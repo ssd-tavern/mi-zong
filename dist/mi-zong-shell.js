@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.31";
+  var CDN_TAG = "1.0.32";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -362,19 +362,19 @@
   var tokens_default = `
 /* ==== 配色（单主题：漆黑鎏金＋旧纸中栏） ==== */
 #mz-shell-root {
-  /* 字阶（全前端唯一字体 Noto Serif SC；八档字号／字距，见 前端信息架构.md「字体与字阶」） */
-  --fs-title: 28px; --ls-title: 14px;      /* 题头：开坛窗题头 */
-  --fs-plaque: 14px; --ls-plaque: 6px;     /* 匾：栏头匾 */
-  --fs-name: 15.5px; --ls-name: 3px;       /* 题名：宗风名、卡题、窗内页签 */
-  --fs-label: 12.5px; --ls-label: 3px;     /* 题头小字：入口小匾名、窗内分组题 */
-  --fs-body: 17.5px;                       /* 正文：挂轴正文 */
-  --fs-read: 13.5px; --ls-read: .5px;      /* 读数：信息榜、入口条、卡内字段 */
-  --fs-tag: 12px; --ls-tag: 2px;           /* 标签：读数键名、灰字提示 */
-  --fs-btn: 13.5px; --ls-btn: 2px; --fs-btn-lg: 16px; --ls-btn-lg: 6px;   /* 钮：朱印钮 */
-  /* 动效纪律（见 前端信息架构.md「动效」）：三档时长＋两条曲线，全前端不得另写数字 */
+  /* 字阶八档，见 前端信息架构.md「字体与字阶」 */
+  --fs-title: 28px; --ls-title: 14px;
+  --fs-plaque: 14px; --ls-plaque: 6px;
+  --fs-name: 15.5px; --ls-name: 3px;
+  --fs-label: 12.5px; --ls-label: 3px;
+  --fs-body: 17.5px;
+  --fs-read: 13.5px; --ls-read: .5px;
+  --fs-tag: 12px; --ls-tag: 2px;
+  --fs-btn: 13.5px; --ls-btn: 2px; --fs-btn-lg: 16px; --ls-btn-lg: 6px;
+  /* 三档时长＋两条曲线，全前端不得另写数字，见 前端信息架构.md「动效」 */
   --t-fast: .16s; --t-mid: .28s; --t-slow: .48s;
-  --ease-out: cubic-bezier(.22,.61,.36,1);      /* 悬停／状态切换：干脆减速 */
-  --ease-paper: cubic-bezier(.16,.84,.3,1);     /* 纸落／印压：重物坐定，无回弹 */
+  --ease-out: cubic-bezier(.22,.61,.36,1);
+  --ease-paper: cubic-bezier(.16,.84,.3,1);
   --lacquer: #171008;
   --paper: #e0d4b4;
   --paper-hi: #eadfc2;
@@ -384,7 +384,6 @@
   --ink-faint: #837455;
   --cinnabar: #a03426;
   --cinnabar-soft: #b04a38;
-  /* 朱漆衬绢系：侧栏低饱和橙朱漆、字走绢色，鎏金回亮 */
   --gold: #d9b45f;
   --gold-rgb: 217,180,95;
   --gold-dim: #c9a04e;
@@ -398,7 +397,7 @@
   --scroll-w: clamp(620px, 46vw, 700px);
   --side-w: clamp(240px, 18vw, 320px);
   --bar-tot: calc(60px + env(safe-area-inset-bottom, 0px));
-  /* 手机端断点走容器查询（外壳本身即视口），预览页可框定外壳尺寸直接看 */
+  /* 断点走容器查询：外壳本身即视口，预览页可框定外壳尺寸直接看 */
   container-type: size; container-name: mz;
 }
 
@@ -411,7 +410,6 @@
   position: fixed; inset: 0; z-index: 9000; display: flex;
   font-family: 'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;
   color: var(--ink);
-  /* 案底：旧绢纹理平铺；叠一层锚色#cfc0a0压灰（原图偏金S60→锚S33），渐晕归CSS */
   background-color: #cfc0a0;
   background-image:
     radial-gradient(120% 105% at 50% 42%, rgba(60,42,18,0) 45%, rgba(60,42,18,.24) 100%),
@@ -420,8 +418,6 @@
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, 512px 512px;
 }
-/* 滚动条：极细淡墨线，尽量无感，悬停才略显 */
-/* 滚动条：一线金轨＋旧金圆头短杆（挂轴轴杆语言），杆身 5px 悬在 1px 细轨上 */
 #mz-shell-root ::-webkit-scrollbar { width: 9px; }
 #mz-shell-root ::-webkit-scrollbar-track { background: linear-gradient(90deg,
   transparent calc(50% - .5px), rgba(var(--gold-rgb), .25) calc(50% - .5px),
@@ -440,7 +436,6 @@
 .mz-side, .mz-rside {
   width: var(--side-w); flex: none; display: flex; flex-direction: column;
   padding: 8px 13px 6px; gap: clamp(4px, 1.5vh, 22px); overflow-y: auto;
-  /* 侧栏：朱漆纹理平铺；叠锚色暗端把色相从朱红拉向赭褐半步，再叠上浅下深的纵向调 */
   background-image:
     linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
     linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
@@ -452,10 +447,10 @@
 .mz-side { border-right: 1px solid rgba(240,200,140,.25); }
 .mz-rside { border-left: 1px solid rgba(240,200,140,.25); }
 
-/* 栏头匾额 v3（素匾：朱漆框方头收边无端饰，横向三切片，两端框角固定、中段匾心拉伸） */
+/* 栏头匾额（横向三切片：两端框角固定，中段匾心拉伸） */
 .mz-plaque {
   flex: none; display: flex; align-items: center; justify-content: center;
-  height: 44px; color: #e4c479;   /* 匾心是黑漆，题字保持亮金 */
+  height: 44px; color: #e4c479;
   font-size: var(--fs-plaque); letter-spacing: var(--ls-plaque); text-indent: var(--ls-plaque);   /* 抵消末字字距，题字真居中 */
   font-weight: 600;
   border-style: solid; border-color: transparent; border-width: 0 6px;
@@ -463,7 +458,7 @@
   filter: drop-shadow(0 3px 7px rgba(0,0,0,.5));
 }
 
-/* ==== 信息榜 v4（纯素窄朱漆框镶绢面：九宫 fill 切片，框条与榜芯随行数拉伸） ==== */
+/* ==== 信息榜（九宫 fill 切片，框条与榜芯随行数拉伸） ==== */
 #mz-board { flex: none;
   border-style: solid; border-color: transparent; border-width: 23px 24px 23px;
   border-image: url('${A2}board-temple.png') 60 64 60 fill / 23px 24px 23px stretch;
@@ -488,22 +483,20 @@
 #mz-minimap:hover { translate: 0 -2px; }
 #mz-minimap .mz-map-wrap { position: relative; }
 #mz-minimap .mz-map-wrap img { width: 100%; }
-/* 坐标对应 map-panorama.png 上的南郊寺庙；换图必须重标（地界→坐标表随复刻版一起建）
-   红标不动画（已拍板）；大地点粒度：在城内就整城一标（长安），不标坊市。
- */
+/* 坐标对应 map-panorama.png 上的南郊寺庙，换图必须重标 */
 #mz-minimap .mz-map-pin { position: absolute; left: 54%; top: 85%; width: 9px; height: 9px; border-radius: 50%;
   background: var(--cinnabar); border: 1.5px solid var(--paper-hi); box-shadow: 0 0 6px var(--cinnabar); }
 #mz-minimap .mz-map-pin::after { content: attr(data-label); position: absolute; left: 13px; top: -4px;
   font-size: 10.5px; letter-spacing: 1px; color: var(--ink-dim); white-space: nowrap;
   background: rgba(234,223,194,.82); padding: 1px 5px; }
-/* 灭佛进度带（占位：先CSS窄带，效果不够再出图） */
+/* 灭佛进度带 */
 #mz-minimap .mz-doom { background: #241a0d; border-top: 1px solid rgba(var(--gold-rgb), .3); padding: 7px 10px 8px; }
 #mz-minimap .mz-doom .mz-lbl { display: flex; justify-content: space-between; font-size: 11.5px; letter-spacing: 2px;
   color: #b39a7e; margin-bottom: 5px; }
-#mz-minimap .mz-doom .mz-lbl b { color: #d89a56; font-weight: 500; }   /* 进度带仍是深底 */
+#mz-minimap .mz-doom .mz-lbl b { color: #d89a56; font-weight: 500; }
 #mz-minimap .mz-doom .mz-bar { height: 5px; background: rgba(255,240,214,.10); }
 #mz-minimap .mz-doom .mz-bar i { display: block; height: 100%; width: 18%; background: linear-gradient(90deg, #7a4a20, #a4623a); }
-/* 地界／风波（自信息榜移入）：各一行，仿灭佛大势行——左小字键（地界行的键即区名）、右绢色正字 */
+/* 地界／风波 */
 #mz-minimap .mz-where, #mz-minimap .mz-storm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
   font-size: 11.5px; letter-spacing: 2px; color: #b39a7e; white-space: nowrap; }
 #mz-minimap .mz-where { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(255,240,214,.12); }
@@ -514,7 +507,7 @@
 #mz-minimap .mz-storm b.mz-good { color: #b9cc8a; }
 #mz-minimap .mz-storm b.mz-red { color: #f09a7e; }
 
-/* ==== 玩法入口条（小匾式：浅楠木芯细朱框九宫，顶角两枚铜钉在角切片内；低栏头匾一级） ==== */
+/* ==== 玩法入口条（小匾：浅楠木芯细朱框九宫切片） ==== */
 .mz-zone { position: relative; padding: 3px 6px 4px; margin: 0; cursor: pointer;
   border-style: solid; border-color: transparent; border-width: 14px;
   border-image: url('${A2}plaque-entry.png') 160 / 14px stretch;
@@ -539,7 +532,7 @@
 .mz-r-row .mz-r-warn { color: #f0b072; }
 .mz-r-row .mz-r-good { color: #b9cc8a; }
 .mz-r-row .mz-r-red { color: #f09a7e; }
-/* 档次色：RPG递进 绿→蓝→紫→金（三档系统取 q1/q2/q4，q3 留扩档） */
+/* 档次色递进 绿 蓝 紫 金；三档系统取 q1/q2/q4，q3 留扩档 */
 .mz-r-row .mz-q1 { color: #a8c47f; }
 .mz-r-row .mz-q2 { color: #8fb5d4; }
 .mz-r-row .mz-q3 { color: #b79bd4; }
@@ -560,7 +553,7 @@
 .mz-zone:hover h5 { color: var(--cinnabar); }
 .mz-zone .mz-z-ico img { filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
 
-/* 锁匾：未解锁入口图标褪色、题字变淡、不可点；锁行一枚线稿锁＋一句开启条件 */
+/* 锁匾 */
 .mz-zone.mz-locked { cursor: default; filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) saturate(.55); }
 .mz-zone.mz-locked:hover { transform: none; }
 .mz-zone.mz-locked h5, .mz-zone.mz-locked:hover h5 { color: var(--ink-faint); }
@@ -568,7 +561,6 @@
 .mz-r-row.mz-r-blank { visibility: hidden; }
 .mz-r-row.mz-r-lock { justify-content: flex-start; gap: 6px; align-items: center; color: var(--ink-faint); letter-spacing: 1.5px; }
 .mz-r-row.mz-r-lock svg { width: 13px; height: 13px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-/* 开启一瞬：匾面泛金光抬起一次 */
 @keyframes mz-unveil { 0% { filter: drop-shadow(0 0 0 rgba(216,164,68,0)); transform: translateY(0); }
   25% { filter: drop-shadow(0 0 14px rgba(216,164,68,.95)) drop-shadow(0 3px 5px rgba(0,0,0,.4)); transform: translateY(-4px); }
   100% { filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); transform: translateY(0); } }
@@ -587,13 +579,13 @@
   // src/css/story.js
   var A3 = ASSET_BASE;
   var story_default = `
-/* ==== 卷首机件（沿远征模式）：更早哨兵 ==== */
+/* ==== 卷首机件：更早哨兵 ==== */
 .mz-earlier { display: block; margin: -8px auto 20px; border: none; background: none; cursor: pointer;
   font-family: inherit; font-size: 12px; letter-spacing: 2px; color: var(--ink-faint); padding: 4px 12px;
   transition: color var(--t-fast) var(--ease-out); }
 .mz-earlier:hover { color: var(--cinnabar); }
 
-/* ==== 楼首思维链（折叠条：金线夹章记，点开展推演） ==== */
+/* ==== 楼首思维链折叠条 ==== */
 .mz-thought { margin: -4px 0 14px; }
 .mz-th-head { width: 100%; display: flex; align-items: center; gap: 10px; border: none; background: none;
   cursor: pointer; padding: 4px 0; color: var(--ink-faint); opacity: .7; transition: color var(--t-fast) var(--ease-out), opacity var(--t-fast) var(--ease-out); }
@@ -606,7 +598,7 @@
   letter-spacing: .3px; color: var(--ink-faint); border-left: 2px solid rgba(139,103,42,.38); }
 .mz-thought.mz-open .mz-th-body { display: block; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 
-/* ==== 行动选项（末楼下方一列四条，动词起句；点击即发送，小样代填书写区） ==== */
+/* ==== 行动选项（末楼下方一列，点击即发送） ==== */
 .mz-opts { margin: 2px 0 12px; }
 .mz-opt-head { display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: 4px; text-indent: 4px;
   color: var(--ink-faint); margin-bottom: 6px; }
@@ -621,7 +613,7 @@
   transition: all var(--t-fast) var(--ease-out); }
 .mz-opt:hover .mz-num { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
 
-/* ==== 楼尾静默行（变量更新牌居左＋心声名签居右，同一行分账） ==== */
+/* ==== 楼尾静默行（变量牌居左＋心声名签居右） ==== */
 .mz-ff { display: flex; align-items: center; gap: 10px; margin: 12px 0 14px; }
 .mz-ff-gap { flex: 1; }
 .mz-ff .mz-ff-label { font-size: 11px; letter-spacing: 2px; color: var(--ink-faint); }
@@ -645,12 +637,12 @@
 .mz-ff-voice .mz-ava { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center;
   justify-content: center; font-size: 11px; color: var(--paper-hi); background: linear-gradient(160deg, #7a5a35, #4a3821);
   box-shadow: 0 0 0 1px rgba(120,96,54,.5); }
-/* 新语红点：楼尾整行共用一枚（不逐人配点），只在心声未查看时存在并呼吸，查看即除 */
+/* 新语红点：楼尾整行共用一枚，不逐人配点 */
 .mz-ff > .mz-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--cinnabar);
   box-shadow: 0 0 6px var(--cinnabar); animation: breathe 2.6s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity: .95; } 50% { opacity: .4; } }
 .mz-ff-voice:hover, .mz-ff-voice.mz-open { color: var(--cinnabar); }
-/* 心声卡（素花笺纸底＋四女主各自的花押叠印右下角；立绘待出图） */
+/* 心声卡：素花笺纸底＋花押叠印右下角 */
 .mz-vc { display: none; gap: 14px; padding: 17px 22px 16px; margin: 0 0 22px;
   position: relative; background: url('${A3}paper-whisper.png');
   background-size: 100% 100%;
@@ -677,24 +669,23 @@
   letter-spacing: inherit; color: var(--ink-faint); padding: 2px 3px; transition: color var(--t-fast) var(--ease-out); }
 .mz-vc-tabs button.mz-on, .mz-vc-tabs button:hover { color: var(--cinnabar); }
 .mz-vc-text { font-size: 13.5px; line-height: 2; color: var(--ink-dim); }
-/* 回想页：页签切换只换卡身，只渲染最近一条回想（历史不进此卡） */
+/* 回想页只渲染最近一条回想，旧条目不进此卡 */
 .mz-vc.mz-memoir .mz-vc-text { display: none; }
 .mz-vc-memos { display: none; }
 .mz-vc.mz-memoir .mz-vc-memos { display: block; }
 .mz-vc-memo { font-size: 13.5px; line-height: 2; color: var(--ink-dim); }
 .mz-vc-memo b { font-weight: 600; letter-spacing: 1px; color: var(--cinnabar); }
-/* 空态（真前端该女主无回想时用）：还没有留下回想 */
 .mz-vc-empty { font-size: 13.5px; line-height: 2; color: var(--ink-faint);
   border-left: 2px solid rgba(160,52,38,.3); padding-left: 12px; }
 
-/* ==== 中栏：挂轴瀑布流（天杆一根压卷首，纸面一路垂到底，输入区并进纸尾） ==== */
+/* ==== 中栏挂轴瀑布流（天杆压卷首，输入区并进纸尾） ==== */
 .mz-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; position: relative; }
 #mz-scroll {
   width: var(--scroll-w); flex: 1; min-height: 0; margin-top: 2px;
   display: flex; flex-direction: column;
   filter: drop-shadow(0 12px 26px rgba(70,50,20,.35));
 }
-/* 卷首：素朱漆平头天杆（三切片，铜箍固定杆身拉伸）＋织锦包首横带＋中垂绦带平结 */
+/* 卷首天杆三切片：铜箍固定，杆身拉伸 */
 .mz-axle { position: relative; flex: none; margin: 0 -14px -6px; z-index: 2; }
 .mz-axle .mz-rod {
   display: block; height: 22px;
@@ -712,7 +703,7 @@
   background: url('${A3}ribbon-knot.png') center top / contain no-repeat;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
 }
-/* 纸面一整条：正文与书写区共用同一张纸，下缘直抵屏底示意卷幅未尽 */
+/* 正文与书写区共用同一张纸 */
 #mz-sheet {
   flex: 1; min-height: 0; display: flex; flex-direction: column;
   background-color: #dfd4b8;
@@ -745,7 +736,6 @@
   transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
 #mz-delbar button.mz-danger { color: var(--cinnabar); border-color: rgba(160,52,38,.55); }
 #mz-delbar button:hover { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
-/* 回到最新钮：悬鱼木牌（鱼头朝下＝坠向卷尾），悬于敕印上方 */
 #mz-jump { position: absolute; z-index: 5; bottom: 84px; left: calc(50% + var(--scroll-w) / 2 - 62px);
   width: 34px; height: 62px; border: none; padding: 0; cursor: pointer; display: none;
   background: url('${A3}hanging-fish.png') center / contain no-repeat;
@@ -754,10 +744,9 @@
 #mz-jump.mz-show { display: block; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 #mz-jump:hover { filter: drop-shadow(0 6px 12px rgba(60,40,15,.55)); rotate: 4deg; }
 
-/* ==== 卷末书写区（并进瀑布流：鎏金界栏隔开，直接写在卷纸上） ==== */
+/* ==== 卷末书写区（并进瀑布流，界栏隔开） ==== */
 #mz-writing { flex: none; position: relative; display: flex; align-items: flex-end; gap: 10px;
   padding: 9px 26px 11px; }
-/* 界栏：CSS 细金线，两端渐隐；纸上用暗金才立得住 */
 #mz-writing::before { content: ''; position: absolute; top: 0; left: 30px; right: 30px; height: 1px;
   background: linear-gradient(90deg, transparent, rgba(139,103,42,.85) 10%, rgba(139,103,42,.85) 90%, transparent); }
 .mz-w-tools { display: flex; gap: 2px; padding-bottom: 4px; }
@@ -769,7 +758,7 @@
   font-family: inherit; font-size: 15px; line-height: 26px; min-height: 36px; max-height: 156px;
   padding: 6px 2px 4px; color: var(--ink); caret-color: var(--cinnabar);
   background: transparent;
-  /* 界行线：淡墨褐，起点对齐 padding-top 使线落在每行字底 */
+  /* 界行线起点须对齐 padding-top，线才落在每行字底 */
   background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(118,94,56,.28) 25px 26px);
   background-position: 0 6px;
   background-attachment: local; }
@@ -787,7 +776,7 @@
 #mz-send:hover { filter: drop-shadow(0 12px 24px rgba(0,0,0,.6)); translate: 0 -2px; }
 #mz-send:active { translate: 0 2px; }
 
-/* ==== 危机段（桌面端不显，手机端替代悬浮朱票：票图正放居中钉在卷末，行事之后；见 phone.js） ==== */
+/* ==== 危机段（桌面端不显，手机端替代悬浮朱票，见 phone.js） ==== */
 .mz-crisis-line { display: none; position: relative; width: 196px; margin: 8px auto 22px;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,.5)) drop-shadow(0 8px 14px rgba(0,0,0,.28)); }
 .mz-crisis-line img { width: 100%; }
@@ -796,13 +785,12 @@
 .mz-crisis-line .mz-ticket-text b { font-size: 12.5px; letter-spacing: 1.5px; color: var(--cinnabar); font-weight: 600; }
 .mz-crisis-line .mz-ticket-text .mz-sub { font-size: 9px; color: var(--ink-dim); margin-top: 3px; letter-spacing: .3px; line-height: 1.5; }
 
-/* ==== 朱票事件层（不常驻，本月危机非空时骑钉在卷轴右肩，大半悬在卷外少遮正文） ==== */
+/* ==== 朱票事件层（本月危机非空时骑钉在卷轴右肩） ==== */
 #mz-crisis { display: none; position: absolute; z-index: 9; top: 30px;
-  /* 骑在纸右缘；窗口收窄、卷外空隙不够时向纸内让位，不压侧栏 */
+  /* 卷外空隙不够时向纸内让位，不压侧栏 */
   left: min(calc(50% + var(--scroll-w) / 2 - 100px), calc(100% - 204px));
   width: 212px; rotate: 4deg; cursor: grab; touch-action: none;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,.7)) drop-shadow(0 12px 22px rgba(0,0,0,.5)); }
-/* 盖印：自上压下、落纸微陷再回正，角度不晃 */
 #mz-shell-root[data-crisis] #mz-crisis { display: block; animation: stamp var(--t-slow) var(--ease-paper); }
 @keyframes stamp {
   0% { opacity: 0; scale: 1.1; translate: 0 -10px; filter: drop-shadow(0 6px 4px rgba(0,0,0,.5)) drop-shadow(0 28px 40px rgba(0,0,0,.35)); }
@@ -819,7 +807,7 @@
   // src/css/lift.js
   var A4 = ASSET_BASE;
   var lift_default = `
-/* ==== 浮窗（素笺题签定稿：无框素纸＋竖排朱漆悬签＋内圈暗金细线，木框方案废弃） ==== */
+/* ==== 浮窗（无框素纸＋竖排朱漆悬签＋内圈暗金细线） ==== */
 #mz-lift { position: fixed; inset: 0; z-index: 40; background: var(--scrim); backdrop-filter: blur(3px);
   display: none; align-items: center; justify-content: center; }
 #mz-lift.mz-show { display: flex; }
@@ -827,12 +815,9 @@
   position: relative; display: flex; flex-direction: column;
   background-color: #dfd4b8; background-image: url('${A4}paper-scroll.png'); background-size: 512px 512px;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) drop-shadow(0 24px 48px rgba(0,0,0,.55)); }
-/* 内圈暗金细线（界栏语言） */
 #mz-lift .mz-held::before { content: ''; position: absolute; inset: 9px; pointer-events: none; z-index: 1;
   border: 1px solid rgba(139,103,42,.5); }
-/* 题签（slip-title.png 竖三切片：签头穿孔与签尾金线固定，签身中段拉伸）：
-   竖排朱漆签悬出纸上缘，窗名题签上；内部排版须避让左上题签区（宽约46px、入纸约70px） */
-/* 题签挂纸左上角原位，尾巴止于页签行与间隙之内（两字 56／三字 77 深），只有页签行为它让路 */
+/* 题签 slip-title.png 竖三切片：签头签尾固定、签身拉伸；窗内排版须避让左上题签区（宽约46px、入纸约70px） */
 #mz-lift .mz-held h3 { position: absolute; top: -34px; left: 26px; z-index: 2;
   writing-mode: vertical-rl; letter-spacing: 6px; padding: 16px 13px 18px;
   font-size: 15px; font-weight: 600; color: var(--side-title);
@@ -840,13 +825,13 @@
   border-image: url('${A4}slip-title.png') 140 0 120 fill / 15px 0 13px stretch;
   filter: drop-shadow(0 3px 6px rgba(0,0,0,.4)); }
 #mz-lift .mz-held .mz-held-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; padding: 30px 34px 26px; }
-/* 收窗叉：桌面端不显（点遮罩关），手机端右上角低调线稿；开坛窗不可关不显（见 phone.js） */
+/* 收窗叉桌面端不显（点遮罩即关），手机端与开坛窗的显隐见 phone.js */
 #mz-lift .mz-lift-x { display: none; position: absolute; top: 10px; right: 10px; z-index: 3; width: 34px; height: 34px; padding: 8px;
   border: none; background: none; cursor: pointer; color: var(--ink-faint); opacity: .55; transition: opacity var(--t-fast) var(--ease-out); }
 #mz-lift .mz-lift-x:hover { opacity: .95; }
 #mz-lift .mz-lift-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 #mz-lift .mz-held .mz-stub { margin: auto; text-align: center; color: var(--ink-faint); font-size: 13.5px; letter-spacing: 4px; }
-/* 开窗：幕先暗、纸坐定、签垂下、字后显，四层错拍；关窗反向收束（mz-hide 由 closeLift 挂，动画完再卸 mz-show） */
+/* 开窗四层错拍；mz-hide 由 closeLift 挂，动画播完才卸 mz-show */
 #mz-lift.mz-show { animation: lift-scrim var(--t-mid) var(--ease-out) both; }
 @keyframes lift-scrim { from { background: transparent; backdrop-filter: blur(0); } }
 #mz-lift.mz-show .mz-held { animation: lift-settle var(--t-slow) var(--ease-paper) both; }
@@ -860,7 +845,7 @@
 @keyframes lift-leave { to { opacity: 0; translate: 0 -10px; } }
 #mz-lift.mz-hide .mz-held h3, #mz-lift.mz-hide .mz-held .mz-held-body { animation: none; }
 
-/* ==== 开坛窗（第 0 楼开局）：同素纸底＋内圈金线；题字不挂匾，直接写在纸面顶端作帖首题头（大字＋细金线）；遮罩点击不关、无关闭钮 ==== */
+/* ==== 开坛窗（第 0 楼开局）：题头写在纸面顶端，遮罩点击不关、无关闭钮 ==== */
 #mz-lift.mz-gate .mz-held { width: min(1100px, 94vw); height: auto; min-height: min(600px, 72vh); max-height: 84vh; }
 #mz-lift.mz-gate .mz-held h3 { position: static; translate: none; writing-mode: horizontal-tb; filter: none;
   border: none; border-image: none; padding: 34px 44px 0; margin: 0; z-index: 2; text-align: center;
@@ -897,7 +882,6 @@
 .mz-gate-sect b { font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; white-space: nowrap; transition: color var(--t-mid) var(--ease-out); }
 .mz-gate-sect span { font-size: var(--fs-read); letter-spacing: var(--ls-read); color: var(--ink-faint); }
 .mz-gate-sect:not(.mz-on) { filter: saturate(.85) opacity(.9); }
-/* 选中态：角花金括弧，自角外合拢落位 */
 .mz-gate-sect.mz-on::before, .mz-gate-sect.mz-on::after { content: ''; position: absolute; width: 14px; height: 14px; border: 2px solid #b8902e;
   animation: bracket-in var(--t-mid) var(--ease-paper) both; }
 @keyframes bracket-in { from { opacity: 0; translate: var(--bx) var(--by); } }
@@ -910,7 +894,7 @@
 .mz-gate-foot .mz-why { position: absolute; left: calc(50% + 70px); top: 50%; translate: 0 -50%; white-space: nowrap; margin: 0; padding-top: 6px; }
 .mz-gate-foot .mz-seal-btn.mz-lg { padding: 8px 22px; }
 
-/* ==== 开坛礼（仅开坛那一次）：窗内文字暗下 → 大朱印盖在纸心、金圈荡开 → 整纸揭走 → 正文缓显、两侧匾额逐块点亮 ==== */
+/* ==== 开坛礼（仅开坛那一次） ==== */
 #mz-lift.mz-rite .mz-held-body, #mz-lift.mz-rite .mz-held h3 { transition: opacity var(--t-mid) var(--ease-out); opacity: .1; }
 #mz-lift.mz-rite .mz-held::before { transition: opacity var(--t-mid); opacity: .35; }
 .mz-rite { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
@@ -923,7 +907,6 @@
 .mz-rite-ring:nth-child(2) { animation-delay: .42s; }
 .mz-rite-ring:nth-child(3) { animation-delay: .58s; border-color: rgba(160,52,38,.7); }
 @keyframes rite-ring { 0% { opacity: 0; scale: 1; } 15% { opacity: 1; } 100% { opacity: 0; scale: 3.4; } }
-/* 白文方印：朱底绢字，纸纹叠印出朱泥颗粒；落印时自高处压下、微陷回正 */
 .mz-rite-seal { position: relative; width: 164px; height: 164px; rotate: -3deg; padding: 14px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
   background: var(--cinnabar) url('${A4}paper-scroll.png') center / 256px; background-blend-mode: multiply;
@@ -936,10 +919,9 @@
   75% { scale: 1.015; } 100% { scale: 1; } }
 .mz-rite-skip { position: absolute; right: 22px; bottom: 16px; font-size: var(--fs-tag); letter-spacing: var(--ls-tag); color: var(--ink-faint); opacity: 0;
   animation: mz-reveal var(--t-mid) .9s var(--ease-out) forwards; }
-/* 揭纸：整张纸（连印）向上揭走 */
 #mz-lift.mz-rite-out .mz-held { animation: rite-lift .6s cubic-bezier(.5,0,.8,.4) both; }
 @keyframes rite-lift { to { opacity: 0; translate: 0 -90px; } }
-/* 两侧匾额点亮：按 --i 顺序错拍 */
+/* --i 由 17-gate.js 的 playEntrance 逐块写入 */
 .mz-kindle { animation: mz-kindle .55s var(--ease-out) both; animation-delay: calc(var(--i, 0) * .07s + .15s); }
 @keyframes mz-kindle { 0% { opacity: 0; translate: 0 8px; filter: brightness(1.5); } 60% { filter: brightness(1.15); } 100% { opacity: 1; translate: 0 0; filter: none; } }
 `;
@@ -947,11 +929,10 @@
   // src/css/windows.js
   var A5 = ASSET_BASE;
   var windows_default = `
-/* ==== 浮窗窗内通用件（页签／经折页／拜帖卡／虚位／朱印钮，CSS 底版；第三批素材出图后换底） ==== */
-/* 窗内整体让出左上题签区（四字窗名签入纸约 124px、右缘约 76px）：列表窗左留 50px 边沟；舆图窗图面压在签下无妨 */
+/* ==== 浮窗窗内通用件（页签／经折页／拜帖卡／虚位／朱印钮） ==== */
+/* 窗内排版须让出左上题签区：列表窗左留边沟，舆图窗图面压在签下无妨 */
 .mz-win { display: none; flex: 1; min-height: 0; flex-direction: column; gap: 14px; }
 .mz-win.mz-on { display: flex; }
-/* 页签：横排于题签避让区右侧，文字＋选中态鎏金底线 */
 .mz-tabs { display: flex; gap: 22px; margin: -6px 0 8px; padding-left: 48px; flex: none; }
 .mz-tabs button { border: none; background: none; cursor: pointer; font-family: inherit; font-size: var(--fs-name);
   letter-spacing: var(--ls-name); color: var(--ink-faint); padding: 4px 2px 6px; position: relative; transition: color var(--t-fast) var(--ease-out); }
@@ -965,7 +946,6 @@
 .mz-pane { display: none; flex: 1; min-height: 0; flex-direction: column; gap: 12px; }
 .mz-pane.mz-on { display: flex; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 @keyframes mz-reveal { from { opacity: 0; translate: 0 4px; } }
-/* 经折页：列表底，纸色比素笺浅半档，折痕竖线分栏 */
 .mz-folio { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px;
   background: #f4efe0 url('${A5}paper-folded.png') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32);
   box-shadow: inset 0 0 0 4px rgba(255,252,244,.35); }
@@ -973,7 +953,6 @@
 .mz-grid.mz-c2 { grid-template-columns: repeat(2, 1fr); }
 .mz-grid.mz-c3 { grid-template-columns: repeat(3, 1fr); }
 .mz-grid.mz-c4 { grid-template-columns: repeat(4, 1fr); }
-/* 拜帖卡：直边素卡＋内圈暗金细线；虚位＝虚线框＋二字 */
 .mz-card { position: relative; padding: 11px 13px 10px;
   border-style: solid; border-color: transparent; border-width: 11px;
   border-image: url('${A5}card-calling.png') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
@@ -990,12 +969,10 @@
 .mz-card.mz-empty.mz-lotus span { position: relative; }
 .mz-card.mz-empty.mz-lotus span { opacity: .9; background: rgba(255,252,244,.8); padding: 0 4px; }
 .mz-card .mz-seal-btn { position: absolute; right: 12px; bottom: 10px; }
-/* 设施卡升档：脚行一枚朱印钮（不悬浮），天工改造展开奇效栏 */
 .mz-card.mz-up .mz-seal-btn { position: static; }
 .mz-card .mz-up-foot { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 .mz-card .mz-up-foot .mz-price { font-size: 12px; margin-left: 6px; opacity: .85; }
 .mz-card .mz-upform { margin-top: 8px; }
-/* 蓝图卡：可点选，选中朱线；已建置灰 */
 .mz-bps { margin-bottom: 4px; }
 .mz-card.mz-bp { cursor: pointer; min-height: 0; padding-top: 9px; padding-bottom: 8px; line-height: 1.6; transition: box-shadow var(--t-fast) var(--ease-out); }
 .mz-card.mz-bp small { display: block; font-size: 12px; letter-spacing: .5px; color: var(--ink-faint); margin-top: 2px; }
@@ -1004,7 +981,7 @@
 .mz-card.mz-bp.mz-off { cursor: default; opacity: .55; }
 .mz-card.mz-bp.mz-off:hover { box-shadow: 0 1px 2px rgba(60,40,15,.12); }
 .mz-card .mz-upform .mz-build-foot { width: 100%; margin-top: 4px; }
-/* 朱印钮（全局按钮语言）：朱漆方印＋绢色字；置灰钮旁灰字注缘由 */
+/* 朱印钮（全局按钮语言） */
 .mz-seal-btn { border: none; cursor: pointer; font-family: inherit; font-size: var(--fs-btn); letter-spacing: var(--ls-btn); text-indent: var(--ls-btn);
   color: #fff4dc; background: var(--cinnabar); padding: 4px 9px; box-shadow: inset 0 0 0 1px rgba(255,236,200,.35), 0 2px 4px rgba(60,20,10,.35);
   transition: filter var(--t-fast) var(--ease-out), translate var(--t-fast) var(--ease-out); }
@@ -1013,7 +990,6 @@
 .mz-seal-btn.mz-lg { font-size: var(--fs-btn-lg); letter-spacing: var(--ls-btn-lg); text-indent: var(--ls-btn-lg); padding: 6px 16px; }
 .mz-seal-btn[disabled] { cursor: not-allowed; background: #8d8271; color: rgba(255,244,220,.7); box-shadow: none; filter: none; translate: none; }
 .mz-why { font-size: var(--fs-tag); letter-spacing: var(--ls-tag); color: var(--ink-faint); margin-left: 8px; }
-/* 表单：写在纸上的输入框（沿书写区语言，下划细墨线） */
 .mz-form { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: flex-end; flex: none; }
 .mz-form label { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; letter-spacing: 2px; color: var(--ink-faint); }
 .mz-form input { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none;
@@ -1021,7 +997,6 @@
 .mz-form input.mz-w { width: 260px; }
 .mz-form .mz-choices { display: flex; gap: 8px; align-items: center; }
 .mz-form .mz-price { font-size: 12px; letter-spacing: .5px; opacity: .85; margin-left: 3px; }
-/* 兴造整页表单：名称／用途／档次三选卡／天工奇效／破土 */
 .mz-build { flex-direction: column; align-items: stretch; gap: 14px; }
 .mz-build input, .mz-build textarea { width: 100%; box-sizing: border-box; }
 .mz-build textarea { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none; resize: none;
@@ -1047,26 +1022,23 @@
 .mz-wonder.mz-live small::before { content: ''; }
 .mz-wonder small { font-size: 11.5px; letter-spacing: .5px; color: var(--ink-faint); margin-top: 2px; }
 .mz-build-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: auto; }
-/* 窗内小题头：鎏金细字＋金线 */
 .mz-wh { display: flex; align-items: center; gap: 10px; flex: none; font-size: 13.5px; letter-spacing: 3px; color: var(--ink-faint); }
 .mz-wh::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(139,103,42,.5), transparent); }
 .mz-wh b { color: var(--cinnabar); font-weight: 600; letter-spacing: 1px; }
 .mz-folio > .mz-wh:not(:first-child) { margin-top: 16px; }
-/* 浮窗定高 620，行撑满余高；右档案列定高后回想在列内滚动 */
+/* 浮窗定高 620，行撑满余高，回想在列内滚动 */
 .mz-wrow { display: flex; gap: 16px; flex: 1; min-height: 0; align-items: flex-start; }
 .mz-wrow > .mz-wcol { align-self: stretch; }
 .mz-wcol { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 /* 空态短句 */
 .mz-none { color: var(--ink-faint); letter-spacing: 3px; font-size: 14px; padding: 6px 2px; }
 
-/* 同心缕：左列名签／中立绘／右档案 */
-/* 名签列自题签避让区下方起排（题签入纸约 70px） */
-/* 同心缕：女主切换走与其他窗一致的顶部页签（.mz-tabs），位阶作页签小字 */
+/* 同心缕：女主切换走顶部页签，位阶作页签小字 */
 .mz-portrait { flex: none; width: 252px; display: flex; flex-direction: column; gap: 8px; }
 .mz-portrait .mz-pic { aspect-ratio: 832 / 1216; width: 100%; background: linear-gradient(165deg, #4a3626, #2b1d13 60%, #1d130c) center / cover no-repeat;
   outline: 1px solid rgba(120,96,54,.5); outline-offset: -3px; display: flex; align-items: center; justify-content: center; }
 .mz-portrait .mz-pic span { writing-mode: vertical-rl; font-size: 11px; letter-spacing: 4px; color: rgba(216,204,178,.45); }
-/* 缩略一行五张、两行十张（252 列宽＝页签行下立绘＋两行缩略恰填 620 窗高） */
+/* 252 列宽＝立绘加两行缩略恰填 620 窗高 */
 .mz-thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
 .mz-thumbs i { width: auto; aspect-ratio: 832 / 1216; background: #3a2a1c; outline: 1px solid rgba(120,96,54,.4); cursor: pointer; opacity: .7; }
 .mz-thumbs i.mz-on { opacity: 1; outline-color: var(--cinnabar); }
@@ -1076,9 +1048,8 @@
   display: flex; align-items: center; justify-content: center; }
 .mz-thumbs i.mz-lock span { font-size: 11px; letter-spacing: 2px; color: rgba(216,204,178,.6); writing-mode: vertical-rl; }
 .mz-thumbs i.mz-lock:hover { opacity: 1; }
-/* 位阶莲瓣：四瓣对应一灌～四灌，待度零瓣 */
+/* 位阶莲瓣：四瓣对应一灌至四灌，待度零瓣，未亮去色压淡 */
 .mz-lotus-row { display: flex; align-items: center; gap: 10px; font-size: 14.5px; letter-spacing: 1px; color: var(--ink-dim); flex: none; }
-/* 莲瓣位阶：一张鎏金莲花素材，按位阶点亮前 N 枚；未亮去色压淡 */
 .mz-lotus-row i { width: 26px; height: 28px; background: url('${A5}lotus-rank.png') center / contain no-repeat;
   filter: grayscale(1) opacity(.32); }
 .mz-lotus-row i.mz-lit { filter: none; }
@@ -1098,7 +1069,6 @@
 .mz-pei  { --stamp: url('${A5}stamp-orchid.png'); }
 .mz-ye   { --stamp: url('${A5}stamp-peach.png'); }
 
-/* 同心缕：未识女主名签置灰 */
 .mz-names button.mz-off { opacity: .45; cursor: default; }
 .mz-names button.mz-off:hover { color: inherit; }
 
@@ -1139,7 +1109,7 @@
 .mz-shop small { display: block; font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); margin-top: 3px; }
 .mz-shop.mz-off { background: none; outline-style: dashed; color: var(--ink-faint); }
 
-/* 舆图浮窗：区域面高亮（SVG overlay，viewBox 1024；当前区着色＋描边，其余悬停淡描） */
+/* 舆图浮窗：SVG overlay 区域面高亮（viewBox 1024） */
 .mz-atlas { flex: 1; min-height: 0; display: flex; gap: 16px; }
 .mz-atlas .mz-mapbox { position: relative; flex: none; height: min(600px, calc(84vh - 100px)); aspect-ratio: 1; outline: 1px solid rgba(50,24,10,.4); }
 .mz-atlas .mz-mapbox img { width: 100%; height: 100%; }
@@ -1151,7 +1121,7 @@
 .mz-atlas .mz-lbl { position: absolute; translate: -50% -50%; font-size: 12px; letter-spacing: 1px; color: var(--ink-dim); white-space: nowrap;
   background: rgba(244,238,220,.82); padding: 1px 5px; pointer-events: none; }
 .mz-atlas .mz-lbl.mz-cur { color: var(--cinnabar); font-weight: 600; font-size: 13px; }
-/* 风波印章：朱泥方印素材叠字；三档色靠 hue-rotate（高＝朱砂本色、中＝−25°暖橙、低＝＋120°青绿） */
+/* 风波印章三档色靠 hue-rotate 偏移朱砂本色 */
 .mz-atlas .mz-storm { position: absolute; top: 8px; right: 8px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
   background: url('${A5}seal-storm.png') center / contain no-repeat;
   font-size: 16px; letter-spacing: 0; font-weight: 700; color: var(--cinnabar); }
@@ -1172,7 +1142,7 @@
   // src/css/extras.js
   var A6 = ASSET_BASE;
   var extras_default = `
-/* ==== 正式版补件（mockup 之外）：正文容器／编辑态／删除态／推演中／入口／变量树／数据库钮 ==== */
+/* ==== 正文容器／编辑态／删除态／推演中／入口／变量树／数据库钮 ==== */
 #mz-shell-root[data-visible="false"] { display: none; }
 .mz-turn .mz-text { display: block; }
 .mz-turn.mz-gm .mz-text p + p { margin-top: .9em; }
@@ -1201,7 +1171,7 @@
 #mz-shell-root[data-acu] #mz-corner button[data-corner="acu"] { display: block; }
 #mz-entry { position: fixed; z-index: 8999; display: none; --fs-label: 12.5px; --ls-label: 3px; }
 #mz-entry.mz-tab { display: block; }
-/* 入卷题签：直角素绢小牌，配色对齐入口面板（绢纸 #f3ead2／入卷红 #9b2f22），左端朱印方章 */
+/* 入卷题签配色对齐酒馆内入口面板（绢纸 #f3ead2／入卷红 #9b2f22） */
 .mz-entry-tab { position: relative; display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 6px 13px 6px 6px;
   font-family: 'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif; font-size: var(--fs-label); letter-spacing: var(--ls-label); text-indent: var(--ls-label);
   color: #3a2c1a; background: #f3ead2 url('${A6}paper-scroll.png') center / 512px; border: 1px solid rgba(139,103,42,.5);
@@ -1224,7 +1194,7 @@
 .mz-vartree .mz-kv b { color: var(--cinnabar); font-weight: 500; }
 .mz-vc-img img { width: 100%; height: 100%; object-fit: cover; }
 .mz-portrait .mz-pic img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
-/* ==== 罪业密簿黑账变体（七窗唯此一扇走暗面）：真黑账纸，朱砂线作骨饰红，题签黑漆描金 ==== */
+/* ==== 罪业密簿黑账变体（七窗唯此一扇走暗面） ==== */
 #mz-lift.mz-sin { --ink: #e3d4ac; --ink-dim: #c3b28a; --ink-faint: #94845f; }
 #mz-lift.mz-sin .mz-held { background-color: #151515; background-image: url('${A6}paper-ledger.png'); }
 #mz-lift.mz-sin .mz-held h3 { border-image-source: url('${A6}slip-ledger.png'); }
@@ -1236,7 +1206,7 @@
 #mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35); }
 #mz-lift.mz-sin .mz-bar-line .mz-bar { background: rgba(0,0,0,.35); }
 
-/* 立绘大图：最简灯箱——半透明黑底悬浮、原图居中、点击即关 */
+/* 立绘大图灯箱 */
 #mz-viewer { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.78);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   cursor: zoom-out; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
@@ -1244,7 +1214,6 @@
 #mz-viewer span { font-size: var(--fs-read); letter-spacing: 4px; text-indent: 4px; color: rgba(240,230,205,.85); }
 .mz-thumbs i { background-size: cover; background-position: center; }
 #mz-crisis.mz-moved { left: var(--cx); top: var(--cy); }
-/* 变量变动：正字朱色晕开、微抬，再缓缓褪回本色；键名不动 */
 @keyframes mz-flash { 0% { color: var(--cinnabar); text-shadow: 0 0 10px rgba(160,52,38,.55); translate: 0 -2px; }
   30% { color: var(--cinnabar); text-shadow: 0 0 0 rgba(160,52,38,0); translate: 0 0; } }
 .mz-flash b, .mz-flash .mz-w-sub, .mz-flash.mz-solo { animation: mz-flash 1.4s var(--ease-out); }
@@ -1252,10 +1221,8 @@
   30% { color: #f6c083; text-shadow: 0 0 0 rgba(240,176,114,0); translate: 0 0; } }
 #mz-minimap .mz-flash b, #mz-minimap .mz-flash .mz-w-sub { animation-name: mz-flash-dark; }
 .mz-win .mz-form input[disabled] { opacity: .5; }
-/* 开坛放行：卷纸正文自下而上缓显 */
 #mz-paper.mz-unveil { animation: mz-unveil .8s var(--ease-out) both; }
 @keyframes mz-unveil { from { opacity: 0; translate: 0 10px; } }
-/* 退出到原生：整卷轻沉淡出，期间失效点击 */
 #mz-shell-root.mz-shell-out { animation: mz-shell-out var(--t-slow) var(--ease-out) both; pointer-events: none; }
 @keyframes mz-shell-out { to { opacity: 0; translate: 0 10px; } }
 @media (prefers-reduced-motion: reduce) { #mz-shell-root, #mz-shell-root *, #mz-shell-root *::before, #mz-shell-root *::after, #mz-lift, #mz-lift * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
@@ -1268,7 +1235,7 @@
 #mz-mbar, #mz-mscrim, #mz-mmenu { display: none; }
 
 @container mz (max-width: 920px) {
-  /* ==== 中栏：挂轴铺满，天杆不再外悬，底部让出底栏 ==== */
+  /* ==== 中栏：挂轴铺满，天杆收进纸内，底部让出底栏 ==== */
   .mz-main { --scroll-w: 100%; padding-top: env(safe-area-inset-top, 0px); padding-bottom: var(--bar-tot); }
   #mz-scroll { width: 100%; margin-top: 0; filter: none; }
   .mz-axle { margin: 0 0 -6px; }
@@ -1279,15 +1246,15 @@
   #mz-writing { padding: 8px 10px 10px; }
   #mz-writing::before { left: 14px; right: 14px; }
   #mz-send { width: 42px; height: 44px; font-size: 18px; }
-  /* 回底木鱼：水平对齐敕印中心（敕印宽 42 贴右 10，木鱼宽 34），纵向悬于敕印之上 */
+  /* 回底木鱼水平对齐敕印中心（敕印宽 42 贴右 10，木鱼宽 34） */
   #mz-jump { bottom: calc(var(--bar-tot) + 62px); left: auto; right: 14px; }
   /* iOS Safari 聚焦字号 <16px 的输入框会放大页面 */
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
-  /* 朱票悬浮太挡视野，手机端撤，换卷末危机段 */
+  /* 手机端撤悬浮朱票，换卷末危机段 */
   #mz-shell-root[data-crisis] #mz-crisis { display: none; }
   .mz-crisis-line { display: block; }
 
-  /* ==== 底栏：朱漆一条，寺况／行事／天机三钮，只挂名字（读数进屉里看，2026-08-25 定） ==== */
+  /* ==== 底栏：寺况／行事／天机三钮，只挂名字，读数进屉里看 ==== */
   #mz-mbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 31; height: var(--bar-tot);
     padding-bottom: env(safe-area-inset-bottom, 0px); display: flex; align-items: stretch;
     background-image:
@@ -1303,7 +1270,7 @@
   #mz-mbar button.mz-on { color: var(--gold); }
   #mz-mbar button[data-drawer="more"] { flex: 0 0 88px; }
   #mz-mbar .mz-sep { width: 1px; margin: 14px 0; background: rgba(240,200,140,.22); }
-  /* 天机菜单：底栏右上升起一块小匾，低频钮（变量／数据库／退出）都在这，退出两步远不误触 */
+  /* 天机菜单：低频钮（变量／数据库／退出）都在这，退出两步远不误触 */
   #mz-mmenu { display: flex; flex-direction: column; position: absolute; right: 8px; bottom: calc(var(--bar-tot) + 10px); z-index: 30; min-width: 150px;
     padding: 4px 6px; border-style: solid; border-color: transparent; border-width: 14px;
     border-image: url('${A7}plaque-entry.png') 160 / 14px stretch; background: url('${A7}silk-board-core.png') center / cover; background-clip: border-box;
@@ -1321,7 +1288,7 @@
     opacity: 0; pointer-events: none; transition: opacity var(--t-mid) var(--ease-out); }
   #mz-mscrim.mz-open { opacity: 1; pointer-events: auto; }
 
-  /* ==== 两侧栏原封变抽屉：自底栏上方升起，内容超高在屉内滚动（一屏收齐铁律手机端豁免） ==== */
+  /* ==== 两侧栏原封变抽屉：内容超高在屉内滚动（一屏收齐手机端豁免） ==== */
   .mz-side, .mz-rside { position: absolute; left: 0; right: 0; bottom: var(--bar-tot); top: auto; width: auto; max-height: 76%; z-index: 30;
     border: none; border-top: 1px solid rgba(240,200,140,.35); padding: 10px 14px 14px; gap: 12px;
     translate: 0 110%; transition: translate var(--t-slow) var(--ease-paper); box-shadow: 0 -12px 30px rgba(0,0,0,.45); }
@@ -1342,7 +1309,7 @@
   .mz-vc { padding: 14px 14px 14px; }
   .mz-atlas { flex-direction: column; overflow-y: auto; }
   .mz-atlas .mz-mapbox { width: 100%; height: auto; }
-  /* 页签栏：等宽一行，小字折到名下，尾注独占一行靠右（九窗页签与同心缕名签通用） */
+  /* 页签栏：等宽一行，小字折到名下，尾注独占一行靠右 */
   .mz-tabs { gap: 0; flex-wrap: wrap; margin: -2px 0 0; padding-left: 40px; }
   .mz-tabs button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px 6px; }
   .mz-tabs button .mz-n { margin-left: 0; font-size: 11px; line-height: 1.3; text-align: center; white-space: normal; }
@@ -1350,7 +1317,6 @@
   .mz-tabs button .mz-red { position: absolute; top: 6px; right: 6px; margin: 0; translate: none; }
   .mz-wrow { flex-direction: column; overflow-y: auto; }
   .mz-wrow > .mz-wcol { align-self: auto; width: 100%; flex: none; }
-  /* 同心缕：主图居中放大，缩略图与锁位在主图下排一行五列 */
   .mz-portrait { width: 100%; flex-direction: column; align-items: center; gap: 10px; }
   .mz-portrait .mz-pic { width: 220px; flex: none; }
   .mz-thumbs { width: 100%; gap: 6px; }
