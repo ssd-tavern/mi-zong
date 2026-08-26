@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.30";
+  var CDN_TAG = "1.0.31";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -240,7 +240,7 @@
     文 = Math.max(0, Math.round(+文 || 0));
     const 贯 = Math.floor(文 / 1e3), 零 = 文 % 1e3;
     if (!贯) return 零 ? cn(零) + "文" : "零贯";
-    return cn(贯) + "贯" + (零 && 贯 < 1e3 ? cn(零) + "文" : "");
+    return cn(贯) + "贯" + (零 ? cn(零) + "文" : "");
   }
   var 总文 = (sd) => (Number(_.get(sd, "资粮.铜钱")) || 0) * 1e3 + (Number(_.get(sd, "资粮.零头文")) || 0);
   function parseTime(s) {
@@ -300,12 +300,8 @@
 
   // src/06-state-mvu.js
   var lastStat = null;
-  var prevStat = null;
   function setLastStat(v) {
     lastStat = v;
-  }
-  function setPrevStat(v) {
-    prevStat = v;
   }
   function currentStat() {
     if (lastStat) return lastStat;
@@ -1468,10 +1464,13 @@
     }
   }
   function gateNeeded() {
-    if (safeLastMessageId() !== 0) return false;
-    if (onPanelSwipe()) return true;
+    if (safeLastMessageId() === 0 && onPanelSwipe()) return true;
     return !readMVU().道场.宗风;
   }
+  var gateLate = () => {
+    const id = safeLastMessageId();
+    return id != null && id > 0;
+  };
   function openingSwipes() {
     const info = readOpenings();
     if (!info) return [];
@@ -1482,18 +1481,15 @@
     return out;
   }
   function gateHtml() {
-    const swipes = openingSwipes();
-    const info = readOpenings();
+    const late = gateLate();
+    const swipes = late ? [] : openingSwipes();
+    const info = late ? null : readOpenings();
     if (swipes.length && page >= swipes.length) page = swipes.length - 1;
     const curSwipe = swipes[page];
     const meta = OPENINGS_META[curSwipe != null ? curSwipe - 1 : 0] || OPENINGS_META[0];
     const multi = swipes.length > 1;
     const nav = multi ? `<div class="mz-gate-nav"><button data-gate="prev" ${page === 0 ? "disabled" : ""}>${ICO.chev}</button><span>${page + 1} / ${swipes.length}</span><button data-gate="next" ${page === swipes.length - 1 ? "disabled" : ""}>${ICO.chev}</button></div>` : "";
-    const sects = SECTS.map((s) => `<button class="mz-gate-sect${chosenSect === s.key ? " mz-on" : ""}" data-gate="sect" data-sect="${s.key}"><b>${s.key}</b><span>${s.line}</span></button>`).join("");
-    const ready = !!chosenSect && (swipes.length > 0 || !info);
-    return `<section class="mz-win mz-on mz-gate-win">
-    <div class="mz-gate-cols">
-      <div class="mz-gate-opening">
+    const opening = late ? "" : `<div class="mz-gate-opening">
         <h4>开场白</h4>
         <div class="mz-gate-card">
           <div class="mz-gate-img"${meta.img ? ` style="background-image:url('${meta.img}')"` : ""}></div>
@@ -1501,7 +1497,12 @@
           <p>${meta.blurb}</p>
           ${nav}
         </div>
-      </div>
+      </div>`;
+    const sects = SECTS.map((s) => `<button class="mz-gate-sect${chosenSect === s.key ? " mz-on" : ""}" data-gate="sect" data-sect="${s.key}"><b>${s.key}</b><span>${s.line}</span></button>`).join("");
+    const ready = !!chosenSect && (late || swipes.length > 0 || !info);
+    return `<section class="mz-win mz-on mz-gate-win">
+    <div class="mz-gate-cols">
+      ${opening}
       <div class="mz-gate-sects">
         <h4>宗风</h4>
         ${sects}
@@ -1509,7 +1510,7 @@
     </div>
     <div class="mz-gate-foot">
       <button class="mz-seal-btn mz-lg" data-gate="confirm" ${ready ? "" : "disabled"}>开坛</button>
-      ${ready ? "" : '<span class="mz-why">请先择定宗风</span>'}
+      <span class="mz-why">${ready ? "" : "请先择定宗风"}</span>
     </div>
   </section>`;
   }
@@ -1524,43 +1525,60 @@
     }
     storyCacheDrop(0);
     setLastStat(null);
-    setPrevStat(null);
+  }
+  function floorStat(mid) {
+    let v = null;
+    try {
+      v = getVariables({ type: "message", message_id: mid });
+    } catch (e) {
+      dbg("gate:get", e);
+    }
+    if ((!v || !v.stat_data) && mid === 0) {
+      const info = readOpenings();
+      const sd = info && info.data[info.cur];
+      v = sd && sd.stat_data ? { stat_data: sd.stat_data } : null;
+    }
+    if (!v || !v.stat_data) return null;
+    return _.cloneDeep(_.omit(v.stat_data, ["$internal"]));
   }
   async function confirmGate(btn) {
     if (busy || !chosenSect) return;
     busy = true;
     btn.disabled = true;
     try {
-      const swipes = openingSwipes();
-      const target = swipes[page];
-      if (target != null) await switchOpening(target);
-      let v = null;
-      try {
-        v = getVariables({ type: "message", message_id: 0 });
-      } catch (e) {
-        dbg("gate:get", e);
+      const late = gateLate();
+      if (!late) {
+        const target = openingSwipes()[page];
+        if (target != null) await switchOpening(target);
       }
-      if (!v || !v.stat_data) {
-        const info = readOpenings();
-        const sd = info && info.data[info.cur];
-        v = sd && sd.stat_data ? { stat_data: sd.stat_data } : null;
+      const stat = floorStat(0);
+      if (!stat && !late) throw new Error("读不到开场变量, 请稍后再试");
+      if (stat) {
+        _.set(stat, "道场.宗风", chosenSect);
+        await insertOrAssignVariables({ stat_data: stat }, { type: "message", message_id: 0 });
+        storyCacheDrop(0);
       }
-      if (!v || !v.stat_data) throw new Error("读不到开场变量, 请稍后再试");
-      const stat = _.cloneDeep(_.omit(v.stat_data, ["$internal"]));
-      _.set(stat, "道场.宗风", chosenSect);
-      await insertOrAssignVariables({ stat_data: stat }, { type: "message", message_id: 0 });
-      setLastStat(_.cloneDeep(stat));
-      setPrevStat(null);
-      storyCacheDrop(0);
+      if (late) {
+        const lastId = safeLastMessageId();
+        const cur = floorStat(lastId);
+        if (!cur) throw new Error("读不到最新一楼的账目, 请稍后再试");
+        _.set(cur, "道场.宗风", chosenSect);
+        await insertOrAssignVariables({ stat_data: cur }, { type: "message", message_id: lastId });
+        storyCacheDrop(lastId);
+        setLastStat(_.cloneDeep(cur));
+      } else {
+        setLastStat(_.cloneDeep(stat));
+      }
       await playRite();
       closeLift(true);
       renderAll(true);
       renderStoryLog();
       playEntrance();
     } catch (e) {
-      const why = btn.parentElement && btn.parentElement.querySelector(".mz-why");
+      const why = doc.querySelector("#" + SEL.lift + " .mz-gate-foot .mz-why");
       if (why) why.textContent = "出错: " + (e && e.message ? e.message : e);
-      btn.disabled = false;
+      const again = doc.querySelector("#" + SEL.lift + ' .mz-gate-foot button[data-gate="confirm"]');
+      if (again) again.disabled = false;
     } finally {
       busy = false;
     }
@@ -2032,10 +2050,10 @@
       setStoryStatus("出错: " + (e && e.message ? e.message : e));
     } finally {
       setLastStat(null);
-      setPrevStat(null);
       storyCacheDrop();
       setDelMode(false);
       renderAll(true);
+      ensureGate();
     }
   }
   var editState = null;
@@ -2237,19 +2255,19 @@
       latestFullText = fullText;
       if (streamRAF == null) streamRAF = requestAnimationFrame(flushStream);
     };
-    eventOn(tavern_events.STREAM_TOKEN_RECEIVED, onStream);
     let receivedId = null;
     const onReceived = (mid) => {
       if (currentGenId === genId) receivedId = mid;
     };
-    eventOn(tavern_events.MESSAGE_RECEIVED, onReceived);
     const onReasoning = (reasoning, duration, mid, state) => {
       liveReasoning = reasoning || liveReasoning;
       reasoningState = state;
       if (streamRAF == null) streamRAF = requestAnimationFrame(flushStream);
     };
-    eventOn(tavern_events.STREAM_REASONING_DONE, onReasoning);
     try {
+      eventOn(tavern_events.STREAM_TOKEN_RECEIVED, onStream);
+      eventOn(tavern_events.MESSAGE_RECEIVED, onReceived);
+      eventOn(tavern_events.STREAM_REASONING_DONE, onReasoning);
       if (typeof triggerSlash !== "function") throw new Error("环境缺少 triggerSlash, 请更新酒馆助手");
       await triggerSlash("/trigger await=true");
       const after = safeLastMessageId();
@@ -2284,17 +2302,20 @@
     try {
       const all = getVariables({ type: "message", message_id: afterSend }) || {};
       const cur = all.stat_data;
-      if (!cur || !_.isEqual(_.omit(cur, ["$internal"]), _.omit(stat, ["$internal"]))) {
-        dbg("carryStat", "用户楼账目与补丁不符, 兜底替换");
+      const 印 = _.get(stat, "系统.代发");
+      if (cur && 印 && _.get(cur, "系统.代发") === 印) {
+        setLastStat(_.cloneDeep(_.omit(cur, ["$internal"])));
+      } else {
+        dbg("carryStat", "用户楼不见代发印记, 兜底替换");
         setStoryStatus("账房补记");
         await replaceVariables({ ...all, stat_data: stat }, { type: "message", message_id: afterSend });
+        setLastStat(_.cloneDeep(stat));
       }
-      setLastStat(_.cloneDeep(stat));
       storyCacheDrop(afterSend);
       renderAll(true);
     } catch (e) {
       dbg("carryStat", e);
-      setStoryStatus("账目未能记入，请删去这一则重来");
+      throw new Error("账目未能记入，请删去这一则重来");
     }
   }
   async function sendText(text, opts) {
@@ -2386,7 +2407,6 @@
         await triggerSlash("/cut " + lastId);
         if (safeLastMessageId() !== lastId - 1) throw new Error("删去上一条回文未生效");
         setLastStat(null);
-        setPrevStat(null);
         storyCacheDrop(lastId);
         renderStoryLog();
         renderAll(true);
@@ -2422,10 +2442,12 @@
       floorCache.delete(id + 1);
       lastRenderedRef.delete(id);
       lastRenderedRef.delete(id + 1);
+      voiceSeen.delete(id);
     } else {
       storyHtmlCache.clear();
       floorCache.clear();
       footOpen.clear();
+      voiceSeen.clear();
       thoughtFoldOpen.clear();
       lastRenderedRef.clear();
       windowCount = WINDOW_SIZE;
@@ -2973,6 +2995,174 @@
     return '<div class="mz-thinking"><span class="mz-rule mz-l"></span><img src="' + asset("incense-coil.png") + '" alt="推演中"><span class="mz-rule mz-r"></span></div>';
   }
 
+  // src/09-board.js
+  var esc = escapeHtml;
+  var zoneName = (loc) => String(loc || "").split("/")[0].trim();
+  var zoneSub = (loc) => String(loc || "").split("/").slice(1).map((s) => s.trim()).filter(Boolean).join(" ");
+  var kindCount = (库藏, kind) => Object.values(库藏).filter((x) => x && x.类别 === kind).length;
+  var facilities = (D) => Object.entries(D.道场.地宫设施).map(([名, v]) => ({ 名, 用途: String((v || {}).用途 || ""), 档次: String((v || {}).档次 || "粗成"), 奇效: String((v || {}).奇效 || "") }));
+  var shopReady = (D, c) => facilities(D).some((f) => c.words.some((w) => f.名.includes(w) || f.用途.includes(w)));
+  var craftable = (D) => CRAFT.filter((c) => shopReady(D, c));
+  var debts = (D) => Object.entries(D.资粮.罪业密簿).filter(([, v]) => v && v.类别 === "债契");
+  var handles = (D) => Object.entries(D.资粮.罪业密簿).filter(([, v]) => v && v.类别 !== "债契");
+  var monthInterest = (D) => debts(D).reduce((s, [, v]) => {
+    const 本 = (Number(v.欠额) || 0) * 1e3, 已 = Number(v.已收息) || 0;
+    return s + (本 > 0 && 已 < 本 ? Math.min(Math.round(本 * 0.05), 本 - 已) : 0);
+  }, 0);
+  var pendingOrders = (D) => Object.entries(D.教务.法事委托).filter(([, v]) => v && v.状态 !== "已完成");
+  var latestRumor = (D) => {
+    const v = Object.values(D.教务.神迹传闻);
+    return v.length ? String(v[v.length - 1]) : "";
+  };
+  var riteCooling = (D) => {
+    const t = parseTime(D.时空.时间);
+    return !!t.月标 && D.教务.上次法会.trim() === t.月标;
+  };
+  var storeGrade = (D) => {
+    const f = facilities(D).find((x) => x.名.includes("库房"));
+    return f ? STORE_CAP[f.档次] ? f.档次 : "粗成" : "无";
+  };
+  var storeCap = (D) => STORE_CAP[storeGrade(D)];
+  var girlUnlocked = (D, n) => D.系统.已解锁.includes("同心缕:" + n) || !!D.核心女主[n].心声;
+  function unlocked(D, key) {
+    const set = D.系统.已解锁;
+    if (key === "营造" || set.includes(key)) return true;
+    if (UNLOCK_FANS[key]) return D.教务.信众 >= UNLOCK_FANS[key];
+    if (key === "库藏") return storeGrade(D) !== "无";
+    if (key === "同心缕") return CAST.some((n) => girlUnlocked(D, n));
+    return false;
+  }
+  function boardHtml(D) {
+    if (D._empty) return '<div class="mz-grp"><div class="mz-solo mz-dim">此则无账目</div></div>';
+    const t = parseTime(D.时空.时间);
+    const dateTxt = t.年序号 >= 0 ? esc(t.月名 || "") + esc(t.日文) : esc(D.时空.时间.replace(/\//g, " "));
+    const fest = festivalState(t);
+    const gate = gateState(t, fest);
+    let festTxt, festCls;
+    if (fest.今日) {
+      festTxt = fest.今日.名;
+      festCls = "mz-fest";
+    } else if (fest.将至) {
+      festTxt = cn(fest.将至.余日) + "日后" + fest.将至.名;
+      festCls = "";
+    } else {
+      festTxt = "无";
+      festCls = "mz-dim";
+    }
+    let levy, levyCls;
+    if (D.暗流.本月危机 === "常例拖欠") {
+      levy = "拖欠未清";
+      levyCls = "mz-warn";
+    } else if (t.年序号 === 4) {
+      levy = "常例失效";
+      levyCls = "";
+    } else if (t.年序号 < 0 || !t.日) {
+      levy = "未知";
+      levyCls = "";
+    } else {
+      const left = Math.max(0, 30 - t.日);
+      levy = left ? "还剩" + cn(left) + "日" : "今日当缴";
+      levyCls = left <= 6 ? "mz-warn" : "";
+    }
+    return '<div class="mz-grp"><div class="mz-solo" data-stat="时间" title="' + esc(D.时空.时间.replace(/\//g, " ")) + '">' + dateTxt + " <b>" + esc(t.时辰) + '</b></div><div class="mz-row"><span>宵禁</span><b class="' + gate.cls + '">' + gate.文 + '</b></div><div class="mz-row"><span>常例</span><b class="' + levyCls + '">' + levy + '</b></div><div class="mz-row"><span>节令</span><b class="' + festCls + '">' + esc(festTxt) + '</b></div></div><div class="mz-grp"><div class="mz-row" data-stat="铜钱"><span>铜钱</span><b>' + money(总文(D)) + '</b></div><div class="mz-row" data-stat="信众"><span>信众</span><b>' + cn(D.教务.信众) + "人</b></div></div>";
+  }
+  var row = (k, v, cls) => '<div class="mz-r-row"><span>' + k + "</span><b" + (cls ? ' class="' + cls + '"' : "") + ">" + v + "</b></div>";
+  function zoneRowsHtml(key, D) {
+    if (!unlocked(D, key)) return '<div class="mz-r-row mz-r-lock">' + ICO.lock + "<span>" + UNLOCK_COND[key] + "</span></div>" + '<div class="mz-r-row mz-r-blank">&nbsp;</div>'.repeat(ZONE_ROWS[key] - 1);
+    switch (key) {
+      case "同心缕":
+        return CAST.map((n) => girlUnlocked(D, n) ? row(n, esc(D.核心女主[n].灌顶位阶)) : row(CAST_HINT[n], "未识", "mz-r-dim")).join("");
+      case "库藏": {
+        const 库 = D.资粮.库藏;
+        const stock = ["药品", "道具", "法器"].map((k) => KIND_SHORT[k] + cn(kindCount(库, k))).join("／");
+        const cr = craftable(D);
+        return row("存货", stock) + row("工坊", cr.length ? "可制" + cr.map((c) => c.kind).join("／") : "无坊", cr.length ? "" : "mz-r-dim");
+      }
+      case "教务": {
+        const n1 = Object.keys(D.执事名册).length, n2 = Object.keys(D.明妃录).length;
+        return row("执事", cn(n1) + "人／十二席", n1 ? "" : "mz-r-dim") + row("明妃", cn(n2) + "位／六席", n2 ? "" : "mz-r-dim") + (riteCooling(D) ? row("法会", "暂休", "mz-r-dim") : row("法会", "待办", "mz-r-good"));
+      }
+      case "营造":
+        return row("表殿", esc(D.道场.表殿等级), HALL_Q[D.道场.表殿等级] || "") + row("地宫", cn(facilities(D).length) + "处");
+      case "法事": {
+        const po = pendingOrders(D);
+        const first = po[0];
+        const rumor = latestRumor(D);
+        return row("委托", cn(po.length) + "单／三席", po.length ? "" : "mz-r-dim") + row("时限", first ? esc(first[0]) + " " + esc(String(first[1].时限 || "")) : "无", first ? "" : "mz-r-dim") + row("传闻", rumor ? esc(rumor) : "未闻", "mz-r-dim");
+      }
+      case "罪业": {
+        const h = handles(D).length, d = debts(D).length, mi = monthInterest(D);
+        return row("把柄", cn(h) + "条", h ? "" : "mz-r-dim") + row("债契", cn(d) + "契", d ? "" : "mz-r-dim") + row("月息", mi ? money(mi) : "无", mi ? "" : "mz-r-dim");
+      }
+    }
+    return "";
+  }
+  function renderMinimap(D) {
+    const mm = doc.getElementById(SEL.minimap);
+    if (!mm) return;
+    const z = zoneName(D.时空.当前地界);
+    const pin = MINIMAP_PIN[z] || (ZONES.includes(z) ? MINIMAP_PIN.长安 : null);
+    const pinEl = mm.querySelector(".mz-map-pin");
+    if (pinEl) {
+      pinEl.style.display = pin ? "" : "none";
+      if (pin) {
+        pinEl.style.left = pin[1] + "%";
+        pinEl.style.top = pin[2] + "%";
+        pinEl.dataset.label = pin[0];
+      }
+    }
+    const t = parseTime(D.时空.时间);
+    const y = Math.max(0, t.年序号);
+    const lbl = mm.querySelector(".mz-doom .mz-lbl b");
+    if (lbl) lbl.textContent = YEAR_SHORT[y] + " " + DOOM[y];
+    const bar = mm.querySelector(".mz-doom .mz-bar i");
+    if (bar) bar.style.width = y * 20 + 10 + "%";
+    const wz = mm.querySelector(".mz-w-zone"), ws = mm.querySelector(".mz-w-sub");
+    const sub = zoneSub(D.时空.当前地界);
+    if (wz) wz.textContent = z;
+    if (ws) {
+      ws.textContent = sub;
+      ws.style.display = sub ? "" : "none";
+    }
+    const where = mm.querySelector(".mz-where");
+    if (where) where.title = D.时空.当前地界.replace(/\//g, " ");
+    const storm = D.暗流.风波;
+    const sb = mm.querySelector(".mz-storm b");
+    if (sb) {
+      sb.textContent = storm;
+      sb.className = STORM_CLS[storm] || "";
+    }
+  }
+  function renderCrisis(D) {
+    const root = doc.getElementById(SHELL_ID);
+    const c = doc.getElementById(SEL.crisis);
+    if (!root || !c) return;
+    const name = D.暗流.本月危机;
+    if (name) {
+      root.setAttribute("data-crisis", "");
+      c.querySelector(".mz-ticket-text b").textContent = name;
+      c.querySelector(".mz-ticket-text .mz-sub").textContent = FORM_MSG.朱票副题;
+    } else {
+      root.removeAttribute("data-crisis");
+      c.classList.remove("mz-moved");
+    }
+    syncCrisisLine(doc.getElementById(SEL.paper), name);
+  }
+  function renderAll(force, Darg) {
+    const D = Darg || readMVU();
+    const board = doc.querySelector("#" + SEL.board + " .mz-face");
+    if (board) board.innerHTML = boardHtml(D);
+    ZONE_DEFS.forEach((z) => {
+      const zone = doc.querySelector("#" + SHELL_ID + ' .mz-zone[data-zone="' + z.key + '"]');
+      if (!zone) return;
+      zone.classList.toggle("mz-locked", !unlocked(D, z.key));
+      zone.querySelector(".mz-zone-rows").innerHTML = zoneRowsHtml(z.key, D);
+    });
+    renderMinimap(D);
+    renderCrisis(D);
+    if (liftOpenName()) refreshLift(D);
+  }
+
   // src/11-forms.js
   function fillWriting(text) {
     const ta = doc.getElementById(SEL.textarea);
@@ -2984,7 +3174,22 @@
   }
   var committing = false;
   async function commitForm({ tag, mutate, message, check }) {
-    if (committing || sending || delMode || editState) return false;
+    if (committing) {
+      setStoryStatus("账房正在记档，稍待");
+      return false;
+    }
+    if (sending) {
+      setStoryStatus("续写未毕，稍待再拨");
+      return false;
+    }
+    if (delMode) {
+      setStoryStatus("正在删记，了结了再拨款");
+      return false;
+    }
+    if (editState) {
+      setStoryStatus("改写未了，先存或弃");
+      return false;
+    }
     committing = true;
     try {
       return await commitFormImpl({ tag, mutate, message, check });
@@ -2994,7 +3199,10 @@
   }
   async function commitFormImpl({ tag, mutate, message, check }) {
     const lastId = safeLastMessageId();
-    if (lastId == null || lastId < 0) return false;
+    if (lastId == null || lastId < 0) {
+      setStoryStatus("卷上尚无记录，无从记账");
+      return false;
+    }
     let v = null;
     try {
       v = getVariables({ type: "message", message_id: lastId });
@@ -3019,7 +3227,8 @@
       setStoryStatus("钱不足");
       return false;
     }
-    _.set(stat, "系统.代发", (tag || "代发") + "#" + Date.now());
+    const 扣款 = Math.max(0, Math.round((Number(_.get(before, "资粮.铜钱")) || 0) - (Number(_.get(stat, "资粮.铜钱")) || 0)));
+    _.set(stat, "系统.代发", (tag || "代发") + "#" + 扣款 + "#" + Date.now());
     const ops = diffPatch(before, stat);
     if (!ops) {
       setStoryStatus("名目里不可含「/」「~」");
@@ -3081,10 +3290,10 @@
   }
 
   // src/10-windows.js
-  var esc = escapeHtml;
+  var esc2 = escapeHtml;
   var card = (inner) => '<div class="mz-card">' + inner + "</div>";
   var empty = (cls) => '<div class="mz-card mz-empty' + (cls ? " " + cls : "") + '"><span>虚位</span></div>';
-  var kv = (k, v) => '<span class="mz-k">' + k + "</span>" + esc(v);
+  var kv = (k, v) => '<span class="mz-k">' + k + "</span>" + esc2(v);
   var tabs = (win, items, tail) => {
     const cur = tabOf(win, items[0].id);
     return '<div class="mz-tabs">' + items.map((t) => "<button" + (cur === t.id ? ' class="mz-on"' : "") + ' data-pane="' + t.id + '">' + t.label + (t.n != null ? '<span class="mz-n">' + t.n + "</span>" : "") + (t.red ? '<span class="mz-red"></span>' : "") + "</button>").join("") + (tail ? '<span class="mz-why" style="margin-left:auto;align-self:center">' + tail + "</span>" : "") + "</div>";
@@ -3097,6 +3306,49 @@
     return diff > 0 ? "钱不足，差" + money(diff) : "";
   };
   var gradeWhy = (D, g) => g === "精工" && !Object.keys(D.执事名册).length ? "须执事带工" : g === "天工" && D.教务.信众 < 50 ? "须信众五十人" : "";
+  var hallWhys = (D) => {
+    const w = [];
+    if (D.道场.表殿等级 !== "破败草庵") w.push("表殿已改建");
+    const l = lack(D, HALL_PRICE.庄严精舍);
+    if (l) w.push(l);
+    return w;
+  };
+  var upgradeWhys = (D, 名, 旧档, 新) => {
+    const w = [];
+    const f = facilities(D).find((x) => x.名 === 名);
+    if (!f) w.push("此屋已不在");
+    else if (f.档次 !== 旧档) w.push("此屋已改建");
+    const g = gradeWhy(D, 新);
+    if (g) w.push(g);
+    const l = lack(D, UPGRADE_PRICE[新]);
+    if (l) w.push(l);
+    return w;
+  };
+  var buildWhys = (D, 档) => {
+    const w = [];
+    const g = gradeWhy(D, 档);
+    if (g) w.push(g);
+    const l = lack(D, GRADE_PRICE[档]);
+    if (l) w.push(l);
+    return w;
+  };
+  var craftWhys = (D, c) => {
+    const w = [];
+    if (!shopReady(D, c)) w.push("须先营造" + c.shop);
+    if (Object.keys(D.资粮.库藏).length >= storeCap(D)) w.push("屉已满");
+    const l = lack(D, c.price);
+    if (l) w.push(l);
+    return w;
+  };
+  var loanWhys = (D, 贯) => {
+    const w = [];
+    const unlocked2 = HALLS.indexOf(D.道场.表殿等级) >= 1 || facilities(D).some((f) => f.名.includes("无尽藏") && f.档次 !== "粗成");
+    if (!unlocked2) w.push("须表殿达庄严精舍，或地宫有精工以上无尽藏柜坊");
+    if (Object.keys(D.资粮.罪业密簿).length >= LIMITS.罪业密簿) w.push("簿已满");
+    const l = 贯 > 0 ? lack(D, 贯) : "";
+    if (l) w.push(l);
+    return w;
+  };
   function atlasHtml(D) {
     const cur = zoneName(D.时空.当前地界);
     const t = parseTime(D.时空.时间);
@@ -3125,7 +3377,7 @@
       const seg = String(v || "").split("/");
       const when = seg.length > 1 ? seg[0].trim() : "";
       const body = seg.length > 1 ? seg.slice(1).join("/").trim() : String(v || "").trim();
-      return '<div class="mz-memo"><b>' + esc(title) + "</b>" + (when ? "<small>" + esc(when) + "</small>" : "") + "<br>" + esc(body) + "</div>";
+      return '<div class="mz-memo"><b>' + esc2(title) + "</b>" + (when ? "<small>" + esc2(when) + "</small>" : "") + "<br>" + esc2(body) + "</div>";
     }).join("") + "</div>";
   }
   function bondHtml(D) {
@@ -3136,69 +3388,66 @@
     const main = mainTheme(bondSel, rank);
     const curTheme = bondTheme && themes.find((t) => t[0] === bondTheme) || main;
     const lit = rankIdx(rank);
-    return '<section class="mz-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc(curTheme[1]) + '" alt="' + esc(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc(t[0]) + '" data-theme="' + esc(t[0]) + `" style="background-image:url('` + esc(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc(r) + '解锁"><span>' + esc(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
+    return '<section class="mz-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc2(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc2(curTheme[1]) + '" alt="' + esc2(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc2(t[0]) + '" data-theme="' + esc2(t[0]) + `" style="background-image:url('` + esc2(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc2(r) + '解锁"><span>' + esc2(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc2(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc2(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
   }
   var upgradeSel = null;
   var bpSel = null;
+  function resetWinState() {
+    upgradeSel = null;
+    bpSel = null;
+  }
   function buildHtml(D) {
     const hall = D.道场.表殿等级;
     const hi = Math.max(0, HALLS.indexOf(hall));
     const steps = HALLS.map((h, i) => '<div class="mz-step ' + (i < hi ? "mz-done" : i === hi ? "mz-cur" : "") + '">' + h + "<small>" + (i === hi ? "当下" : i < hi ? "已成" : i === 1 ? "二百贯" : "一千贯 须得敕额") + "</small>" + (h === "敕赐法堂" && D.道场.敕额 ? '<span class="mz-chi">敕</span>' : "") + "</div>").join("");
     let act = "";
     if (hi === 0) {
-      const why = lack(D, HALL_PRICE.庄严精舍);
-      act = '<div class="mz-step-act">' + sealBtn("升 庄严精舍", "hall", !why, why) + "</div>";
+      const whys = hallWhys(D);
+      act = '<div class="mz-step-act">' + sealBtn("升 庄严精舍", "hall", !whys.length, whys.join(" ")) + "</div>";
     } else if (hi === 1) {
       act = '<div class="mz-step-act"><span class="mz-why">升敕赐法堂须得敕额，须教主亲身周旋</span></div>';
     }
     const fs = facilities(D);
     const cards = fs.length ? fs.map((f) => {
-      const body = '<span class="mz-tag ' + (GRADE_Q[f.档次] || "mz-q1") + '">' + esc(f.档次) + "</span><b>" + esc(f.名) + "</b>" + kv("用途", f.用途) + (f.奇效 ? "<br>" + kv("奇效", f.奇效) : "");
+      const body = '<span class="mz-tag ' + (GRADE_Q[f.档次] || "mz-q1") + '">' + esc2(f.档次) + "</span><b>" + esc2(f.名) + "</b>" + kv("用途", f.用途) + (f.奇效 ? "<br>" + kv("奇效", f.奇效) : "");
       const next = GRADES[GRADES.indexOf(f.档次) + 1];
       if (!next) return card(body);
-      const why = gradeWhy(D, next) || lack(D, UPGRADE_PRICE[next]);
+      const why = upgradeWhys(D, f.名, f.档次, next).join(" ");
       if (upgradeSel === f.名 && !why) {
         return '<div class="mz-card mz-up">' + body + '<form class="mz-form mz-upform" onsubmit="return false"><label class="mz-wonder mz-live">奇效<textarea name="奇效" rows="2" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>升作天工须议定奇效</small></label><div class="mz-build-foot">' + sealBtn("罢", "upgrade-cancel", true) + sealBtn("议定改造", "upgrade-go", true, "", "") + "</div></form></div>";
       }
-      return '<div class="mz-card mz-up">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
+      return '<div class="mz-card mz-up">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc2(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
     }).join("") : '<div class="mz-none">未辟</div>';
     const NOTE = { 粗成: "草创堪用，暗藏破绽", 精工: "坚实可靠，无虞", 天工: "鬼斧神工，议定奇效" };
     const picks = GRADES.map((g) => {
-      const whys = [];
-      const w = gradeWhy(D, g);
-      if (w) whys.push(w);
-      const l = lack(D, GRADE_PRICE[g]);
-      if (l) whys.push(l);
+      const whys = buildWhys(D, g);
       return '<label class="mz-pick' + (whys.length ? " mz-off" : "") + '"><input type="radio" name="档次" value="' + g + '"' + (whys.length ? " disabled" : "") + "><b>" + g + '</b><span class="mz-price">' + cn(GRADE_PRICE[g]) + "贯</span><small>" + (whys.length ? whys.join(" ") : NOTE[g]) + "</small></label>";
     }).join("");
     const built = Object.fromEntries(fs.map((f) => [f.名, f.档次]));
-    const bpCards = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-card mz-bp mz-off"><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc(built[b.名]) + "</span><b>" + esc(b.名) + "</b><small>" + esc(b.用途.split("。")[0]) + "。</small></div>" : '<div class="mz-card mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc(b.名) + '"><b>' + esc(b.名) + "</b><small>" + esc(b.用途.split("。")[0]) + "。</small></div>").join("");
+    const bpCards = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-card mz-bp mz-off"><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc2(built[b.名]) + "</span><b>" + esc2(b.名) + "</b><small>" + esc2(b.用途.split("。")[0]) + "。</small></div>" : '<div class="mz-card mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc2(b.名) + '"><b>' + esc2(b.名) + "</b><small>" + esc2(b.用途.split("。")[0]) + "。</small></div>").join("");
     const blueprints = wh("蓝图", "地面") + '<div class="mz-grid mz-c4 mz-bps">' + bpCards("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-grid mz-c4 mz-bps">' + bpCards("地下") + "</div>" + wh("兴造");
     const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名]);
-    const buildForm = '<form class="mz-form mz-build" onsubmit="return false"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true) + "</div></form>";
+    const buildForm = '<form class="mz-form mz-build" onsubmit="return false"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc2(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc2(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true) + "</div></form>";
     return '<section class="mz-win mz-on">' + tabs("营造", [{ id: "cave", label: "道场", n: hall + "／地宫" + cn(fs.length) + "处" }, { id: "build", label: "兴造" }]) + pane("营造", "cave", wh("表殿") + '<div class="mz-steps">' + steps + "</div>" + act + wh("地宫设施", cn(fs.length) + "处") + '<div class="mz-folio mz-grid mz-c3">' + cards + "</div>", "cave") + pane("营造", "build", '<div class="mz-folio">' + blueprints + buildForm + "</div>", "cave") + "</section>";
   }
   function sinHtml(D) {
     const hs = handles(D), ds = debts(D);
     const total = hs.length + ds.length;
-    const hCards = hs.length ? hs.map(([名, v]) => card("<b>" + esc(名) + "</b>" + kv("详情", v.详情 || "") + "<br>" + kv("价值", v.价值 || "") + '<button class="mz-seal-btn" data-act="extort" data-name="' + esc(名) + '">勒索</button>')).join("") : '<div class="mz-none">簿中无名</div>';
+    const hCards = hs.length ? hs.map(([名, v]) => card("<b>" + esc2(名) + "</b>" + kv("详情", v.详情 || "") + "<br>" + kv("价值", v.价值 || "") + '<button class="mz-seal-btn" data-act="extort" data-name="' + esc2(名) + '">勒索</button>')).join("") : '<div class="mz-none">簿中无名</div>';
     const dCards = ds.length ? ds.map(([名, v]) => {
       const 本 = (Number(v.欠额) || 0) * 1e3, 已 = Number(v.已收息) || 0;
       const pct = 本 > 0 ? Math.min(100, Math.round(已 / 本 * 100)) : 0;
-      return card("<b>" + esc(名) + "</b>" + kv("欠额", cn(Number(v.欠额) || 0) + "贯") + "<br>" + kv("已收息", money(已)) + (v.详情 ? "<br>" + kv("详情", v.详情) : "") + '<div class="mz-bar-line"><span>利不过本</span><div class="mz-bar"><i style="width:' + pct + '%"></i></div><span>' + (pct >= 100 ? "已停息" : cn(pct) + "分") + "</span></div>");
+      return card("<b>" + esc2(名) + "</b>" + kv("欠额", cn(Number(v.欠额) || 0) + "贯") + "<br>" + kv("已收息", money(已)) + (v.详情 ? "<br>" + kv("详情", v.详情) : "") + '<div class="mz-bar-line"><span>利不过本</span><div class="mz-bar"><i style="width:' + pct + '%"></i></div><span>' + (pct >= 100 ? "已停息" : cn(pct) + "分") + "</span></div>");
     }).join("") : '<div class="mz-none">簿中无名</div>';
-    const unlocked2 = HALLS.indexOf(D.道场.表殿等级) >= 1 || facilities(D).some((f) => f.名.includes("无尽藏") && f.档次 !== "粗成");
-    const whys = [];
-    if (!unlocked2) whys.push("须表殿达庄严精舍，或地宫有精工以上无尽藏柜坊");
-    if (total >= LIMITS.罪业密簿) whys.push("簿满");
+    const whys = loanWhys(D, 0);
     const loanForm = wh("无尽藏放贷") + '<form class="mz-form" onsubmit="return false"><label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="贯" inputmode="numeric"></label><label>抵押<input class="mz-w" name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-choices">' + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + "</div></form>";
     return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-grid mz-c2">' + hCards + "</div>", "handle") + pane("罪业", "debt", '<div class="mz-folio"><div class="mz-grid mz-c2">' + dCards + "</div>" + loanForm + "</div>", "handle") + "</section>";
   }
   function riteHtml(D) {
     const orders = Object.entries(D.教务.法事委托);
-    const cards = orders.map(([客, v]) => card('<span class="mz-tag' + (v.状态 === "已完成" ? " mz-gold" : "") + '">' + esc(v.状态 || "待办") + "</span><b>" + esc(客) + "</b>" + kv("诉求", v.诉求 || "") + "<br>" + kv("时限", v.时限 || "") + "<br>" + kv("报酬", v.报酬 || "")));
+    const cards = orders.map(([客, v]) => card('<span class="mz-tag' + (v.状态 === "已完成" ? " mz-gold" : "") + '">' + esc2(v.状态 || "待办") + "</span><b>" + esc2(客) + "</b>" + kv("诉求", v.诉求 || "") + "<br>" + kv("时限", v.时限 || "") + "<br>" + kv("报酬", v.报酬 || "")));
     while (cards.length < LIMITS.法事委托) cards.push(empty());
-    const rumors = Object.values(D.教务.神迹传闻).reverse().map((r) => '<div class="mz-banner">' + esc(String(r)) + "</div>");
+    const rumors = Object.values(D.教务.神迹传闻).reverse().map((r) => '<div class="mz-banner">' + esc2(String(r)) + "</div>");
     while (rumors.length < LIMITS.神迹传闻) rumors.push('<div class="mz-banner mz-empty">未闻</div>');
     const pend = pendingOrders(D).length;
     return '<section class="mz-win mz-on">' + tabs("法事", [{ id: "order", label: "委托", n: cn(pend) + "／三席" }, { id: "rumor", label: "传闻", n: cn(Object.keys(D.教务.神迹传闻).length) }]) + pane("法事", "order", '<div class="mz-folio mz-grid mz-c3">' + cards.join("") + "</div>", "order") + pane("法事", "rumor", '<div class="mz-folio"><div class="mz-banners">' + rumors.join("") + "</div></div>", "order") + "</section>";
@@ -3207,13 +3456,13 @@
     const st = Object.entries(D.执事名册);
     const sCards = st.map(([名, v]) => {
       const s = String(v || "").split("/");
-      return card("<b>" + esc(名) + "</b>" + kv("身份", s[0] || "") + "<br>" + kv("位阶", s[1] || "") + "<br>" + kv("职能", s.slice(2).join("/") || ""));
+      return card("<b>" + esc2(名) + "</b>" + kv("身份", s[0] || "") + "<br>" + kv("位阶", s[1] || "") + "<br>" + kv("职能", s.slice(2).join("/") || ""));
     });
     while (sCards.length < LIMITS.执事名册) sCards.push(empty());
     const cs = Object.entries(D.明妃录);
     const cCards = cs.map(([名, v]) => {
       const s = String(v || "").split("/");
-      return card("<b>" + esc(名) + "</b>" + kv("出身", s[0] || "") + "<br>" + kv("度化", s[1] || "") + "<br>" + kv("要点", s.slice(2).join("/") || ""));
+      return card("<b>" + esc2(名) + "</b>" + kv("出身", s[0] || "") + "<br>" + kv("度化", s[1] || "") + "<br>" + kv("要点", s.slice(2).join("/") || ""));
     });
     while (cCards.length < LIMITS.明妃录) cCards.push(empty("mz-lotus"));
     const cooling = riteCooling(D);
@@ -3223,7 +3472,7 @@
       ["精工以上坛场设施", facilities(D).some((f) => ALTAR_WORDS.some((w) => f.名.includes(w) || f.用途.includes(w)) && f.档次 !== "粗成")],
       ["信众五十人以上", D.教务.信众 >= 50]
     ];
-    return '<section class="mz-win mz-on">' + tabs("教务", [{ id: "steward", label: "执事", n: cn(st.length) + "／十二席", red: st.length >= LIMITS.执事名册 }, { id: "consort", label: "明妃", n: cn(cs.length) + "／六席", red: cs.length >= LIMITS.明妃录 }, { id: "rite", label: "法会", n: cooling ? "暂休" : "待办" }]) + pane("教务", "steward", '<div class="mz-folio mz-grid mz-c4">' + sCards.join("") + "</div>", "steward") + pane("教务", "consort", wh("明妃法座", cn(cs.length) + "位／六席") + '<div class="mz-folio mz-grid mz-c3">' + cCards.join("") + "</div>", "steward") + pane("教务", "rite", wh("上次法会", D.教务.上次法会 ? esc(D.教务.上次法会.replace("/", " ")) : "未曾办过") + '<div class="mz-none">' + (cooling ? "本月已办" : "本月可办") + "</div>" + wh("筹办门槛") + '<ul class="mz-ticks">' + ticks.map(([t, ok]) => "<li" + (ok ? ' class="mz-ok"' : "") + ">" + t + "</li>").join("") + '</ul><div class="mz-none">大法会关涉满城风云，须教主亲自开坛，此处仅照验规制</div>', "steward") + "</section>";
+    return '<section class="mz-win mz-on">' + tabs("教务", [{ id: "steward", label: "执事", n: cn(st.length) + "／十二席", red: st.length >= LIMITS.执事名册 }, { id: "consort", label: "明妃", n: cn(cs.length) + "／六席", red: cs.length >= LIMITS.明妃录 }, { id: "rite", label: "法会", n: cooling ? "暂休" : "待办" }]) + pane("教务", "steward", '<div class="mz-folio mz-grid mz-c4">' + sCards.join("") + "</div>", "steward") + pane("教务", "consort", wh("明妃法座", cn(cs.length) + "位／六席") + '<div class="mz-folio mz-grid mz-c3">' + cCards.join("") + "</div>", "steward") + pane("教务", "rite", wh("上次法会", D.教务.上次法会 ? esc2(D.教务.上次法会.replace("/", " ")) : "未曾办过") + '<div class="mz-none">' + (cooling ? "本月已办" : "本月可办") + "</div>" + wh("筹办门槛") + '<ul class="mz-ticks">' + ticks.map(([t, ok]) => "<li" + (ok ? ' class="mz-ok"' : "") + ">" + t + "</li>").join("") + '</ul><div class="mz-none">大法会关涉满城风云，须教主亲自开坛，此处仅照验规制</div>', "steward") + "</section>";
   }
   function cofferHtml(D) {
     const items = Object.entries(D.资粮.库藏);
@@ -3231,7 +3480,7 @@
     const cap = storeCap(D);
     const paneOf = (kind) => {
       const mine = items.filter(([, v]) => v && v.类别 === kind);
-      const cards = mine.map(([名, v]) => card('<span class="mz-tag">' + esc(kind) + "</span><b>" + esc(名) + "</b>" + kv("效用", v.效用 || "")));
+      const cards = mine.map(([名, v]) => card('<span class="mz-tag">' + esc2(kind) + "</span><b>" + esc2(名) + "</b>" + kv("效用", v.效用 || "")));
       const free = cap - total;
       let empties = free > 0 ? Math.max(1, (4 - mine.length % 4) % 4) : 0;
       empties = Math.min(empties, free);
@@ -3240,12 +3489,8 @@
     };
     const ready = CRAFT.map((c) => shopReady(D, c));
     const shops = CRAFT.map((c, i) => '<div class="mz-shop' + (ready[i] ? "" : " mz-off") + '">' + c.kind + "<small>" + c.shop + (ready[i] ? " 已备" : " 须先营造") + "</small></div>").join("");
-    const choices = CRAFT.map((c, i) => {
-      const whys = [];
-      if (!ready[i]) whys.push("须先营造" + c.shop);
-      if (total >= cap) whys.push("屉满");
-      const l = lack(D, c.price);
-      if (l) whys.push(l);
+    const choices = CRAFT.map((c) => {
+      const whys = craftWhys(D, c);
       return sealBtn(c.kind + '<span class="mz-price">' + cn(c.price) + "贯</span>", "craft:" + c.kind, !whys.length, whys.join(" "));
     }).join("");
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
@@ -3321,10 +3566,10 @@
       return;
     }
     if (act === "hall") {
-      commitForm({ tag: "兴造", mutate: (sd) => {
+      commitForm({ tag: "兴造", check: (D) => hallWhys(D).join(" "), mutate: (sd) => {
         sd.资粮.铜钱 -= HALL_PRICE.庄严精舍;
         sd.道场.表殿等级 = "庄严精舍";
-      }, message: FORM_MSG.升殿("庄严精舍") });
+      }, message: FORM_MSG.升殿("庄严精舍") }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "upgrade" || act === "upgrade-go" || act === "upgrade-cancel") {
@@ -3350,13 +3595,13 @@
         return;
       }
       upgradeSel = null;
-      commitForm({ tag: "兴造", check: (D2) => lack(D2, UPGRADE_PRICE[新]) || gradeWhy(D2, 新), mutate: (sd) => {
-        sd.资粮.铜钱 -= UPGRADE_PRICE[新];
+      commitForm({ tag: "兴造", check: (D2) => upgradeWhys(D2, 名, f.档次, 新).join(" "), mutate: (sd) => {
         const cur = sd.道场.地宫设施 && sd.道场.地宫设施[名];
         if (!cur) return;
+        sd.资粮.铜钱 -= UPGRADE_PRICE[新];
         cur.档次 = 新;
         if (奇效) cur.奇效 = 奇效;
-      }, message: FORM_MSG.升造(名, f.档次, 新, 奇效) });
+      }, message: FORM_MSG.升造(名, f.档次, 新, 奇效) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "build") {
@@ -3371,11 +3616,11 @@
         return;
       }
       const 奇效 = 档 === "天工" ? v.奇效 || "" : "";
-      commitForm({ tag: "兴造", check: (D) => lack(D, GRADE_PRICE[档]) || gradeWhy(D, 档), mutate: (sd) => {
+      commitForm({ tag: "兴造", check: (D) => buildWhys(D, 档).join(" "), mutate: (sd) => {
         sd.资粮.铜钱 -= GRADE_PRICE[档];
         sd.道场.地宫设施 = sd.道场.地宫设施 || {};
         sd.道场.地宫设施[v.名称] = Object.assign({ 用途: v.用途 || "", 档次: 档 }, 奇效 ? { 奇效 } : {});
-      }, message: FORM_MSG.兴造(v.名称, 档, 奇效) });
+      }, message: FORM_MSG.兴造(v.名称, 档, 奇效) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       bpSel = null;
       return;
     }
@@ -3387,11 +3632,11 @@
         hint(btn, "先填物名");
         return;
       }
-      commitForm({ tag: "工巧", mutate: (sd) => {
+      commitForm({ tag: "工巧", check: (D) => craftWhys(D, c).join(" "), mutate: (sd) => {
         sd.资粮.铜钱 -= c.price;
         sd.资粮.库藏 = sd.资粮.库藏 || {};
         sd.资粮.库藏[v.物名] = { 类别: 类, 效用: v.效用 || "" };
-      }, message: FORM_MSG.工巧(v.物名, 类) });
+      }, message: FORM_MSG.工巧(v.物名, 类) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "loan") {
@@ -3405,11 +3650,11 @@
         hint(btn, "本金须为整数贯");
         return;
       }
-      commitForm({ tag: "无尽藏", check: (D) => lack(D, 贯), mutate: (sd) => {
+      commitForm({ tag: "无尽藏", check: (D) => loanWhys(D, 贯).join(" "), mutate: (sd) => {
         sd.资粮.铜钱 -= 贯;
         sd.资粮.罪业密簿 = sd.资粮.罪业密簿 || {};
         sd.资粮.罪业密簿[v.欠户] = { 类别: "债契", 欠额: 贯, 已收息: 0, 详情: v.抵押 ? "押 " + v.抵押 : "", 价值: "月息五分，利不过本" };
-      }, message: FORM_MSG.放贷(v.欠户, cn(贯)) });
+      }, message: FORM_MSG.放贷(v.欠户, cn(贯)) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
     }
   }
   function openViewer(src, title) {
@@ -3417,7 +3662,7 @@
     if (!root || doc.getElementById("mz-viewer")) return;
     const v = doc.createElement("div");
     v.id = "mz-viewer";
-    v.innerHTML = '<img src="' + esc(src) + '" alt="' + esc(title) + '">' + (title ? "<span>" + esc(title) + "</span>" : "");
+    v.innerHTML = '<img src="' + esc2(src) + '" alt="' + esc2(title) + '">' + (title ? "<span>" + esc2(title) + "</span>" : "");
     v.addEventListener("click", () => v.remove());
     root.appendChild(v);
   }
@@ -3442,6 +3687,7 @@
   var tabOf = (win, def) => tabState[win] || def;
   function openLift(name) {
     if (gateNeeded()) name = GATE_WIN;
+    setDrawer(null);
     openName = name;
     const lift = doc.getElementById(SEL.lift);
     if (!lift) return;
@@ -3457,6 +3703,7 @@
   function closeLift(force) {
     if (openName === GATE_WIN && !force && gateNeeded()) return;
     openName = null;
+    resetWinState();
     const lift = doc.getElementById(SEL.lift);
     if (!lift) return;
     lift.classList.add("mz-hide");
@@ -3468,6 +3715,34 @@
       if (body) body.innerHTML = "";
     }, 300);
   }
+  var fieldKey = (el) => {
+    const k = el.name || el.dataset.k || el.id || "";
+    if (!k) return "";
+    const form = el.closest("form");
+    return (form ? form.className : "") + "|" + k;
+  };
+  var isPick = (el) => el.type === "radio" || el.type === "checkbox";
+  function grabFields(root) {
+    const out = /* @__PURE__ */ new Map();
+    root.querySelectorAll("input, textarea, select").forEach((el) => {
+      const k = fieldKey(el);
+      if (!k) return;
+      if (isPick(el)) out.set(k + "=" + el.value, el.checked);
+      else out.set(k, el.value);
+    });
+    return out;
+  }
+  function restoreFields(root, vals) {
+    if (!vals.size) return;
+    root.querySelectorAll("input, textarea, select").forEach((el) => {
+      const k = fieldKey(el);
+      if (!k || el.disabled) return;
+      const v = vals.get(isPick(el) ? k + "=" + el.value : k);
+      if (v === void 0) return;
+      if (isPick(el)) el.checked = v;
+      else el.value = v;
+    });
+  }
   function refreshLift(Darg) {
     if (!openName) return;
     const body = doc.getElementById(SEL.liftBody);
@@ -3475,7 +3750,9 @@
     const D = Darg || readMVU();
     const keep = body.querySelector(".mz-folio, .mz-timeline, .mz-vartree");
     const st = keep ? keep.scrollTop : 0;
+    const vals = grabFields(body);
     body.innerHTML = openName === GATE_WIN ? gateHtml() : winHtml(openName, D);
+    restoreFields(body, vals);
     const again = body.querySelector(".mz-folio, .mz-timeline, .mz-vartree");
     if (again) again.scrollTop = st;
   }
@@ -3640,10 +3917,7 @@
     });
     root.querySelectorAll(".mz-side [data-lift], .mz-rside [data-lift]").forEach((el) => {
       el.addEventListener("click", () => {
-        if (!el.classList.contains("mz-locked")) {
-          setDrawer(null);
-          openLift(el.dataset.lift);
-        }
+        if (!el.classList.contains("mz-locked")) openLift(el.dataset.lift);
       });
     });
     root.querySelectorAll("#" + SEL.mbar + " [data-drawer]").forEach((b) => {
@@ -3660,173 +3934,6 @@
     });
     doc.getElementById(SEL.mscrim).addEventListener("click", () => setDrawer(null));
     updateAcuNav();
-  }
-
-  // src/09-board.js
-  var esc2 = escapeHtml;
-  var zoneName = (loc) => String(loc || "").split("/")[0].trim();
-  var zoneSub = (loc) => String(loc || "").split("/").slice(1).map((s) => s.trim()).filter(Boolean).join(" ");
-  var kindCount = (库藏, kind) => Object.values(库藏).filter((x) => x && x.类别 === kind).length;
-  var facilities = (D) => Object.entries(D.道场.地宫设施).map(([名, v]) => ({ 名, 用途: String((v || {}).用途 || ""), 档次: String((v || {}).档次 || "粗成"), 奇效: String((v || {}).奇效 || "") }));
-  var shopReady = (D, c) => facilities(D).some((f) => c.words.some((w) => f.名.includes(w) || f.用途.includes(w)));
-  var craftable = (D) => CRAFT.filter((c) => shopReady(D, c));
-  var debts = (D) => Object.entries(D.资粮.罪业密簿).filter(([, v]) => v && v.类别 === "债契");
-  var handles = (D) => Object.entries(D.资粮.罪业密簿).filter(([, v]) => v && v.类别 !== "债契");
-  var monthInterest = (D) => debts(D).reduce((s, [, v]) => {
-    const 本 = (Number(v.欠额) || 0) * 1e3, 已 = Number(v.已收息) || 0;
-    return s + (本 > 0 && 已 < 本 ? Math.min(Math.round(本 * 0.05), 本 - 已) : 0);
-  }, 0);
-  var pendingOrders = (D) => Object.entries(D.教务.法事委托).filter(([, v]) => v && v.状态 !== "已完成");
-  var latestRumor = (D) => {
-    const v = Object.values(D.教务.神迹传闻);
-    return v.length ? String(v[v.length - 1]) : "";
-  };
-  var riteCooling = (D) => {
-    const t = parseTime(D.时空.时间);
-    return !!t.月标 && D.教务.上次法会.trim() === t.月标;
-  };
-  var storeGrade = (D) => {
-    const f = facilities(D).find((x) => x.名.includes("库房"));
-    return f ? STORE_CAP[f.档次] ? f.档次 : "粗成" : "无";
-  };
-  var storeCap = (D) => STORE_CAP[storeGrade(D)];
-  var girlUnlocked = (D, n) => D.系统.已解锁.includes("同心缕:" + n) || !!D.核心女主[n].心声;
-  function unlocked(D, key) {
-    const set = D.系统.已解锁;
-    if (key === "营造" || set.includes(key)) return true;
-    if (UNLOCK_FANS[key]) return D.教务.信众 >= UNLOCK_FANS[key];
-    if (key === "库藏") return storeGrade(D) !== "无";
-    if (key === "同心缕") return CAST.some((n) => girlUnlocked(D, n));
-    return false;
-  }
-  function boardHtml(D) {
-    const t = parseTime(D.时空.时间);
-    const dateTxt = t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " "));
-    const fest = festivalState(t);
-    const gate = gateState(t, fest);
-    let festTxt, festCls;
-    if (fest.今日) {
-      festTxt = fest.今日.名;
-      festCls = "mz-fest";
-    } else if (fest.将至) {
-      festTxt = cn(fest.将至.余日) + "日后" + fest.将至.名;
-      festCls = "";
-    } else {
-      festTxt = "无";
-      festCls = "mz-dim";
-    }
-    let levy, levyCls;
-    if (D.暗流.本月危机 === "常例拖欠") {
-      levy = "拖欠未清";
-      levyCls = "mz-warn";
-    } else if (t.年序号 === 4) {
-      levy = "常例失效";
-      levyCls = "";
-    } else if (t.年序号 < 0 || !t.日) {
-      levy = "未知";
-      levyCls = "";
-    } else {
-      const left = Math.max(0, 30 - t.日);
-      levy = left ? "还剩" + cn(left) + "日" : "今日当缴";
-      levyCls = left <= 6 ? "mz-warn" : "";
-    }
-    return '<div class="mz-grp"><div class="mz-solo" data-stat="时间" title="' + esc2(D.时空.时间.replace(/\//g, " ")) + '">' + dateTxt + " <b>" + esc2(t.时辰) + '</b></div><div class="mz-row"><span>宵禁</span><b class="' + gate.cls + '">' + gate.文 + '</b></div><div class="mz-row"><span>常例</span><b class="' + levyCls + '">' + levy + '</b></div><div class="mz-row"><span>节令</span><b class="' + festCls + '">' + esc2(festTxt) + '</b></div></div><div class="mz-grp"><div class="mz-row" data-stat="铜钱"><span>铜钱</span><b>' + money(总文(D)) + '</b></div><div class="mz-row" data-stat="信众"><span>信众</span><b>' + cn(D.教务.信众) + "人</b></div></div>";
-  }
-  var row = (k, v, cls) => '<div class="mz-r-row"><span>' + k + "</span><b" + (cls ? ' class="' + cls + '"' : "") + ">" + v + "</b></div>";
-  function zoneRowsHtml(key, D) {
-    if (!unlocked(D, key)) return '<div class="mz-r-row mz-r-lock">' + ICO.lock + "<span>" + UNLOCK_COND[key] + "</span></div>" + '<div class="mz-r-row mz-r-blank">&nbsp;</div>'.repeat(ZONE_ROWS[key] - 1);
-    switch (key) {
-      case "同心缕":
-        return CAST.map((n) => girlUnlocked(D, n) ? row(n, esc2(D.核心女主[n].灌顶位阶)) : row(CAST_HINT[n], "未识", "mz-r-dim")).join("");
-      case "库藏": {
-        const 库 = D.资粮.库藏;
-        const stock = ["药品", "道具", "法器"].map((k) => KIND_SHORT[k] + cn(kindCount(库, k))).join("／");
-        const cr = craftable(D);
-        return row("存货", stock) + row("工坊", cr.length ? "可制" + cr.map((c) => c.kind).join("／") : "无坊", cr.length ? "" : "mz-r-dim");
-      }
-      case "教务": {
-        const n1 = Object.keys(D.执事名册).length, n2 = Object.keys(D.明妃录).length;
-        return row("执事", cn(n1) + "人／十二席", n1 ? "" : "mz-r-dim") + row("明妃", cn(n2) + "位／六席", n2 ? "" : "mz-r-dim") + (riteCooling(D) ? row("法会", "暂休", "mz-r-dim") : row("法会", "待办", "mz-r-good"));
-      }
-      case "营造":
-        return row("表殿", esc2(D.道场.表殿等级), HALL_Q[D.道场.表殿等级] || "") + row("地宫", cn(facilities(D).length) + "处");
-      case "法事": {
-        const po = pendingOrders(D);
-        const first = po[0];
-        const rumor = latestRumor(D);
-        return row("委托", cn(po.length) + "单／三席", po.length ? "" : "mz-r-dim") + row("时限", first ? esc2(first[0]) + " " + esc2(String(first[1].时限 || "")) : "无", first ? "" : "mz-r-dim") + row("传闻", rumor ? esc2(rumor) : "未闻", "mz-r-dim");
-      }
-      case "罪业": {
-        const h = handles(D).length, d = debts(D).length, mi = monthInterest(D);
-        return row("把柄", cn(h) + "条", h ? "" : "mz-r-dim") + row("债契", cn(d) + "契", d ? "" : "mz-r-dim") + row("月息", mi ? money(mi) : "无", mi ? "" : "mz-r-dim");
-      }
-    }
-    return "";
-  }
-  function renderMinimap(D) {
-    const mm = doc.getElementById(SEL.minimap);
-    if (!mm) return;
-    const z = zoneName(D.时空.当前地界);
-    const pin = MINIMAP_PIN[z] || (ZONES.includes(z) ? MINIMAP_PIN.长安 : null);
-    const pinEl = mm.querySelector(".mz-map-pin");
-    if (pinEl) {
-      pinEl.style.display = pin ? "" : "none";
-      if (pin) {
-        pinEl.style.left = pin[1] + "%";
-        pinEl.style.top = pin[2] + "%";
-        pinEl.dataset.label = pin[0];
-      }
-    }
-    const t = parseTime(D.时空.时间);
-    const y = Math.max(0, t.年序号);
-    const lbl = mm.querySelector(".mz-doom .mz-lbl b");
-    if (lbl) lbl.textContent = YEAR_SHORT[y] + " " + DOOM[y];
-    const bar = mm.querySelector(".mz-doom .mz-bar i");
-    if (bar) bar.style.width = y * 20 + 10 + "%";
-    const wz = mm.querySelector(".mz-w-zone"), ws = mm.querySelector(".mz-w-sub");
-    const sub = zoneSub(D.时空.当前地界);
-    if (wz) wz.textContent = z;
-    if (ws) {
-      ws.textContent = sub;
-      ws.style.display = sub ? "" : "none";
-    }
-    const where = mm.querySelector(".mz-where");
-    if (where) where.title = D.时空.当前地界.replace(/\//g, " ");
-    const storm = D.暗流.风波;
-    const sb = mm.querySelector(".mz-storm b");
-    if (sb) {
-      sb.textContent = storm;
-      sb.className = STORM_CLS[storm] || "";
-    }
-  }
-  function renderCrisis(D) {
-    const root = doc.getElementById(SHELL_ID);
-    const c = doc.getElementById(SEL.crisis);
-    if (!root || !c) return;
-    const name = D.暗流.本月危机;
-    if (name) {
-      root.setAttribute("data-crisis", "");
-      c.querySelector(".mz-ticket-text b").textContent = name;
-      c.querySelector(".mz-ticket-text .mz-sub").textContent = FORM_MSG.朱票副题;
-    } else {
-      root.removeAttribute("data-crisis");
-      c.classList.remove("mz-moved");
-    }
-    syncCrisisLine(doc.getElementById(SEL.paper), name);
-  }
-  function renderAll(force, Darg) {
-    const D = Darg || readMVU();
-    const board = doc.querySelector("#" + SEL.board + " .mz-face");
-    if (board) board.innerHTML = boardHtml(D);
-    ZONE_DEFS.forEach((z) => {
-      const zone = doc.querySelector("#" + SHELL_ID + ' .mz-zone[data-zone="' + z.key + '"]');
-      if (!zone) return;
-      zone.classList.toggle("mz-locked", !unlocked(D, z.key));
-      zone.querySelector(".mz-zone-rows").innerHTML = zoneRowsHtml(z.key, D);
-    });
-    renderMinimap(D);
-    renderCrisis(D);
-    if (liftOpenName()) refreshLift(D);
   }
 
   // src/02-visibility.js
@@ -3855,6 +3962,7 @@
       hideEntry();
       raiseAcuUi();
     } else {
+      setDrawer(null);
       closeLift();
       renderEntry();
     }
@@ -3889,7 +3997,6 @@
     }
     try {
       setLastStat(null);
-      setPrevStat(null);
       storyCacheDrop();
       setEditState(null);
       if (delMode) setDelMode(false);
@@ -3975,7 +4082,6 @@
     try {
       if (!variables || !variables.stat_data) return;
       if (!variables_before_update || !_.isEqual(variables.stat_data, variables_before_update.stat_data)) {
-        if (variables_before_update && variables_before_update.stat_data) setPrevStat(_.cloneDeep(_.omit(variables_before_update.stat_data, ["$internal"])));
         setLastStat(_.cloneDeep(_.omit(variables.stat_data, ["$internal"])));
         const lid = safeLastMessageId();
         storyCacheDrop(lid);
@@ -4028,7 +4134,6 @@
   onEvent(tavern_events.MESSAGE_SWIPED, (mid) => {
     onMsgMutated(mid);
     setLastStat(null);
-    setPrevStat(null);
     renderAll(true);
     if (isShellVisible()) ensureGate();
     else renderEntry();
@@ -4036,18 +4141,32 @@
   onEvent(tavern_events.MESSAGE_DELETED, () => {
     storyCacheDrop();
     setLastStat(null);
-    setPrevStat(null);
     if (isShellVisible() && !sending && !delMode && !editState) {
       renderAll(true);
       renderStoryLog();
       ensureGate();
     }
   });
+  function clampCrisis(c, left, top) {
+    const off = c.parentElement.getBoundingClientRect();
+    const w = window.parent.innerWidth, h = window.parent.innerHeight;
+    c.style.setProperty("--cx", Math.min(Math.max(left, 4 - off.left), w - off.left - c.offsetWidth - 4) + "px");
+    c.style.setProperty("--cy", Math.min(Math.max(top, 4 - off.top), h - off.top - c.offsetHeight - 4) + "px");
+  }
+  function onCrisisResize() {
+    const c = doc.getElementById(SEL.crisis);
+    if (!c || !c.classList.contains("mz-moved")) return;
+    clampCrisis(c, c.offsetLeft, c.offsetTop);
+  }
   function bindCrisisDrag() {
     const c = doc.getElementById(SEL.crisis);
     if (!c || c.dataset.bound) return;
     c.dataset.bound = "1";
     let drag = null;
+    const endDrag = () => {
+      drag = null;
+      c.style.cursor = "";
+    };
     c.addEventListener("pointerdown", (e) => {
       drag = { x: e.clientX, y: e.clientY, left: c.offsetLeft, top: c.offsetTop, moved: false };
       c.setPointerCapture(e.pointerId);
@@ -4057,17 +4176,18 @@
       const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
       if (!drag.moved && Math.abs(dx) + Math.abs(dy) <= 4) return;
       drag.moved = true;
-      const off = c.parentElement.getBoundingClientRect();
-      const w = window.parent.innerWidth, h = window.parent.innerHeight;
-      c.style.setProperty("--cx", Math.min(Math.max(drag.left + dx, 4 - off.left), w - off.left - c.offsetWidth - 4) + "px");
-      c.style.setProperty("--cy", Math.min(Math.max(drag.top + dy, 4 - off.top), h - off.top - c.offsetHeight - 4) + "px");
+      clampCrisis(c, drag.left + dx, drag.top + dy);
       c.classList.add("mz-moved");
       c.style.cursor = "grabbing";
     });
-    c.addEventListener("pointerup", () => {
-      drag = null;
-      c.style.cursor = "";
-    });
+    c.addEventListener("pointerup", endDrag);
+    c.addEventListener("pointercancel", endDrag);
+    c.addEventListener("lostpointercapture", endDrag);
+    try {
+      window.parent.addEventListener("resize", onCrisisResize);
+    } catch (e) {
+      dbg("crisisResize", e);
+    }
   }
   async function init() {
     try {
@@ -4076,7 +4196,6 @@
       dbg("waitMvu", e);
     }
     setLastStat(null);
-    setPrevStat(null);
     storyCacheDrop();
     const prevVisible = isShellVisible();
     [SHELL_ID, SEL.entry].forEach((id) => {
@@ -4152,6 +4271,7 @@
   window.addEventListener("pagehide", () => {
     try {
       window.parent.removeEventListener("resize", positionPill);
+      window.parent.removeEventListener("resize", onCrisisResize);
       window.parent.removeEventListener("mz-shell-enter", onShellEnter);
       doc.removeEventListener("keydown", onDocKey);
       stopAcuTimers();
