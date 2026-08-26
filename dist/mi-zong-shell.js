@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.38";
+  var CDN_TAG = "1.0.39";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -22,6 +22,7 @@
     entryEnter: "mz-entry-enter",
     shellHideStyle: "mz-shell-hide-style",
     shellStyle: "mz-shell-style",
+    curtain: "mz-curtain",
     board: "mz-board",
     minimap: "mz-minimap",
     paper: "mz-paper",
@@ -1221,11 +1222,23 @@
   30% { color: #f6c083; text-shadow: 0 0 0 rgba(240,176,114,0); translate: 0 0; } }
 #mz-minimap .mz-flash b, #mz-minimap .mz-flash .mz-w-sub { animation-name: mz-flash-dark; }
 .mz-win .mz-form input[disabled] { opacity: .5; }
-#mz-paper.mz-unveil { animation: mz-unveil .8s var(--ease-out) both; }
-@keyframes mz-unveil { from { opacity: 0; translate: 0 10px; } }
-#mz-shell-root.mz-shell-out { animation: mz-shell-out var(--t-slow) var(--ease-out) both; pointer-events: none; }
-@keyframes mz-shell-out { to { opacity: 0; translate: 0 10px; } }
-@media (prefers-reduced-motion: reduce) { #mz-shell-root, #mz-shell-root *, #mz-shell-root *::before, #mz-shell-root *::after, #mz-lift, #mz-lift * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+#mz-paper.mz-paper-in { animation: mz-paper-in .8s var(--ease-out) both; }
+@keyframes mz-paper-in { from { opacity: 0; translate: 0 10px; } }
+/* ==== 合卷幕（入卷／退出共用，挂在壳外故不用壳内变量） ==== */
+#mz-curtain { position: fixed; inset: 0; z-index: 9500; display: none; pointer-events: none; }
+#mz-curtain.mz-on { display: block; pointer-events: auto; }
+#mz-curtain .mz-half { position: absolute; left: 0; right: 0; height: 50%; background: #171008; }
+#mz-curtain .mz-half::after { content: ''; position: absolute; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(217,180,95,.55) 20%, rgba(217,180,95,.55) 80%, transparent); }
+#mz-curtain .mz-top { top: 0; translate: 0 -100%; }
+#mz-curtain .mz-top::after { bottom: 0; }
+#mz-curtain .mz-bot { bottom: 0; translate: 0 100%; }
+#mz-curtain .mz-bot::after { top: 0; }
+#mz-curtain.mz-close .mz-half { animation: mz-curtain-close .32s cubic-bezier(.22,.61,.36,1) both; }
+#mz-curtain.mz-open .mz-half { animation: mz-curtain-open .38s cubic-bezier(.16,.84,.3,1) both; }
+@keyframes mz-curtain-close { to { translate: 0 0; } }
+@keyframes mz-curtain-open { from { translate: 0 0; } }
+@media (prefers-reduced-motion: reduce) { #mz-shell-root, #mz-shell-root *, #mz-shell-root *::before, #mz-shell-root *::after, #mz-lift, #mz-lift *, #mz-curtain * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 `;
 
   // src/css/phone.js
@@ -1587,7 +1600,7 @@
     });
   }
   function playEntrance() {
-    animateOnce(doc.getElementById(SEL.paper), "mz-unveil", 900);
+    animateOnce(doc.getElementById(SEL.paper), "mz-paper-in", 900);
     const root = doc.getElementById("mz-shell-root");
     if (!root) return;
     const els = [...root.querySelectorAll(".mz-side #mz-board, .mz-side .mz-zone, #mz-minimap, .mz-rside .mz-zone")];
@@ -3979,48 +3992,70 @@
       renderEntry();
     }
   }
-  var exiting = false;
-  function playExit() {
-    const root = doc.getElementById(SHELL_ID);
-    if (!root || exiting) {
-      if (!root) applyVisibility(false);
-      return;
+  function ensureCurtain() {
+    let c = doc.getElementById(SEL.curtain);
+    if (!c) {
+      c = doc.createElement("div");
+      c.id = SEL.curtain;
+      c.dataset.owner = SHELL_TOKEN;
+      c.innerHTML = '<div class="mz-half mz-top"></div><div class="mz-half mz-bot"></div>';
+      doc.body.appendChild(c);
     }
-    exiting = true;
-    root.classList.add("mz-shell-out");
-    const done = () => {
-      if (!exiting) return;
-      exiting = false;
-      root.classList.remove("mz-shell-out");
-      applyVisibility(false);
+    return c;
+  }
+  function runCurtain(phase, ms, then) {
+    const c = ensureCurtain();
+    c.className = "mz-on mz-" + phase;
+    const half = c.firstElementChild;
+    let fired = false;
+    const go = () => {
+      if (fired) return;
+      fired = true;
+      half.removeEventListener("animationend", go);
+      then();
     };
-    root.addEventListener("animationend", function h(e) {
-      if (e.target !== root) return;
-      root.removeEventListener("animationend", h);
-      done();
+    half.addEventListener("animationend", go);
+    setTimeout(go, ms + 120);
+  }
+  var busy2 = false;
+  function withCurtain(swap) {
+    if (busy2) return;
+    busy2 = true;
+    runCurtain("close", 320, () => {
+      try {
+        swap();
+      } finally {
+        runCurtain("open", 380, () => {
+          const c = doc.getElementById(SEL.curtain);
+          if (c) c.className = "";
+          busy2 = false;
+        });
+      }
     });
-    setTimeout(done, 700);
   }
   function toggleShellImpl() {
+    if (busy2) return;
     if (isShellVisible()) {
       commitUserEditIfOpen();
-      playExit();
+      withCurtain(() => applyVisibility(false));
       return;
     }
-    try {
-      setLastStat(null);
-      storyCacheDrop();
-      setEditState(null);
-      if (delMode) setDelMode(false);
-      applyVisibility(true);
-      updateAcuNav();
-      renderAll(true);
-      renderStoryLog();
-      if (!ensureGate()) playEntrance();
-    } catch (e) {
-      applyVisibility(false);
-      throw e;
-    }
+    withCurtain(() => {
+      try {
+        setLastStat(null);
+        storyCacheDrop();
+        setEditState(null);
+        if (delMode) setDelMode(false);
+        applyVisibility(true);
+        updateAcuNav();
+        renderAll(true);
+        renderStoryLog();
+        if (!ensureGate()) playEntrance();
+      } catch (e) {
+        applyVisibility(false);
+        throw e;
+      }
+    });
   }
   var toggleShell = typeof errorCatched === "function" ? errorCatched(toggleShellImpl) : toggleShellImpl;
   function onShellEnter() {
@@ -4304,6 +4339,8 @@
         if (style) style.remove();
         const hideStyle = doc.getElementById(SEL.shellHideStyle);
         if (hideStyle) hideStyle.remove();
+        const curtain = doc.getElementById(SEL.curtain);
+        if (curtain && curtain.dataset.owner === SHELL_TOKEN) curtain.remove();
         FONT_CSS.forEach((h, i) => {
           const l = doc.getElementById(FONT_LINK_ID + i);
           if (l) l.remove();
