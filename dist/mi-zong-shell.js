@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.37";
+  var CDN_TAG = "1.0.38";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1335,8 +1335,20 @@
 
 `;
 
+  // src/css/armor.js
+  var armor_default = `
+#mz-shell-root input, #mz-shell-root textarea {
+  background-color: transparent !important; color: var(--ink) !important;
+  box-shadow: none !important; border-radius: 0 !important; font-family: inherit !important; }
+#mz-shell-root input:focus, #mz-shell-root textarea:focus { outline: none !important; }
+#mz-writing textarea, #mz-shell-root .mz-story-edit textarea { border: none !important; }
+#mz-shell-root .mz-story-edit textarea { color: var(--cinnabar) !important; }
+#mz-shell-root .mz-form input, #mz-shell-root .mz-build textarea { border: none !important; border-bottom: 1px solid rgba(118,94,56,.5) !important; }
+#mz-lift.mz-sin .mz-form input { border-bottom-color: rgba(227,212,172,.4) !important; }
+`;
+
   // src/03-theme.js
-  var SHELL_CSS = tokens_default + sides_default + story_default + lift_default + windows_default + extras_default + phone_default;
+  var SHELL_CSS = tokens_default + sides_default + story_default + lift_default + windows_default + extras_default + phone_default + armor_default;
 
   // src/08-animation.js
   function animateOnce(el, cls, timeout) {
