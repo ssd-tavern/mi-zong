@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.41";
+  var CDN_TAG = "1.0.42";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -2980,7 +2980,7 @@
   }
   function storyParas(text, streaming) {
     const escaped = escapeHtml(text);
-    const marked = streaming ? escaped : escaped.replace(/“([^”\n]*?)”/g, '<span class="mz-quote">“$1”</span>').replace(/&quot;([^\n]*?)&quot;/g, '<span class="mz-quote">&quot;$1&quot;</span>');
+    const marked = streaming ? escaped : escaped.replace(/“([^”\n]*?)”/g, '<span class="mz-quote">“$1”</span>').replace(/「([^」\n]*?)」/g, '<span class="mz-quote">「$1」</span>').replace(/&quot;([^\n]*?)&quot;/g, '<span class="mz-quote">&quot;$1&quot;</span>');
     return marked.split(/\n+/).map((s) => s.trim()).filter(Boolean);
   }
   function storyTextHtml(text, streaming) {
