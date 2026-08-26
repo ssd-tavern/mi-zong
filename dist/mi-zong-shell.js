@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.43";
+  var CDN_TAG = "1.0.44";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -3986,12 +3986,16 @@
   function warmAssets() {
     if (warmed) return;
     warmed = true;
-    const run = () => {
-      for (const n of PRELOAD_ASSETS) doc.createElement("img").src = asset(n);
-    };
     const w = doc.defaultView;
-    if (w && typeof w.requestIdleCallback === "function") w.requestIdleCallback(run, { timeout: 3e3 });
-    else setTimeout(run, 300);
+    const idle = (fn) => w && typeof w.requestIdleCallback === "function" ? w.requestIdleCallback(fn, { timeout: 2e3 }) : setTimeout(fn, 200);
+    let i = 0;
+    const next = () => {
+      if (i >= PRELOAD_ASSETS.length) return;
+      const img = doc.createElement("img");
+      img.onload = img.onerror = () => idle(next);
+      img.src = asset(PRELOAD_ASSETS[i++]);
+    };
+    idle(next);
   }
   var busy2 = false;
   function fade(root, cls, then) {
@@ -4048,7 +4052,6 @@
       if (!isShellVisible()) return;
       ensureHideStyle().disabled = false;
       if (needGate) ensureGate();
-      warmAssets();
     });
   }
   var toggleShell = typeof errorCatched === "function" ? errorCatched(toggleShellImpl) : toggleShellImpl;
@@ -4244,6 +4247,7 @@
       if (el) el.remove();
     });
     ensureShell();
+    warmAssets();
     ensureEntry();
     ensureStoryDom();
     bindLift();
