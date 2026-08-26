@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.29";
+  var CDN_TAG = "1.0.30";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -88,18 +88,18 @@
       grade: [["一灌瓶灌", CB("eueumq")], ["二灌密灌", CB("ltzlih")], ["三灌慧灌", CB("alancw")], ["四灌大乐", CB("nxejmb")]]
     },
     裴清砚: {
-      work: [["书斋挥毫", CB("3j73il")], ["曲江诗会", CB("vsnu2y")], ["煮茶失误", CB("bhv9nz")], ["风雪庭院", CB("s2kylc")]],
-      rite: [["法事求道", CB("dxtm23")], ["荒野古刹", CB("cgldjq")]],
+      work: [["书斋挥毫", CB("3j73il")], ["上元灯船", CB("xthmz4")], ["煮茶失误", CB("bhv9nz")], ["风雪庭院", CB("s2kylc")]],
+      rite: [["法事求道", CB("5bfwfo")], ["荒野古刹", CB("f7a50t")]],
       grade: [["一灌瓶灌", CB("6fyn2u")], ["二灌密灌", CB("aszq05")], ["三灌慧灌", CB("eb6z4u")], ["四灌大乐", CB("y11fwk")]]
     },
     叶玄薇: {
       work: [["街头执法", CB("qmblzw")], ["校场切磋", CB("szlrfw")], ["西市肉饼", CB("ap762h")], ["丹房格物", CB("0m8xyn")]],
       rite: [["斋醮法坛", CB("ufmtsy")], ["地宫对峙", CB("ooeomu")]],
-      grade: [["一灌瓶灌", CB("2gme73")], ["二灌密灌", CB("6yz5qy")], ["三灌慧灌", CB("wbvips")], ["四灌大乐", CB("20k2mm")]]
+      grade: [["一灌瓶灌", CB("pwwlih")], ["二灌密灌", CB("uzopeb")], ["三灌慧灌", CB("41vm4u")], ["四灌大乐", CB("d8hgib")]]
     },
     萧夜沉: {
-      work: [["酒肆当垆", CB("edctyi")], ["暗市验货", CB("mekzp3")], ["内室鉴香", CB("o302a6")], ["后院听雨", CB("f7ay4l")]],
-      rite: [["大寺供香", CB("usf9ed")], ["法事密谋", CB("v1th0q")]],
+      work: [["酒肆当垆", CB("edctyi")], ["暗市验货", CB("stieeb")], ["内室鉴香", CB("o302a6")], ["后院听雨", CB("f7ay4l")]],
+      rite: [["大寺供香", CB("11zlk1")], ["法事密谋", CB("v1th0q")]],
       grade: [["一灌瓶灌", CB("utqt5v")], ["二灌密灌", CB("kovkxr")], ["三灌慧灌", CB("nq0q5n")], ["四灌大乐", CB("9ced93")]]
     }
   };
