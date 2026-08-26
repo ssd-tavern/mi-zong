@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.35";
+  var CDN_TAG = "1.0.36";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1728,7 +1728,7 @@
     }
     return last;
   }
-  var MAIN_TAGS = ["maintext", "content", "正文", "dream_body"];
+  var MAIN_TAGS = ["maintext", "content", "正文", "dream_body", "game"];
   var MAIN_OPEN_RE = new RegExp("(?:^|\\n)[ \\t]*<(" + MAIN_TAGS.join("|") + ")(?:\\s[^<>]*)?>", "gi");
   function lastMainOpen(s) {
     const m = lastMatch(s, MAIN_OPEN_RE);
@@ -1737,6 +1737,12 @@
     return { index, end: m.index + m[0].length, tag: m[1].toLowerCase() };
   }
   var DOC_ROOT_RE = /<dream_plot(?:\s[^<>]*)?>/i;
+  var GEMINI_TURN_RE = /<\|im_start\|>\s*gemini[^\n]*\n?[\s\S]*?(?:<\|im_end\|>|$)/gi;
+  var CONTROL_TOKEN_RE = /<\|im_start\|>[^\n]*|<\|(?:im_end|pad|pad_end)\|>/gi;
+  function stripControlTurns(s) {
+    if (s.indexOf("<|") < 0) return s;
+    return s.replace(GEMINI_TURN_RE, "").replace(CONTROL_TOKEN_RE, "");
+  }
   var THOUGHT_TAGS = ["thinking", "think", "cot", "reasoning", "meow", "think_nya~", "konatan_planning~", "draft_notes", "draft", "preparation"];
   var THOUGHT_NAMES = THOUGHT_TAGS.map(esc).join("|");
   var THOUGHT_OPEN = "<(?:" + THOUGHT_NAMES + ")(?:\\s[^<>]*)?>";
@@ -1750,7 +1756,7 @@
     return s.replace(HEAD_MARK_RE, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<\/[^<>\n]{1,40}>/g, "").replace(/<([^<>\n]{1,40})>/g, "$1").trim();
   }
   function splitThought(raw, streaming) {
-    let rest = String(raw);
+    let rest = stripControlTurns(String(raw));
     const thoughts = [];
     const mainAt = () => {
       const m = lastMainOpen(rest);
@@ -1841,7 +1847,8 @@
     "dream_big_discuss",
     "dream_after_thinking",
     "original",
-    "analysis"
+    "analysis",
+    "safety_check"
   ];
   var STRIP_RE = new RegExp("<(" + STRIP_TAGS.map(esc).join("|") + ")(?:\\s[^<>]*)?>[\\s\\S]*?(?:<\\/\\1\\s*>|$)", "gi");
   var ANY_TAG_RE = /<\/?[A-Za-z_一-鿿][\w\-~:.一-鿿]*(?:\s[^<>]*)?\/?>/g;
