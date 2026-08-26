@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.40";
+  var CDN_TAG = "1.0.41";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1223,7 +1223,7 @@
 .mz-win .mz-form input[disabled] { opacity: .5; }
 #mz-paper.mz-paper-in { animation: mz-paper-in .8s var(--ease-out) both; }
 @keyframes mz-paper-in { from { opacity: 0; translate: 0 10px; } }
-#mz-shell-root.mz-shell-in { animation: mz-shell-in .28s var(--ease-out) both; }
+#mz-shell-root.mz-shell-in { animation: mz-shell-in .28s var(--ease-out) both; pointer-events: none; }
 @keyframes mz-shell-in { from { opacity: 0; scale: 1.01; } }
 #mz-shell-root.mz-shell-out { animation: mz-shell-out .28s var(--ease-out) both; pointer-events: none; }
 @keyframes mz-shell-out { to { opacity: 0; scale: .985; } }
@@ -4014,6 +4014,7 @@
       fade(root, "mz-shell-out", () => applyVisibility(false));
       return;
     }
+    let needGate = false;
     try {
       setLastStat(null);
       storyCacheDrop();
@@ -4023,14 +4024,18 @@
       updateAcuNav();
       renderAll(true);
       renderStoryLog();
-      if (!ensureGate()) playEntrance();
+      needGate = gateNeeded();
+      if (!needGate) playEntrance();
     } catch (e) {
       applyVisibility(false);
       throw e;
     }
     const shown = doc.getElementById(SHELL_ID);
-    if (shown) fade(shown, "mz-shell-in", () => {
-      if (isShellVisible()) ensureHideStyle().disabled = false;
+    if (!shown) return;
+    fade(shown, "mz-shell-in", () => {
+      if (!isShellVisible()) return;
+      ensureHideStyle().disabled = false;
+      if (needGate) ensureGate();
     });
   }
   var toggleShell = typeof errorCatched === "function" ? errorCatched(toggleShellImpl) : toggleShellImpl;
