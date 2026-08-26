@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.44";
+  var CDN_TAG = "1.0.45";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -427,6 +427,8 @@
   background-clip: border-box; border-radius: 5px;
   background-color: color-mix(in srgb, var(--gold-dim) 62%, transparent); }
 #mz-shell-root ::-webkit-scrollbar-thumb:hover { background-color: var(--gold-dim); }
+/* 禁用态光标总规则：表单件与钮走原生 disabled，非表单件走 .mz-off（.mz-lock／.mz-locked 同义） */
+#mz-shell-root [disabled], #mz-shell-root .mz-off, #mz-shell-root .mz-lock, #mz-shell-root .mz-locked { cursor: not-allowed; }
 
 `;
 
@@ -525,7 +527,7 @@
 .mz-z-ico img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
 .mz-z-ico.mz-stub { border: 1px dashed rgba(var(--gold-rgb), .4); color: var(--gold-dim); }
 .mz-z-ico.mz-stub svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.mz-zone:hover h5::after { background: linear-gradient(90deg, rgba(var(--gold-rgb), .6), transparent); }
+.mz-zone:not(.mz-locked):hover h5::after { background: linear-gradient(90deg, rgba(var(--gold-rgb), .6), transparent); }
 /* 状态行纪律：每条入口必须挂中频读数，只挂名字的入口条不许存在 */
 .mz-r-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px;
   color: var(--side-text); line-height: 1.78; white-space: nowrap; }
@@ -555,7 +557,7 @@
 .mz-zone .mz-z-ico img { filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
 
 /* 锁匾 */
-.mz-zone.mz-locked { cursor: default; filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) saturate(.55); }
+.mz-zone.mz-locked { filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) saturate(.55); }
 .mz-zone.mz-locked:hover { transform: none; }
 .mz-zone.mz-locked h5, .mz-zone.mz-locked:hover h5 { color: var(--ink-faint); }
 .mz-zone.mz-locked .mz-z-ico img { filter: grayscale(1) opacity(.55); }
@@ -584,7 +586,8 @@
 .mz-earlier { display: block; margin: -8px auto 20px; border: none; background: none; cursor: pointer;
   font-family: inherit; font-size: 12px; letter-spacing: 2px; color: var(--ink-faint); padding: 4px 12px;
   transition: color var(--t-fast) var(--ease-out); }
-.mz-earlier:hover { color: var(--cinnabar); }
+.mz-earlier:not([disabled]):hover { color: var(--cinnabar); }
+.mz-earlier[disabled] { opacity: .5; }
 
 /* ==== 楼首思维链折叠条 ==== */
 .mz-thought { margin: -4px 0 14px; }
@@ -736,7 +739,8 @@
   font-size: 12px; letter-spacing: 2px; text-indent: 2px; color: var(--ink-dim); padding: 3px 12px;
   transition: color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
 #mz-delbar button.mz-danger { color: var(--cinnabar); border-color: rgba(160,52,38,.55); }
-#mz-delbar button:hover { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
+#mz-delbar button:not([disabled]):hover { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
+#mz-delbar button[disabled] { opacity: .45; }
 #mz-jump { position: absolute; z-index: 5; bottom: 84px; left: calc(50% + var(--scroll-w) / 2 - 62px);
   width: 34px; height: 62px; border: none; padding: 0; cursor: pointer; display: none;
   background: url('${A3}hanging-fish.webp') center / contain no-repeat;
@@ -753,7 +757,8 @@
 .mz-w-tools { display: flex; gap: 2px; padding-bottom: 4px; }
 .mz-w-tools button { width: 28px; height: 28px; border: none; background: none; cursor: pointer; padding: 6px;
   color: var(--ink-dim); opacity: .45; transition: opacity var(--t-fast) var(--ease-out), translate var(--t-fast) var(--ease-out); }
-.mz-w-tools button:hover { opacity: 1; translate: 0 -1px; }
+.mz-w-tools button:not([disabled]):hover { opacity: 1; translate: 0 -1px; }
+.mz-w-tools button[disabled] { opacity: .22; }
 .mz-w-tools button svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 #mz-writing textarea { flex: 1; min-width: 0; resize: none; border: none; outline: none;
   font-family: inherit; font-size: 15px; line-height: 26px; min-height: 36px; max-height: 156px;
@@ -763,6 +768,7 @@
   background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(118,94,56,.28) 25px 26px);
   background-position: 0 6px;
   background-attachment: local; }
+#mz-writing textarea[disabled] { opacity: .55; }
 #mz-writing textarea::placeholder { color: var(--ink-faint); opacity: .75; }
 #mz-send {
   width: 46px; height: 48px; flex: none; border: none;
@@ -871,7 +877,7 @@
 .mz-gate-nav button { border: none; background: none; cursor: pointer; color: var(--ink-dim); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
 .mz-gate-nav button svg { width: 16px; height: 16px; }
 .mz-gate-nav button:first-child svg { rotate: 180deg; }
-.mz-gate-nav button[disabled] { opacity: .3; cursor: default; }
+.mz-gate-nav button[disabled] { opacity: .3; }
 .mz-gate-sects { display: flex; flex-direction: column; }
 .mz-gate-sect:last-child { margin-bottom: 0; }
 .mz-gate-sect { position: relative; display: flex; align-items: baseline; gap: 14px; text-align: left; cursor: pointer; font-family: inherit;
@@ -951,9 +957,9 @@
   background: #f4efe0 url('${A5}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32);
   box-shadow: inset 0 0 0 4px rgba(255,252,244,.35); }
 .mz-grid { display: grid; gap: 12px; align-content: start; grid-auto-rows: max-content; }
-.mz-grid.mz-c2 { grid-template-columns: repeat(2, 1fr); }
-.mz-grid.mz-c3 { grid-template-columns: repeat(3, 1fr); }
-.mz-grid.mz-c4 { grid-template-columns: repeat(4, 1fr); }
+.mz-grid.mz-c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mz-grid.mz-c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.mz-grid.mz-c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .mz-card { position: relative; padding: 11px 13px 10px;
   border-style: solid; border-color: transparent; border-width: 11px;
   border-image: url('${A5}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
@@ -973,17 +979,21 @@
 .mz-card.mz-up .mz-seal-btn { position: static; }
 .mz-card .mz-up-foot { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
 .mz-card .mz-up-foot .mz-price { font-size: 12px; margin-left: 6px; opacity: .85; }
-.mz-card .mz-upform { margin-top: 8px; }
-.mz-bps { margin-bottom: 4px; }
-.mz-card.mz-bp { cursor: pointer; min-height: 0; padding-top: 9px; padding-bottom: 8px; line-height: 1.6; transition: box-shadow var(--t-fast) var(--ease-out); }
-.mz-card.mz-bp small { display: block; font-size: 12px; letter-spacing: .5px; color: var(--ink-faint); margin-top: 2px; }
-.mz-card.mz-bp:hover { box-shadow: inset 0 0 0 1px rgba(160,52,38,.5); }
-.mz-card.mz-bp.mz-on { box-shadow: inset 0 0 0 1px var(--cinnabar); background-color: rgba(160,52,38,.06); }
-.mz-card.mz-bp.mz-off { cursor: default; opacity: .55; }
-.mz-card.mz-bp.mz-off:hover { box-shadow: 0 1px 2px rgba(60,40,15,.12); }
-.mz-card .mz-upform .mz-build-foot { width: 100%; margin-top: 4px; }
+.mz-card.mz-up.mz-on { box-shadow: inset 0 0 0 1px var(--cinnabar), 0 1px 2px rgba(60,40,15,.12); }
+/* 兴造：左蓝图清单／右表单，点清单一行右侧即填 */
+.mz-buildrow { align-items: stretch; }
+.mz-bplist { flex: none; width: 212px; gap: 6px; }
+.mz-bps { display: flex; flex-direction: column; gap: 3px; }
+.mz-bp { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 10px; font-family: inherit; text-align: left; cursor: pointer;
+  border: 1px solid rgba(139,103,42,.3); background: rgba(255,252,244,.5); transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
+.mz-bp b { font-size: 14.5px; letter-spacing: 2px; color: var(--ink); font-weight: 600; }
+.mz-bp .mz-tag { font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); white-space: nowrap; }
+.mz-bp .mz-tag.mz-q1 { color: #5f7d36; } .mz-bp .mz-tag.mz-q2 { color: #3f6d95; } .mz-bp .mz-tag.mz-q4 { color: #9a7420; }
+.mz-bp:not(.mz-off):hover { border-color: rgba(160,52,38,.5); }
+.mz-bp.mz-on { border-color: var(--cinnabar); background: rgba(160,52,38,.07); box-shadow: inset 0 0 0 1px var(--cinnabar); }
+.mz-bp.mz-off { opacity: .55; }
 /* 朱印钮（全局按钮语言） */
-.mz-seal-btn { border: none; cursor: pointer; font-family: inherit; font-size: var(--fs-btn); letter-spacing: var(--ls-btn); text-indent: var(--ls-btn);
+.mz-seal-btn { border: none; cursor: pointer; white-space: nowrap; font-family: inherit; font-size: var(--fs-btn); letter-spacing: var(--ls-btn); text-indent: var(--ls-btn);
   color: #fff4dc; background: var(--cinnabar); padding: 4px 9px; box-shadow: inset 0 0 0 1px rgba(255,236,200,.35), 0 2px 4px rgba(60,20,10,.35);
   transition: filter var(--t-fast) var(--ease-out), translate var(--t-fast) var(--ease-out); }
 .mz-seal-btn:hover { filter: brightness(1.12); translate: 0 -1px; }
@@ -998,31 +1008,42 @@
 .mz-form input.mz-w { width: 260px; }
 .mz-form .mz-choices { display: flex; gap: 8px; align-items: center; }
 .mz-form .mz-price { font-size: 12px; letter-spacing: .5px; opacity: .85; margin-left: 3px; }
-.mz-build { flex-direction: column; align-items: stretch; gap: 14px; }
-.mz-build input, .mz-build textarea { width: 100%; box-sizing: border-box; }
-.mz-build textarea { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none; resize: none;
+.mz-form ::placeholder { color: rgba(118,94,56,.42); }
+/* 契纸：一切记账表单的容器，整列竖排、控件撑满、大号朱印钮收尾 */
+.mz-sheet { flex-direction: column; align-items: stretch; gap: 11px; padding: 12px 18px 12px;
+  border: 1px solid rgba(139,103,42,.35); background: rgba(255,252,244,.55); box-shadow: inset 0 0 0 3px rgba(255,252,244,.5); }
+.mz-sheet input, .mz-sheet textarea { width: 100%; box-sizing: border-box; }
+.mz-sheet .mz-none { padding: 0; font-size: 13px; }
+.mz-build { flex: 1; min-width: 0; }
+.mz-loan { flex: none; width: 340px; align-self: flex-start; }
+.mz-craft { max-width: 720px; }
+.mz-form textarea { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none; resize: none;
   font-family: inherit; font-size: 15.5px; line-height: 1.7; color: var(--ink); padding: 3px 2px; caret-color: var(--cinnabar); }
-.mz-build .mz-wh { margin-top: 2px; }
-.mz-picks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-.mz-pick { position: relative; display: flex; flex-direction: column; gap: 3px; padding: 12px 14px 10px; cursor: pointer; letter-spacing: 1px;
+.mz-sheet .mz-wh { margin-top: 2px; }
+.mz-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mz-pick { position: relative; display: flex; flex-direction: column; gap: 2px; padding: 9px 14px 8px; cursor: pointer; letter-spacing: 1px;
   border: 1px solid rgba(139,103,42,.35); background: rgba(255,252,244,.55); color: var(--ink-dim); transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
 .mz-pick input { position: absolute; opacity: 0; width: 0; height: 0; }
 .mz-pick b { font-size: 16px; letter-spacing: 3px; color: var(--ink); font-weight: 600; }
 .mz-pick .mz-price { margin: 0; font-size: 13px; color: #9a7420; }
 .mz-pick small { font-size: 12px; letter-spacing: .5px; color: var(--ink-faint); line-height: 1.5; }
-.mz-pick:hover { border-color: rgba(160,52,38,.5); }
+.mz-pick:not(.mz-off):hover { border-color: rgba(160,52,38,.5); }
 .mz-pick:has(input:checked) { border-color: var(--cinnabar); background: rgba(160,52,38,.07); box-shadow: inset 0 0 0 1px var(--cinnabar); }
-.mz-pick.mz-off { cursor: not-allowed; opacity: .55; }
+.mz-pick.mz-off { opacity: .55; }
 .mz-pick.mz-off small { color: #96500f; }
-/* 奇效栏常显，仅天工选中时解锁输入 */
+/* 奇效栏常显，仅天工选中时解锁输入；textarea 穿透事件，禁用光标挂在 label 上 */
+.mz-wonder { cursor: not-allowed; }
 .mz-wonder textarea { pointer-events: none; opacity: .45; }
+.mz-build:has(input[value="天工"]:checked) .mz-wonder { cursor: auto; }
 .mz-build:has(input[value="天工"]:checked) .mz-wonder textarea { pointer-events: auto; opacity: 1; }
 .mz-wonder small::before { content: '选天工后可议定。'; }
 .mz-build:has(input[value="天工"]:checked) .mz-wonder small::before { content: ''; }
+.mz-wonder.mz-live { cursor: auto; }
 .mz-wonder.mz-live textarea { pointer-events: auto; opacity: 1; }
 .mz-wonder.mz-live small::before { content: ''; }
 .mz-wonder small { font-size: 11.5px; letter-spacing: .5px; color: var(--ink-faint); margin-top: 2px; }
 .mz-build-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: auto; }
+.mz-build-foot > .mz-why:first-child { flex: 1; margin-left: 0; }
 .mz-wh { display: flex; align-items: center; gap: 10px; flex: none; font-size: 13.5px; letter-spacing: 3px; color: var(--ink-faint); }
 .mz-wh::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(139,103,42,.5), transparent); }
 .mz-wh b { color: var(--cinnabar); font-weight: 600; letter-spacing: 1px; }
@@ -1040,12 +1061,12 @@
   outline: 1px solid rgba(120,96,54,.5); outline-offset: -3px; display: flex; align-items: center; justify-content: center; }
 .mz-portrait .mz-pic span { writing-mode: vertical-rl; font-size: 11px; letter-spacing: 4px; color: rgba(216,204,178,.45); }
 /* 252 列宽＝立绘加两行缩略恰填 620 窗高 */
-.mz-thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.mz-thumbs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
 .mz-thumbs i { width: auto; aspect-ratio: 832 / 1216; background: #3a2a1c; outline: 1px solid rgba(120,96,54,.4); cursor: pointer; opacity: .7; }
 .mz-thumbs i.mz-on { opacity: 1; outline-color: var(--cinnabar); }
 .mz-thumbs i:hover { opacity: 1; }
 /* 锁定格：暗底居中位阶二字，DOM 内无图片 URL */
-.mz-thumbs i.mz-lock { cursor: default; opacity: 1; background: #2a1d12; outline-color: rgba(120,96,54,.25);
+.mz-thumbs i.mz-lock { opacity: 1; background: #2a1d12; outline-color: rgba(120,96,54,.25);
   display: flex; align-items: center; justify-content: center; }
 .mz-thumbs i.mz-lock span { font-size: 11px; letter-spacing: 2px; color: rgba(216,204,178,.6); writing-mode: vertical-rl; }
 .mz-thumbs i.mz-lock:hover { opacity: 1; }
@@ -1070,7 +1091,7 @@
 .mz-pei  { --stamp: url('${A5}stamp-orchid.webp'); }
 .mz-ye   { --stamp: url('${A5}stamp-peach.webp'); }
 
-.mz-names button.mz-off { opacity: .45; cursor: default; }
+.mz-names button.mz-off { opacity: .45; }
 .mz-names button.mz-off:hover { color: inherit; }
 
 /* 营造：表殿三级阶梯 */
@@ -1103,19 +1124,12 @@
 .mz-ticks li.mz-ok { color: var(--ink); }
 .mz-ticks li.mz-ok::before { background: var(--good); border-color: var(--good); box-shadow: inset 0 0 0 2px rgba(255,252,244,.9); }
 
-/* 工巧：三作坊状态格 */
-.mz-shops { display: flex; gap: 14px; flex: none; }
-.mz-shop { flex: 1; padding: 12px 14px; text-align: center; background: rgba(255,252,244,.72); outline: 1px solid rgba(139,103,42,.45); outline-offset: -4px;
-  font-size: 15px; letter-spacing: 2px; color: var(--ink); }
-.mz-shop small { display: block; font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); margin-top: 3px; }
-.mz-shop.mz-off { background: none; outline-style: dashed; color: var(--ink-faint); }
-
 /* 舆图浮窗：SVG overlay 区域面高亮（viewBox 1024） */
 .mz-atlas { flex: 1; min-height: 0; display: flex; gap: 16px; }
 .mz-atlas .mz-mapbox { position: relative; flex: none; height: min(600px, calc(84vh - 100px)); aspect-ratio: 1; outline: 1px solid rgba(50,24,10,.4); }
 .mz-atlas .mz-mapbox img { width: 100%; height: 100%; }
 .mz-atlas .mz-mapbox svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.mz-atlas path { fill: transparent; stroke: transparent; stroke-width: 2; cursor: pointer; transition: fill var(--t-fast) var(--ease-out), stroke var(--t-fast) var(--ease-out); }
+.mz-atlas path { fill: transparent; stroke: transparent; stroke-width: 2; transition: fill var(--t-fast) var(--ease-out), stroke var(--t-fast) var(--ease-out); }
 .mz-atlas path:hover { fill: rgba(160,52,38,.10); stroke: rgba(160,52,38,.45); }
 .mz-atlas path.mz-cur { fill: rgba(160,52,38,.28); stroke: var(--cinnabar); stroke-width: 2.5; animation: region-breathe 1.6s var(--ease-out) 1; }
 @keyframes region-breathe { 0% { fill: rgba(160,52,38,.5); } 100% { fill: rgba(160,52,38,.28); } }
@@ -1206,6 +1220,7 @@
 #mz-lift.mz-sin .mz-form input { border-bottom-color: rgba(227,212,172,.4); }
 #mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35); }
 #mz-lift.mz-sin .mz-bar-line .mz-bar { background: rgba(0,0,0,.35); }
+#mz-lift.mz-sin .mz-sheet { background: rgba(0,0,0,.28); border-color: rgba(176,74,56,.4); box-shadow: inset 0 0 0 3px rgba(0,0,0,.2); }
 
 /* 立绘大图灯箱 */
 #mz-viewer { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.78);
@@ -1221,7 +1236,6 @@
 @keyframes mz-flash-dark { 0% { color: #f6c083; text-shadow: 0 0 10px rgba(240,176,114,.7); translate: 0 -2px; }
   30% { color: #f6c083; text-shadow: 0 0 0 rgba(240,176,114,0); translate: 0 0; } }
 #mz-minimap .mz-flash b, #mz-minimap .mz-flash .mz-w-sub { animation-name: mz-flash-dark; }
-.mz-win .mz-form input[disabled] { opacity: .5; }
 #mz-paper.mz-paper-in { animation: mz-paper-in .8s var(--ease-out) both; }
 @keyframes mz-paper-in { from { opacity: 0; translate: 0 10px; } }
 #mz-shell-root.mz-shell-in { animation: mz-shell-in .28s var(--ease-out) both; pointer-events: none; }
@@ -1323,8 +1337,11 @@
   .mz-portrait { width: 100%; flex-direction: column; align-items: center; gap: 10px; }
   .mz-portrait .mz-pic { width: 220px; flex: none; }
   .mz-thumbs { width: 100%; gap: 6px; }
-  .mz-grid.mz-c3, .mz-grid.mz-c4 { grid-template-columns: repeat(2, 1fr); }
-  .mz-picks { grid-template-columns: repeat(2, 1fr); }
+  .mz-grid.mz-c3, .mz-grid.mz-c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mz-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mz-bplist { width: 100%; }
+  .mz-bps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mz-loan { width: 100%; }
   .mz-form input.mz-w { width: 100%; }
   #mz-lift.mz-gate .mz-held { width: 100%; height: calc(100% - 56px); max-height: none; }
   .mz-gate-cols { display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
@@ -1957,6 +1974,8 @@
     }
     if (regen) regen.disabled = on;
     if (del) del.disabled = on;
+    const early = doc.querySelector("#" + SEL.paper + " .mz-earlier");
+    if (early) early.disabled = on;
   }
   var delMode = false;
   var delSel = /* @__PURE__ */ new Set();
@@ -2750,10 +2769,12 @@
         const label = "前文尚有 " + cn(wStart) + " 则，展卷";
         if (existingSentinel) {
           existingSentinel.textContent = label;
+          existingSentinel.disabled = delMode || sending;
         } else {
           const el = doc.createElement("button");
           el.className = "mz-earlier";
           el.textContent = label;
+          el.disabled = delMode || sending;
           log.insertBefore(el, log.firstChild);
         }
       } else if (existingSentinel) {
@@ -3347,14 +3368,15 @@
     if (l) w.push(l);
     return w;
   };
-  var craftWhys = (D, c) => {
+  var craftPickWhys = (D, c) => {
     const w = [];
     if (!shopReady(D, c)) w.push("须先营造" + c.shop);
-    if (Object.keys(D.资粮.库藏).length >= storeCap(D)) w.push("屉已满");
     const l = lack(D, c.price);
     if (l) w.push(l);
     return w;
   };
+  var craftGateWhys = (D) => Object.keys(D.资粮.库藏).length >= storeCap(D) ? ["屉已满"] : [];
+  var craftWhys = (D, c) => craftGateWhys(D).concat(craftPickWhys(D, c));
   var loanWhys = (D, 贯) => {
     const w = [];
     const unlocked2 = HALLS.indexOf(D.道场.表殿等级) >= 1 || facilities(D).some((f) => f.名.includes("无尽藏") && f.档次 !== "粗成");
@@ -3411,6 +3433,8 @@
     upgradeSel = null;
     bpSel = null;
   }
+  var BUILD_FORM = "mz-form mz-sheet mz-build";
+  var WONDER_PH = "入浴者心防天然松动，灌顶事半功倍";
   function buildHtml(D) {
     const hall = D.道场.表殿等级;
     const hi = Math.max(0, HALLS.indexOf(hall));
@@ -3423,15 +3447,15 @@
       act = '<div class="mz-step-act"><span class="mz-why">升敕赐法堂须得敕额，须教主亲身周旋</span></div>';
     }
     const fs = facilities(D);
+    const upSel = upgradeSel && fs.find((x) => x.名 === upgradeSel);
+    const upNext = upSel ? GRADES[GRADES.indexOf(upSel.档次) + 1] : null;
+    const upBar = upSel && upNext ? '<form class="mz-form mz-sheet mz-upform" onsubmit="return false">' + wh("改造", esc3(upSel.名) + " " + esc3(upSel.档次) + " 升 " + upNext + " " + cn(UPGRADE_PRICE[upNext]) + "贯") + '<label class="mz-wonder mz-live">奇效<textarea name="奇效" rows="2" placeholder="' + WONDER_PH + '"></textarea><small>升作天工须议定奇效，写入即成定局</small></label><div class="mz-build-foot">' + sealBtn("罢", "upgrade-cancel", true) + sealBtn("议定改造", "upgrade-go", true, "", " mz-lg") + "</div></form>" : "";
     const cards = fs.length ? fs.map((f) => {
       const body = '<span class="mz-tag ' + (GRADE_Q[f.档次] || "mz-q1") + '">' + esc3(f.档次) + "</span><b>" + esc3(f.名) + "</b>" + kv("用途", f.用途) + (f.奇效 ? "<br>" + kv("奇效", f.奇效) : "");
       const next = GRADES[GRADES.indexOf(f.档次) + 1];
       if (!next) return card(body);
       const why = upgradeWhys(D, f.名, f.档次, next).join(" ");
-      if (upgradeSel === f.名 && !why) {
-        return '<div class="mz-card mz-up">' + body + '<form class="mz-form mz-upform" onsubmit="return false"><label class="mz-wonder mz-live">奇效<textarea name="奇效" rows="2" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>升作天工须议定奇效</small></label><div class="mz-build-foot">' + sealBtn("罢", "upgrade-cancel", true) + sealBtn("议定改造", "upgrade-go", true, "", "") + "</div></form></div>";
-      }
-      return '<div class="mz-card mz-up">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc3(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
+      return '<div class="mz-card mz-up' + (upgradeSel === f.名 ? " mz-on" : "") + '">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc3(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
     }).join("") : '<div class="mz-none">未辟</div>';
     const NOTE = { 粗成: "草创堪用，暗藏破绽", 精工: "坚实可靠，无虞", 天工: "鬼斧神工，议定奇效" };
     const picks = GRADES.map((g) => {
@@ -3439,11 +3463,11 @@
       return '<label class="mz-pick' + (whys.length ? " mz-off" : "") + '"><input type="radio" name="档次" value="' + g + '"' + (whys.length ? " disabled" : "") + "><b>" + g + '</b><span class="mz-price">' + cn(GRADE_PRICE[g]) + "贯</span><small>" + (whys.length ? whys.join(" ") : NOTE[g]) + "</small></label>";
     }).join("");
     const built = Object.fromEntries(fs.map((f) => [f.名, f.档次]));
-    const bpCards = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-card mz-bp mz-off"><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span><b>" + esc3(b.名) + "</b><small>" + esc3(b.用途.split("。")[0]) + "。</small></div>" : '<div class="mz-card mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + "</b><small>" + esc3(b.用途.split("。")[0]) + "。</small></div>").join("");
-    const blueprints = wh("蓝图", "地面") + '<div class="mz-grid mz-c4 mz-bps">' + bpCards("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-grid mz-c4 mz-bps">' + bpCards("地下") + "</div>" + wh("兴造");
+    const bpRows = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span></div>" : '<button type="button" class="mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + '</b><span class="mz-tag">未建</span></button>').join("");
+    const bpList = '<div class="mz-wcol mz-bplist">' + wh("蓝图", "地面") + '<div class="mz-bps">' + bpRows("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-bps">' + bpRows("地下") + "</div></div>";
     const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名]);
-    const buildForm = '<form class="mz-form mz-build" onsubmit="return false"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true) + "</div></form>";
-    return '<section class="mz-win mz-on">' + tabs("营造", [{ id: "cave", label: "道场", n: hall + "／地宫" + cn(fs.length) + "处" }, { id: "build", label: "兴造" }]) + pane("营造", "cave", wh("表殿") + '<div class="mz-steps">' + steps + "</div>" + act + wh("地宫设施", cn(fs.length) + "处") + '<div class="mz-folio mz-grid mz-c3">' + cards + "</div>", "cave") + pane("营造", "build", '<div class="mz-folio">' + blueprints + buildForm + "</div>", "cave") + "</section>";
+    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true, "", " mz-lg") + "</div></form>";
+    return '<section class="mz-win mz-on">' + tabs("营造", [{ id: "cave", label: "道场", n: hall + "／地宫" + cn(fs.length) + "处" }, { id: "build", label: "兴造" }]) + pane("营造", "cave", wh("表殿") + '<div class="mz-steps">' + steps + "</div>" + act + wh("地宫设施", cn(fs.length) + "处") + '<div class="mz-folio">' + upBar + '<div class="mz-grid mz-c3">' + cards + "</div></div>", "cave") + pane("营造", "build", '<div class="mz-folio"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div></div>", "cave") + "</section>";
   }
   function sinHtml(D) {
     const hs = handles(D), ds = debts(D);
@@ -3455,8 +3479,8 @@
       return card("<b>" + esc3(名) + "</b>" + kv("欠额", cn(Number(v.欠额) || 0) + "贯") + "<br>" + kv("已收息", money(已)) + (v.详情 ? "<br>" + kv("详情", v.详情) : "") + '<div class="mz-bar-line"><span>利不过本</span><div class="mz-bar"><i style="width:' + pct + '%"></i></div><span>' + (pct >= 100 ? "已停息" : cn(pct) + "分") + "</span></div>");
     }).join("") : '<div class="mz-none">簿中无名</div>';
     const whys = loanWhys(D, 0);
-    const loanForm = wh("无尽藏放贷") + '<form class="mz-form" onsubmit="return false"><label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="贯" inputmode="numeric"></label><label>抵押<input class="mz-w" name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-choices">' + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + "</div></form>";
-    return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-grid mz-c2">' + hCards + "</div>", "handle") + pane("罪业", "debt", '<div class="mz-folio"><div class="mz-grid mz-c2">' + dCards + "</div>" + loanForm + "</div>", "handle") + "</section>";
+    const loanForm = '<form class="mz-form mz-sheet mz-loan" onsubmit="return false">' + wh("无尽藏放贷") + '<label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="整数贯" inputmode="numeric"></label><label>抵押<input name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-none">月息五分，利不过本；按月自动入账，簿共' + cn(total) + '／五条</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + "</div></form>";
+    return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-grid mz-c2">' + hCards + "</div>", "handle") + pane("罪业", "debt", '<div class="mz-folio"><div class="mz-wrow"><div class="mz-wcol" style="flex:1">' + wh("债契", cn(ds.length) + "契") + '<div class="mz-grid mz-c2">' + dCards + "</div></div>" + loanForm + "</div></div>", "handle") + "</section>";
   }
   function riteHtml(D) {
     const orders = Object.entries(D.教务.法事委托);
@@ -3503,18 +3527,18 @@
       return '<div class="mz-folio mz-grid mz-c4">' + (cards.length ? cards.join("") : '<div class="mz-none">屉中无物</div>') + "</div>";
     };
     const ready = CRAFT.map((c) => shopReady(D, c));
-    const shops = CRAFT.map((c, i) => '<div class="mz-shop' + (ready[i] ? "" : " mz-off") + '">' + c.kind + "<small>" + c.shop + (ready[i] ? " 已备" : " 须先营造") + "</small></div>").join("");
-    const choices = CRAFT.map((c) => {
-      const whys = craftWhys(D, c);
-      return sealBtn(c.kind + '<span class="mz-price">' + cn(c.price) + "贯</span>", "craft:" + c.kind, !whys.length, whys.join(" "));
-    }).join("");
+    const pickWhys = CRAFT.map((c) => craftPickWhys(D, c));
+    const firstOk = pickWhys.findIndex((w) => !w.length);
+    const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
+    const gate = craftGateWhys(D);
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
+    const craftForm = '<form class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("作坊") + '<div class="mz-picks">' + shops + "</div>" + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label>效用<input name="效用" placeholder="饮之如坠云雾，半个时辰方醒"></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("开炉", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form>";
     return '<section class="mz-win mz-on">' + tabs("库藏", [
       { id: "drug", label: "药品", n: cn(kindCount(D.资粮.库藏, "药品")) },
       { id: "tool", label: "道具", n: cn(kindCount(D.资粮.库藏, "道具")) },
       { id: "ritual", label: "法器", n: cn(kindCount(D.资粮.库藏, "法器")) },
       { id: "craft", label: "工坊", n: crList.length ? "可制" + crList.join("／") : "无坊" }
-    ], "共" + cn(total) + "／" + cn(cap) + "屉") + pane("库藏", "drug", paneOf("药品"), "drug") + pane("库藏", "tool", paneOf("道具"), "drug") + pane("库藏", "ritual", paneOf("法器"), "drug") + pane("库藏", "craft", wh("作坊") + '<div class="mz-shops">' + shops + "</div>" + wh("制作") + '<form class="mz-form" onsubmit="return false"><label>物名<input name="物名" placeholder="醉仙散"></label><label>效用<input class="mz-w" name="效用" placeholder="饮之如坠云雾，半个时辰方醒"></label><div class="mz-choices">' + choices + '</div></form><div class="mz-none">拨资开炉，片刻功成，归入库藏</div>', "drug") + "</section>";
+    ], "共" + cn(total) + "／" + cn(cap) + "屉") + pane("库藏", "drug", paneOf("药品"), "drug") + pane("库藏", "tool", paneOf("道具"), "drug") + pane("库藏", "ritual", paneOf("法器"), "drug") + pane("库藏", "craft", '<div class="mz-folio">' + craftForm + "</div>", "drug") + "</section>";
   }
   function winHtml(name, D) {
     switch (name) {
@@ -3569,6 +3593,7 @@
     const bpCard = e.target.closest(".mz-bp[data-bp]");
     if (bpCard) {
       bpSel = bpSel === bpCard.dataset.bp ? null : bpCard.dataset.bp;
+      forgetFields(BUILD_FORM, ["名称", "用途"]);
       rerender();
       return;
     }
@@ -3639,10 +3664,14 @@
       bpSel = null;
       return;
     }
-    if (act.startsWith("craft:")) {
-      const 类 = act.slice(6);
-      const c = CRAFT.find((x) => x.kind === 类);
+    if (act === "craft") {
       const v = formVals(btn);
+      const 类 = v.类别;
+      const c = CRAFT.find((x) => x.kind === 类);
+      if (!c) {
+        hint(btn, "先选类别");
+        return;
+      }
       if (!v.物名) {
         hint(btn, "先填物名");
         return;
@@ -3703,6 +3732,7 @@
   function openLift(name) {
     if (gateNeeded()) name = GATE_WIN;
     setDrawer(null);
+    if (openName !== name) dirty.clear();
     openName = name;
     const lift = doc.getElementById(SEL.lift);
     if (!lift) return;
@@ -3718,6 +3748,7 @@
   function closeLift(force) {
     if (openName === GATE_WIN && !force && gateNeeded()) return;
     openName = null;
+    dirty.clear();
     resetWinState();
     const lift = doc.getElementById(SEL.lift);
     if (!lift) return;
@@ -3730,6 +3761,7 @@
       if (body) body.innerHTML = "";
     }, 300);
   }
+  var dirty = /* @__PURE__ */ new Set();
   var fieldKey = (el) => {
     const k = el.name || el.dataset.k || el.id || "";
     if (!k) return "";
@@ -3737,11 +3769,20 @@
     return (form ? form.className : "") + "|" + k;
   };
   var isPick = (el) => el.type === "radio" || el.type === "checkbox";
+  function onFieldInput(e) {
+    const el = e.target;
+    if (!el || !el.matches || !el.matches("input, textarea, select")) return;
+    const k = fieldKey(el);
+    if (k) dirty.add(k);
+  }
+  function forgetFields(formClass, names) {
+    for (const n of names) dirty.delete(formClass + "|" + n);
+  }
   function grabFields(root) {
     const out = /* @__PURE__ */ new Map();
     root.querySelectorAll("input, textarea, select").forEach((el) => {
       const k = fieldKey(el);
-      if (!k) return;
+      if (!k || !dirty.has(k)) return;
       if (isPick(el)) out.set(k + "=" + el.value, el.checked);
       else out.set(k, el.value);
     });
@@ -3798,6 +3839,8 @@
     const lift = doc.getElementById(SEL.lift);
     if (lift && !lift.dataset.bound) {
       lift.addEventListener("click", onLiftClick);
+      lift.addEventListener("input", onFieldInput);
+      lift.addEventListener("change", onFieldInput);
       lift.dataset.bound = "1";
     }
   }
