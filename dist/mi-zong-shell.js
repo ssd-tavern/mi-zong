@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.33";
+  var CDN_TAG = "1.0.34";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1560,7 +1560,7 @@
       held.appendChild(rite);
       lift.classList.add("mz-rite");
       let t1 = 0, t2 = 0, done = false;
-      const finish = () => {
+      const finish2 = () => {
         if (done) return;
         done = true;
         clearTimeout(t1);
@@ -1569,9 +1569,9 @@
         lift.classList.remove("mz-rite", "mz-rite-out");
         resolve();
       };
-      rite.addEventListener("click", finish, { once: true });
+      rite.addEventListener("click", finish2, { once: true });
       t1 = setTimeout(() => lift.classList.add("mz-rite-out"), 1500);
-      t2 = setTimeout(finish, 2100);
+      t2 = setTimeout(finish2, 2100);
     });
   }
   function playEntrance() {
@@ -1716,57 +1716,81 @@
   }
 
   // src/adapters/presets.js
-  var THOUGHT_TAG_NAMES = ["thinking", "think", "cot", "reasoning", "meow", "think_nya~", "konatan_planning~", "draft_notes", "draft", "preparation"];
-  var THOUGHT_TAG_RE = THOUGHT_TAG_NAMES.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
-  var THOUGHT_OPEN_RE = "<(?:" + THOUGHT_TAG_RE + ")>";
-  var THOUGHT_CLOSE_RE = "(?:<\\/(?:" + THOUGHT_TAG_RE + ")>|<!--\\s*(?:end_of_梳理|1·思考结束|end_of_Subtext_think)\\s*-->|我将进行符合需求的创作：|#{1,6}\\s*正式创作)";
-  var THOUGHT_HEAD_RE = /^\s*\[(?:metacognition|love_qkll)\]/i;
-  function bareThoughtMatch(raw) {
-    const m = new RegExp("^([\\s\\S]*?)" + THOUGHT_CLOSE_RE, "i").exec(raw);
-    if (m && !/<maintext>|<content>|<options>/i.test(m[0])) return { bodyEnd: m[1].length, tagEnd: m[0].length };
-    if (THOUGHT_HEAD_RE.test(raw)) {
-      const b = String(raw).search(/<maintext>|<content>/i);
-      if (b > 0) return { bodyEnd: b, tagEnd: b };
+  function esc(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+  function lastMatch(s, re) {
+    const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
+    let m, last = null;
+    while (m = g.exec(s)) {
+      last = m;
+      if (!m[0].length) g.lastIndex++;
     }
-    return null;
+    return last;
   }
-  function tideDraftMatch(raw) {
-    if (!/<基础确认>/i.test(raw)) return null;
-    const b = String(raw).search(/<content(?:\s[^>]*)?>/i);
-    return b > 0 ? { bodyEnd: b, tagEnd: b } : null;
+  var MAIN_TAGS = ["maintext", "content", "正文", "dream_body"];
+  var MAIN_OPEN_RE = new RegExp("(?:^|\\n)[ \\t]*<(" + MAIN_TAGS.join("|") + ")(?:\\s[^<>]*)?>", "gi");
+  function lastMainOpen(s) {
+    const m = lastMatch(s, MAIN_OPEN_RE);
+    if (!m) return null;
+    const index = m.index + m[0].indexOf("<");
+    return { index, end: m.index + m[0].length, tag: m[1].toLowerCase() };
   }
-  function stripThink(raw) {
-    const s = String(raw);
-    const afterOpenBased = s.replace(new RegExp(THOUGHT_OPEN_RE + "[\\s\\S]*?" + THOUGHT_CLOSE_RE, "gi"), "").replace(new RegExp(THOUGHT_OPEN_RE + "[\\s\\S]*?(?=<maintext>|<content>)", "i"), "").replace(new RegExp(THOUGHT_OPEN_RE + "[\\s\\S]*$", "i"), "");
-    if (afterOpenBased !== s) return afterOpenBased;
-    const bare = bareThoughtMatch(s);
-    return bare ? s.slice(bare.tagEnd) : s;
+  var DOC_ROOT_RE = /<dream_plot(?:\s[^<>]*)?>/i;
+  var THOUGHT_TAGS = ["thinking", "think", "cot", "reasoning", "meow", "think_nya~", "konatan_planning~", "draft_notes", "draft", "preparation"];
+  var THOUGHT_NAMES = THOUGHT_TAGS.map(esc).join("|");
+  var THOUGHT_OPEN = "<(?:" + THOUGHT_NAMES + ")(?:\\s[^<>]*)?>";
+  var THOUGHT_CLOSE = "</(?:" + THOUGHT_NAMES + ")\\s*>";
+  var THOUGHT_BLOCK_RE = new RegExp(THOUGHT_OPEN + "([\\s\\S]*?)" + THOUGHT_CLOSE, "gi");
+  var THOUGHT_TAIL_RE = new RegExp(THOUGHT_OPEN + "([\\s\\S]*)$", "i");
+  var BARE_CLOSE_RE = new RegExp("(?:" + THOUGHT_CLOSE + "|<!--\\s*(?:end_of_梳理|1·思考结束|end_of_Subtext_think)\\s*-->|<｜end▁of▁thinking｜>|前尘已定，梦境将演。|我将进行符合需求的创作：|#{1,6}[ \\t]*正式创作|#{1,6}[ \\t]*正文[ \\t]*(?=\\r?\\n|$))", "i");
+  var HEAD_MARK_RE = /^\s*(?:\[(?:metacognition|love_qkll)\]|<｜begin▁of▁thinking｜>|吾有一梦，今方始筑：?)/i;
+  var TIDE_HEAD_RE = /^\s*<基础确认>/i;
+  function cleanThought(s) {
+    return s.replace(HEAD_MARK_RE, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<\/[^<>\n]{1,40}>/g, "").replace(/<([^<>\n]{1,40})>/g, "$1").trim();
+  }
+  function splitThought(raw, streaming) {
+    let rest = String(raw);
+    const thoughts = [];
+    const mainAt = () => {
+      const m = lastMainOpen(rest);
+      return m ? m.index : -1;
+    };
+    if (TIDE_HEAD_RE.test(rest)) {
+      const i2 = mainAt();
+      if (i2 > 0) return { thoughts: [rest.slice(0, i2)], rest: rest.slice(i2) };
+      if (streaming) return { thoughts: [rest], rest: "" };
+    }
+    rest = rest.replace(THOUGHT_BLOCK_RE, (m, body) => {
+      thoughts.push(body);
+      return "";
+    });
+    const tail = rest.match(THOUGHT_TAIL_RE);
+    if (tail) {
+      const m = lastMainOpen(tail[1]);
+      if (m) {
+        thoughts.push(tail[1].slice(0, m.index));
+        rest = rest.slice(0, tail.index) + tail[1].slice(m.index);
+      } else {
+        thoughts.push(tail[1]);
+        rest = rest.slice(0, tail.index);
+      }
+    }
+    if (thoughts.length) return { thoughts, rest };
+    const i = mainAt();
+    const c = rest.match(BARE_CLOSE_RE);
+    if (c && (i < 0 || c.index < i)) return { thoughts: [rest.slice(0, c.index)], rest: rest.slice(c.index + c[0].length) };
+    const r = rest.match(DOC_ROOT_RE);
+    if (r && (i < 0 || r.index < i)) return { thoughts: [rest.slice(0, r.index)], rest: rest.slice(r.index + r[0].length) };
+    if (HEAD_MARK_RE.test(rest) && i > 0) return { thoughts: [rest.slice(0, i)], rest: rest.slice(i) };
+    if (streaming && i < 0 && rest.trim()) return { thoughts: [rest], rest: "" };
+    return { thoughts, rest };
   }
   function extractThought(raw, streaming) {
     if (!raw) return "";
-    if (/<基础确认>/i.test(raw)) {
-      const tide = tideDraftMatch(raw);
-      if (tide) return raw.slice(0, tide.bodyEnd).trim();
-      if (streaming) return raw.trim();
-    }
-    const re = new RegExp(THOUGHT_OPEN_RE + "([\\s\\S]*?)" + THOUGHT_CLOSE_RE, "gi");
-    let m, parts = [];
-    while (m = re.exec(raw)) parts.push(m[1].trim());
-    if (!parts.length) {
-      const om = raw.match(new RegExp(THOUGHT_OPEN_RE + "([\\s\\S]*?)(?=<maintext>|<content>)", "i"));
-      if (om) parts.push(om[1].trim());
-      else if (streaming) {
-        const os = raw.match(new RegExp(THOUGHT_OPEN_RE + "([\\s\\S]*)$", "i"));
-        if (os) parts.push(os[1].trim());
-      }
-    }
-    if (!parts.length) {
-      const bare = bareThoughtMatch(raw);
-      if (bare) parts.push(raw.slice(0, bare.bodyEnd).replace(THOUGHT_HEAD_RE, "").trim());
-    }
-    return parts.join("\n\n").trim();
+    return splitThought(raw, streaming).thoughts.map(cleanThought).filter(Boolean).join("\n\n");
   }
-  var PRESET_STRIP_TAGS = [
+  var STRIP_TAGS = [
     "details",
     "summary",
     "tucao",
@@ -1778,11 +1802,10 @@
     "guifan",
     "done",
     "disclaimer",
+    "Reference_Example",
     "w2g",
     "VariableCheck",
     "memo",
-    "draft",
-    "Interleaving",
     "choice",
     "safe",
     "theater",
@@ -1795,7 +1818,6 @@
     "Shiosai",
     "snow",
     "quote",
-    "htm1fenge",
     "math",
     "finish",
     "WF",
@@ -1803,89 +1825,66 @@
     "script",
     "scene",
     "image",
-    "imgthink"
+    "imgthink",
+    "options",
+    "branches",
+    "UpdateVariable",
+    "状态面板",
+    "角色状态面板",
+    "dream_scene",
+    "dream_option",
+    "dream_after_format",
+    "dream_parallel_event",
+    "simple_thinking",
+    "dream_summary",
+    "dream_discuss",
+    "dream_big_discuss",
+    "dream_after_thinking",
+    "original",
+    "analysis"
   ];
-  var PRESET_UNWRAP_TAGS = [
-    "content",
-    "writing_process",
-    "Chain_of_Thought",
-    "SexualScene",
-    "thought",
-    "os",
-    "font",
-    "span",
-    "p",
-    "div",
-    "b",
-    "i",
-    "em",
-    "strong",
-    "hr",
-    "img",
-    "a",
-    "small",
-    "big",
-    "u",
-    "center",
-    "mark",
-    "正文",
-    "images"
-  ];
-  var PRESET_STRIP_RE = new RegExp("<(" + PRESET_STRIP_TAGS.join("|") + ")(?:\\s[^>]*)?>[\\s\\S]*?(?:<\\/\\1\\s*>|$)", "gi");
-  var PRESET_UNWRAP_RE = new RegExp("<\\/?(?:" + PRESET_UNWRAP_TAGS.join("|") + ")(?:\\s[^>]*?)?\\s*\\/?>", "gi");
-  function stripPresetNoise(text) {
-    return text.replace(PRESET_STRIP_RE, "").replace(/<(?:角色)?状态面板>[\s\S]*?(?:<\/(?:角色)?状态面板>|$)/g, "").replace(/<Q>[\s\S]*?(?:<\/WF>|$)/gi, "").replace(/<br\s*\/?>/gi, "\n").replace(PRESET_UNWRAP_RE, "").replace(/<!--[\s\S]*?-->/g, "").replace(/^\s*###\s*正文\s*$/gm, "").replace(/<\/dream_delete>/gi, "");
+  var STRIP_RE = new RegExp("<(" + STRIP_TAGS.map(esc).join("|") + ")(?:\\s[^<>]*)?>[\\s\\S]*?(?:<\\/\\1\\s*>|$)", "gi");
+  var ANY_TAG_RE = /<\/?[A-Za-z_一-鿿][\w\-~:.一-鿿]*(?:\s[^<>]*)?\/?>/g;
+  var TAIL_CUT_RE = /<(options|branches|choice|dream_option|dream_after_format|UpdateVariable)(?:\s[^<>]*)?>(?:(?!<\/\1)[\s\S])*$|<!--(?:(?!-->)[\s\S])*$|<\/?[^<>\s]*$/i;
+  function stripNoise(text) {
+    return text.replace(/<htm1fenge(?:\s[^<>]*)?>([\s\S]*?)(?:<\/htm1fenge\s*>|$)/gi, (m, inner) => {
+      const d = inner.match(/<span[^<>]*display:\s*none[^<>]*>([\s\S]*?)<\/span>/i);
+      return d ? d[1].trim() : "";
+    }).replace(STRIP_RE, "").replace(/<Q>[\s\S]*?(?:<\/WF>|$)/gi, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<br\s*\/?>|<\/paragraph\s*>/gi, "\n").replace(ANY_TAG_RE, "").replace(/^[ \t]*#{1,6}[ \t]*正文[ \t]*(?:\r?\n|$)/gm, "").replace(/^[ \t]*>[ \t]*凝嘤嘤[：:].*(?:\r?\n|$)/gm, "");
   }
-  var MAIN_TAG_NAMES = ["maintext", "content", "正文", "dream_body"];
-  function findMainBlock(s) {
-    for (const tag of MAIN_TAG_NAMES) {
-      const re = new RegExp("<" + tag + "(?:\\s[^>]*)?>", "gi");
-      let m, last = null;
-      while (m = re.exec(s)) last = m;
-      if (!last) continue;
-      const body = s.slice(last.index + last[0].length);
-      const j = body.toLowerCase().indexOf("</" + tag + ">");
-      return j >= 0 ? { body: body.slice(0, j), closed: true } : { body, closed: false };
-    }
-    return null;
+  function finish(body, depth) {
+    return applyDisplayRegexes(stripNoise(body), depth).trim();
   }
   function extractMainText(raw, streaming, depth) {
     if (!raw) return "";
     if (/^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(raw)) return "";
-    const s = stripThink(raw);
-    const main = findMainBlock(s);
+    const rest = splitThought(raw, streaming).rest;
+    const main = lastMainOpen(rest);
     if (main) {
-      const body = main.body;
-      if (main.closed) return applyDisplayRegexes(stripPresetNoise(body.replace(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/gi, "")), depth).trim();
-      return applyDisplayRegexes(stripPresetNoise(body.replace(/<options>[\s\S]*$/i, "").replace(/<branches>[\s\S]*$/i, "").replace(/<choice>[\s\S]*$/i, "").replace(/<dream_option>[\s\S]*$/i, "").replace(/<UpdateVariable>[\s\S]*$/i, "").replace(/<StatusPlaceHolderImpl\s*\/?>/gi, "")).replace(/<!--[\s\S]*$/, "").replace(/<\/?[a-z]*$/i, ""), depth).trim();
+      let body = rest.slice(main.end);
+      const j = body.toLowerCase().indexOf("</" + main.tag + ">");
+      body = j >= 0 ? body.slice(0, j) : body.replace(TAIL_CUT_RE, "");
+      return finish(body, depth);
     }
     if (streaming) return "";
-    return applyDisplayRegexes(stripPresetNoise(s.replace(/<UpdateVariable>[\s\S]*?(?:<\/UpdateVariable>|$)/gi, "").replace(/<options>[\s\S]*?(?:<\/options>|$)/gi, "").replace(/<branches>[\s\S]*?(?:<\/branches>|$)/gi, "").replace(/<choice>[\s\S]*?(?:<\/choice>|$)/gi, "").replace(/<dream_option>[\s\S]*?(?:<\/dream_option>|$)/gi, "").replace(/<StatusPlaceHolderImpl\s*\/?>/gi, "")), depth).trim();
+    return finish(rest, depth);
   }
+  var OPTION_TAGS = ["options", "choice", "branches", "dream_option"];
+  var OPTION_PREFIX_RE = /^\s*>?\s*(?:\d+\s*[.、):：]|[A-Za-z]\s*[.、)]|[-*•]|选项[一二三四五六七八九十\d]+\s*[：:]|[①②③④⑤⑥⑦⑧])?\s*(?:[[【][^\]】\n]{1,12}[\]】])?\s*/;
   function extractOptions(raw, depth) {
     if (!raw) return [];
-    const s = stripThink(raw);
-    for (const tag of ["options", "choice"]) {
-      const i = s.toLowerCase().lastIndexOf("<" + tag + ">");
-      if (i < 0) continue;
-      const body2 = s.slice(i + tag.length + 2);
-      const j2 = body2.toLowerCase().indexOf("</" + tag + ">");
-      if (j2 < 0) return [];
-      return applyDisplayRegexes(body2.slice(0, j2), depth).split("\n").map((l) => l.replace(/^\s*(?:\d+[.、)]|[-*])\s*/, "").trim()).filter(Boolean).slice(0, 6);
+    const s = splitThought(raw, false).rest;
+    let best = null;
+    for (const tag of OPTION_TAGS) {
+      const m = lastMatch(s, new RegExp("<" + tag + "(?:\\s[^<>]*)?>", "i"));
+      if (m && (!best || m.index > best.index)) best = { index: m.index, end: m.index + m[0].length, tag };
     }
-    const b = s.toLowerCase().lastIndexOf("<branches>");
-    if (b >= 0) {
-      const body2 = s.slice(b + "<branches>".length);
-      const j2 = body2.toLowerCase().indexOf("</branches>");
-      if (j2 < 0) return [];
-      return applyDisplayRegexes(body2.slice(0, j2), depth).split("\n").map((l) => (l.match(/^\s*[A-Za-z][.、)]\s*(.+?)\s*$/) || [])[1]).filter(Boolean).slice(0, 10);
-    }
-    const d = s.toLowerCase().lastIndexOf("<dream_option>");
-    if (d < 0) return [];
-    const body = s.slice(d + "<dream_option>".length);
-    const j = body.toLowerCase().indexOf("</dream_option>");
+    if (!best) return [];
+    const body = s.slice(best.end);
+    const j = body.toLowerCase().indexOf("</" + best.tag + ">");
     if (j < 0) return [];
-    return applyDisplayRegexes(body.slice(0, j), depth).split("|").map((l) => l.trim()).filter(Boolean).slice(0, 6);
+    const text = applyDisplayRegexes(body.slice(0, j), depth).replace(/<summary(?:\s[^<>]*)?>[\s\S]*?<\/summary\s*>/gi, "").replace(ANY_TAG_RE, "");
+    return text.split(/\n|\|/).map((l) => l.replace(OPTION_PREFIX_RE, "").trim()).filter(Boolean).slice(0, 10);
   }
 
   // src/16-story-actions.js
@@ -2962,7 +2961,7 @@
   }
 
   // src/09-board.js
-  var esc = escapeHtml;
+  var esc2 = escapeHtml;
   var zoneName = (loc) => String(loc || "").split("/")[0].trim();
   var zoneSub = (loc) => String(loc || "").split("/").slice(1).map((s) => s.trim()).filter(Boolean).join(" ");
   var kindCount = (库藏, kind) => Object.values(库藏).filter((x) => x && x.类别 === kind).length;
@@ -3001,7 +3000,7 @@
   function boardHtml(D) {
     if (D._empty) return '<div class="mz-grp"><div class="mz-solo mz-dim">此则无账目</div></div>';
     const t = parseTime(D.时空.时间);
-    const dateTxt = t.年序号 >= 0 ? esc(t.月名 || "") + esc(t.日文) : esc(D.时空.时间.replace(/\//g, " "));
+    const dateTxt = t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " "));
     const fest = festivalState(t);
     const gate = gateState(t, fest);
     let festTxt, festCls;
@@ -3030,14 +3029,14 @@
       levy = left ? "还剩" + cn(left) + "日" : "今日当缴";
       levyCls = left <= 6 ? "mz-warn" : "";
     }
-    return '<div class="mz-grp"><div class="mz-solo" data-stat="时间" title="' + esc(D.时空.时间.replace(/\//g, " ")) + '">' + dateTxt + " <b>" + esc(t.时辰) + '</b></div><div class="mz-row"><span>宵禁</span><b class="' + gate.cls + '">' + gate.文 + '</b></div><div class="mz-row"><span>常例</span><b class="' + levyCls + '">' + levy + '</b></div><div class="mz-row"><span>节令</span><b class="' + festCls + '">' + esc(festTxt) + '</b></div></div><div class="mz-grp"><div class="mz-row" data-stat="铜钱"><span>铜钱</span><b>' + money(总文(D)) + '</b></div><div class="mz-row" data-stat="信众"><span>信众</span><b>' + cn(D.教务.信众) + "人</b></div></div>";
+    return '<div class="mz-grp"><div class="mz-solo" data-stat="时间" title="' + esc2(D.时空.时间.replace(/\//g, " ")) + '">' + dateTxt + " <b>" + esc2(t.时辰) + '</b></div><div class="mz-row"><span>宵禁</span><b class="' + gate.cls + '">' + gate.文 + '</b></div><div class="mz-row"><span>常例</span><b class="' + levyCls + '">' + levy + '</b></div><div class="mz-row"><span>节令</span><b class="' + festCls + '">' + esc2(festTxt) + '</b></div></div><div class="mz-grp"><div class="mz-row" data-stat="铜钱"><span>铜钱</span><b>' + money(总文(D)) + '</b></div><div class="mz-row" data-stat="信众"><span>信众</span><b>' + cn(D.教务.信众) + "人</b></div></div>";
   }
   var row = (k, v, cls) => '<div class="mz-r-row"><span>' + k + "</span><b" + (cls ? ' class="' + cls + '"' : "") + ">" + v + "</b></div>";
   function zoneRowsHtml(key, D) {
     if (!unlocked(D, key)) return '<div class="mz-r-row mz-r-lock">' + ICO.lock + "<span>" + UNLOCK_COND[key] + "</span></div>" + '<div class="mz-r-row mz-r-blank">&nbsp;</div>'.repeat(ZONE_ROWS[key] - 1);
     switch (key) {
       case "同心缕":
-        return CAST.map((n) => girlUnlocked(D, n) ? row(n, esc(D.核心女主[n].灌顶位阶)) : row(CAST_HINT[n], "未识", "mz-r-dim")).join("");
+        return CAST.map((n) => girlUnlocked(D, n) ? row(n, esc2(D.核心女主[n].灌顶位阶)) : row(CAST_HINT[n], "未识", "mz-r-dim")).join("");
       case "库藏": {
         const 库 = D.资粮.库藏;
         const stock = ["药品", "道具", "法器"].map((k) => KIND_SHORT[k] + cn(kindCount(库, k))).join("／");
@@ -3049,12 +3048,12 @@
         return row("执事", cn(n1) + "人／十二席", n1 ? "" : "mz-r-dim") + row("明妃", cn(n2) + "位／六席", n2 ? "" : "mz-r-dim") + (riteCooling(D) ? row("法会", "暂休", "mz-r-dim") : row("法会", "待办", "mz-r-good"));
       }
       case "营造":
-        return row("表殿", esc(D.道场.表殿等级), HALL_Q[D.道场.表殿等级] || "") + row("地宫", cn(facilities(D).length) + "处");
+        return row("表殿", esc2(D.道场.表殿等级), HALL_Q[D.道场.表殿等级] || "") + row("地宫", cn(facilities(D).length) + "处");
       case "法事": {
         const po = pendingOrders(D);
         const first = po[0];
         const rumor = latestRumor(D);
-        return row("委托", cn(po.length) + "单／三席", po.length ? "" : "mz-r-dim") + row("时限", first ? esc(first[0]) + " " + esc(String(first[1].时限 || "")) : "无", first ? "" : "mz-r-dim") + row("传闻", rumor ? esc(rumor) : "未闻", "mz-r-dim");
+        return row("委托", cn(po.length) + "单／三席", po.length ? "" : "mz-r-dim") + row("时限", first ? esc2(first[0]) + " " + esc2(String(first[1].时限 || "")) : "无", first ? "" : "mz-r-dim") + row("传闻", rumor ? esc2(rumor) : "未闻", "mz-r-dim");
       }
       case "罪业": {
         const h = handles(D).length, d = debts(D).length, mi = monthInterest(D);
@@ -3256,10 +3255,10 @@
   }
 
   // src/10-windows.js
-  var esc2 = escapeHtml;
+  var esc3 = escapeHtml;
   var card = (inner) => '<div class="mz-card">' + inner + "</div>";
   var empty = (cls) => '<div class="mz-card mz-empty' + (cls ? " " + cls : "") + '"><span>虚位</span></div>';
-  var kv = (k, v) => '<span class="mz-k">' + k + "</span>" + esc2(v);
+  var kv = (k, v) => '<span class="mz-k">' + k + "</span>" + esc3(v);
   var tabs = (win, items, tail) => {
     const cur = tabOf(win, items[0].id);
     return '<div class="mz-tabs">' + items.map((t) => "<button" + (cur === t.id ? ' class="mz-on"' : "") + ' data-pane="' + t.id + '">' + t.label + (t.n != null ? '<span class="mz-n">' + t.n + "</span>" : "") + (t.red ? '<span class="mz-red"></span>' : "") + "</button>").join("") + (tail ? '<span class="mz-why" style="margin-left:auto;align-self:center">' + tail + "</span>" : "") + "</div>";
@@ -3343,7 +3342,7 @@
       const seg = String(v || "").split("/");
       const when = seg.length > 1 ? seg[0].trim() : "";
       const body = seg.length > 1 ? seg.slice(1).join("/").trim() : String(v || "").trim();
-      return '<div class="mz-memo"><b>' + esc2(title) + "</b>" + (when ? "<small>" + esc2(when) + "</small>" : "") + "<br>" + esc2(body) + "</div>";
+      return '<div class="mz-memo"><b>' + esc3(title) + "</b>" + (when ? "<small>" + esc3(when) + "</small>" : "") + "<br>" + esc3(body) + "</div>";
     }).join("") + "</div>";
   }
   function bondHtml(D) {
@@ -3354,7 +3353,7 @@
     const main = mainTheme(bondSel, rank);
     const curTheme = bondTheme && themes.find((t) => t[0] === bondTheme) || main;
     const lit = rankIdx(rank);
-    return '<section class="mz-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc2(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc2(curTheme[1]) + '" alt="' + esc2(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc2(t[0]) + '" data-theme="' + esc2(t[0]) + `" style="background-image:url('` + esc2(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc2(r) + '解锁"><span>' + esc2(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc2(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc2(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
+    return '<section class="mz-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc3(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc3(curTheme[1]) + '" alt="' + esc3(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc3(t[0]) + '" data-theme="' + esc3(t[0]) + `" style="background-image:url('` + esc3(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc3(r) + '解锁"><span>' + esc3(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc3(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc3(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
   }
   var upgradeSel = null;
   var bpSel = null;
@@ -3375,14 +3374,14 @@
     }
     const fs = facilities(D);
     const cards = fs.length ? fs.map((f) => {
-      const body = '<span class="mz-tag ' + (GRADE_Q[f.档次] || "mz-q1") + '">' + esc2(f.档次) + "</span><b>" + esc2(f.名) + "</b>" + kv("用途", f.用途) + (f.奇效 ? "<br>" + kv("奇效", f.奇效) : "");
+      const body = '<span class="mz-tag ' + (GRADE_Q[f.档次] || "mz-q1") + '">' + esc3(f.档次) + "</span><b>" + esc3(f.名) + "</b>" + kv("用途", f.用途) + (f.奇效 ? "<br>" + kv("奇效", f.奇效) : "");
       const next = GRADES[GRADES.indexOf(f.档次) + 1];
       if (!next) return card(body);
       const why = upgradeWhys(D, f.名, f.档次, next).join(" ");
       if (upgradeSel === f.名 && !why) {
         return '<div class="mz-card mz-up">' + body + '<form class="mz-form mz-upform" onsubmit="return false"><label class="mz-wonder mz-live">奇效<textarea name="奇效" rows="2" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>升作天工须议定奇效</small></label><div class="mz-build-foot">' + sealBtn("罢", "upgrade-cancel", true) + sealBtn("议定改造", "upgrade-go", true, "", "") + "</div></form></div>";
       }
-      return '<div class="mz-card mz-up">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc2(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
+      return '<div class="mz-card mz-up">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc3(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
     }).join("") : '<div class="mz-none">未辟</div>';
     const NOTE = { 粗成: "草创堪用，暗藏破绽", 精工: "坚实可靠，无虞", 天工: "鬼斧神工，议定奇效" };
     const picks = GRADES.map((g) => {
@@ -3390,20 +3389,20 @@
       return '<label class="mz-pick' + (whys.length ? " mz-off" : "") + '"><input type="radio" name="档次" value="' + g + '"' + (whys.length ? " disabled" : "") + "><b>" + g + '</b><span class="mz-price">' + cn(GRADE_PRICE[g]) + "贯</span><small>" + (whys.length ? whys.join(" ") : NOTE[g]) + "</small></label>";
     }).join("");
     const built = Object.fromEntries(fs.map((f) => [f.名, f.档次]));
-    const bpCards = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-card mz-bp mz-off"><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc2(built[b.名]) + "</span><b>" + esc2(b.名) + "</b><small>" + esc2(b.用途.split("。")[0]) + "。</small></div>" : '<div class="mz-card mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc2(b.名) + '"><b>' + esc2(b.名) + "</b><small>" + esc2(b.用途.split("。")[0]) + "。</small></div>").join("");
+    const bpCards = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-card mz-bp mz-off"><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span><b>" + esc3(b.名) + "</b><small>" + esc3(b.用途.split("。")[0]) + "。</small></div>" : '<div class="mz-card mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + "</b><small>" + esc3(b.用途.split("。")[0]) + "。</small></div>").join("");
     const blueprints = wh("蓝图", "地面") + '<div class="mz-grid mz-c4 mz-bps">' + bpCards("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-grid mz-c4 mz-bps">' + bpCards("地下") + "</div>" + wh("兴造");
     const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名]);
-    const buildForm = '<form class="mz-form mz-build" onsubmit="return false"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc2(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc2(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true) + "</div></form>";
+    const buildForm = '<form class="mz-form mz-build" onsubmit="return false"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="入浴者心防天然松动，灌顶事半功倍"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true) + "</div></form>";
     return '<section class="mz-win mz-on">' + tabs("营造", [{ id: "cave", label: "道场", n: hall + "／地宫" + cn(fs.length) + "处" }, { id: "build", label: "兴造" }]) + pane("营造", "cave", wh("表殿") + '<div class="mz-steps">' + steps + "</div>" + act + wh("地宫设施", cn(fs.length) + "处") + '<div class="mz-folio mz-grid mz-c3">' + cards + "</div>", "cave") + pane("营造", "build", '<div class="mz-folio">' + blueprints + buildForm + "</div>", "cave") + "</section>";
   }
   function sinHtml(D) {
     const hs = handles(D), ds = debts(D);
     const total = hs.length + ds.length;
-    const hCards = hs.length ? hs.map(([名, v]) => card("<b>" + esc2(名) + "</b>" + kv("详情", v.详情 || "") + "<br>" + kv("价值", v.价值 || "") + '<button class="mz-seal-btn" data-act="extort" data-name="' + esc2(名) + '">勒索</button>')).join("") : '<div class="mz-none">簿中无名</div>';
+    const hCards = hs.length ? hs.map(([名, v]) => card("<b>" + esc3(名) + "</b>" + kv("详情", v.详情 || "") + "<br>" + kv("价值", v.价值 || "") + '<button class="mz-seal-btn" data-act="extort" data-name="' + esc3(名) + '">勒索</button>')).join("") : '<div class="mz-none">簿中无名</div>';
     const dCards = ds.length ? ds.map(([名, v]) => {
       const 本 = (Number(v.欠额) || 0) * 1e3, 已 = Number(v.已收息) || 0;
       const pct = 本 > 0 ? Math.min(100, Math.round(已 / 本 * 100)) : 0;
-      return card("<b>" + esc2(名) + "</b>" + kv("欠额", cn(Number(v.欠额) || 0) + "贯") + "<br>" + kv("已收息", money(已)) + (v.详情 ? "<br>" + kv("详情", v.详情) : "") + '<div class="mz-bar-line"><span>利不过本</span><div class="mz-bar"><i style="width:' + pct + '%"></i></div><span>' + (pct >= 100 ? "已停息" : cn(pct) + "分") + "</span></div>");
+      return card("<b>" + esc3(名) + "</b>" + kv("欠额", cn(Number(v.欠额) || 0) + "贯") + "<br>" + kv("已收息", money(已)) + (v.详情 ? "<br>" + kv("详情", v.详情) : "") + '<div class="mz-bar-line"><span>利不过本</span><div class="mz-bar"><i style="width:' + pct + '%"></i></div><span>' + (pct >= 100 ? "已停息" : cn(pct) + "分") + "</span></div>");
     }).join("") : '<div class="mz-none">簿中无名</div>';
     const whys = loanWhys(D, 0);
     const loanForm = wh("无尽藏放贷") + '<form class="mz-form" onsubmit="return false"><label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="贯" inputmode="numeric"></label><label>抵押<input class="mz-w" name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-choices">' + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + "</div></form>";
@@ -3411,9 +3410,9 @@
   }
   function riteHtml(D) {
     const orders = Object.entries(D.教务.法事委托);
-    const cards = orders.map(([客, v]) => card('<span class="mz-tag' + (v.状态 === "已完成" ? " mz-gold" : "") + '">' + esc2(v.状态 || "待办") + "</span><b>" + esc2(客) + "</b>" + kv("诉求", v.诉求 || "") + "<br>" + kv("时限", v.时限 || "") + "<br>" + kv("报酬", v.报酬 || "")));
+    const cards = orders.map(([客, v]) => card('<span class="mz-tag' + (v.状态 === "已完成" ? " mz-gold" : "") + '">' + esc3(v.状态 || "待办") + "</span><b>" + esc3(客) + "</b>" + kv("诉求", v.诉求 || "") + "<br>" + kv("时限", v.时限 || "") + "<br>" + kv("报酬", v.报酬 || "")));
     while (cards.length < LIMITS.法事委托) cards.push(empty());
-    const rumors = Object.values(D.教务.神迹传闻).reverse().map((r) => '<div class="mz-banner">' + esc2(String(r)) + "</div>");
+    const rumors = Object.values(D.教务.神迹传闻).reverse().map((r) => '<div class="mz-banner">' + esc3(String(r)) + "</div>");
     while (rumors.length < LIMITS.神迹传闻) rumors.push('<div class="mz-banner mz-empty">未闻</div>');
     const pend = pendingOrders(D).length;
     return '<section class="mz-win mz-on">' + tabs("法事", [{ id: "order", label: "委托", n: cn(pend) + "／三席" }, { id: "rumor", label: "传闻", n: cn(Object.keys(D.教务.神迹传闻).length) }]) + pane("法事", "order", '<div class="mz-folio mz-grid mz-c3">' + cards.join("") + "</div>", "order") + pane("法事", "rumor", '<div class="mz-folio"><div class="mz-banners">' + rumors.join("") + "</div></div>", "order") + "</section>";
@@ -3422,13 +3421,13 @@
     const st = Object.entries(D.执事名册);
     const sCards = st.map(([名, v]) => {
       const s = String(v || "").split("/");
-      return card("<b>" + esc2(名) + "</b>" + kv("身份", s[0] || "") + "<br>" + kv("位阶", s[1] || "") + "<br>" + kv("职能", s.slice(2).join("/") || ""));
+      return card("<b>" + esc3(名) + "</b>" + kv("身份", s[0] || "") + "<br>" + kv("位阶", s[1] || "") + "<br>" + kv("职能", s.slice(2).join("/") || ""));
     });
     while (sCards.length < LIMITS.执事名册) sCards.push(empty());
     const cs = Object.entries(D.明妃录);
     const cCards = cs.map(([名, v]) => {
       const s = String(v || "").split("/");
-      return card("<b>" + esc2(名) + "</b>" + kv("出身", s[0] || "") + "<br>" + kv("度化", s[1] || "") + "<br>" + kv("要点", s.slice(2).join("/") || ""));
+      return card("<b>" + esc3(名) + "</b>" + kv("出身", s[0] || "") + "<br>" + kv("度化", s[1] || "") + "<br>" + kv("要点", s.slice(2).join("/") || ""));
     });
     while (cCards.length < LIMITS.明妃录) cCards.push(empty("mz-lotus"));
     const cooling = riteCooling(D);
@@ -3438,7 +3437,7 @@
       ["精工以上坛场设施", facilities(D).some((f) => ALTAR_WORDS.some((w) => f.名.includes(w) || f.用途.includes(w)) && f.档次 !== "粗成")],
       ["信众五十人以上", D.教务.信众 >= 50]
     ];
-    return '<section class="mz-win mz-on">' + tabs("教务", [{ id: "steward", label: "执事", n: cn(st.length) + "／十二席", red: st.length >= LIMITS.执事名册 }, { id: "consort", label: "明妃", n: cn(cs.length) + "／六席", red: cs.length >= LIMITS.明妃录 }, { id: "rite", label: "法会", n: cooling ? "暂休" : "待办" }]) + pane("教务", "steward", '<div class="mz-folio mz-grid mz-c4">' + sCards.join("") + "</div>", "steward") + pane("教务", "consort", wh("明妃法座", cn(cs.length) + "位／六席") + '<div class="mz-folio mz-grid mz-c3">' + cCards.join("") + "</div>", "steward") + pane("教务", "rite", wh("上次法会", D.教务.上次法会 ? esc2(D.教务.上次法会.replace("/", " ")) : "未曾办过") + '<div class="mz-none">' + (cooling ? "本月已办" : "本月可办") + "</div>" + wh("筹办门槛") + '<ul class="mz-ticks">' + ticks.map(([t, ok]) => "<li" + (ok ? ' class="mz-ok"' : "") + ">" + t + "</li>").join("") + '</ul><div class="mz-none">大法会关涉满城风云，须教主亲自开坛，此处仅照验规制</div>', "steward") + "</section>";
+    return '<section class="mz-win mz-on">' + tabs("教务", [{ id: "steward", label: "执事", n: cn(st.length) + "／十二席", red: st.length >= LIMITS.执事名册 }, { id: "consort", label: "明妃", n: cn(cs.length) + "／六席", red: cs.length >= LIMITS.明妃录 }, { id: "rite", label: "法会", n: cooling ? "暂休" : "待办" }]) + pane("教务", "steward", '<div class="mz-folio mz-grid mz-c4">' + sCards.join("") + "</div>", "steward") + pane("教务", "consort", wh("明妃法座", cn(cs.length) + "位／六席") + '<div class="mz-folio mz-grid mz-c3">' + cCards.join("") + "</div>", "steward") + pane("教务", "rite", wh("上次法会", D.教务.上次法会 ? esc3(D.教务.上次法会.replace("/", " ")) : "未曾办过") + '<div class="mz-none">' + (cooling ? "本月已办" : "本月可办") + "</div>" + wh("筹办门槛") + '<ul class="mz-ticks">' + ticks.map(([t, ok]) => "<li" + (ok ? ' class="mz-ok"' : "") + ">" + t + "</li>").join("") + '</ul><div class="mz-none">大法会关涉满城风云，须教主亲自开坛，此处仅照验规制</div>', "steward") + "</section>";
   }
   function cofferHtml(D) {
     const items = Object.entries(D.资粮.库藏);
@@ -3446,7 +3445,7 @@
     const cap = storeCap(D);
     const paneOf = (kind) => {
       const mine = items.filter(([, v]) => v && v.类别 === kind);
-      const cards = mine.map(([名, v]) => card('<span class="mz-tag">' + esc2(kind) + "</span><b>" + esc2(名) + "</b>" + kv("效用", v.效用 || "")));
+      const cards = mine.map(([名, v]) => card('<span class="mz-tag">' + esc3(kind) + "</span><b>" + esc3(名) + "</b>" + kv("效用", v.效用 || "")));
       const free = cap - total;
       let empties = free > 0 ? Math.max(1, (4 - mine.length % 4) % 4) : 0;
       empties = Math.min(empties, free);
@@ -3628,7 +3627,7 @@
     if (!root || doc.getElementById("mz-viewer")) return;
     const v = doc.createElement("div");
     v.id = "mz-viewer";
-    v.innerHTML = '<img src="' + esc2(src) + '" alt="' + esc2(title) + '">' + (title ? "<span>" + esc2(title) + "</span>" : "");
+    v.innerHTML = '<img src="' + esc3(src) + '" alt="' + esc3(title) + '">' + (title ? "<span>" + esc3(title) + "</span>" : "");
     v.addEventListener("click", () => v.remove());
     root.appendChild(v);
   }
