@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.42";
+  var CDN_TAG = "1.0.43";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,6 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
+  var PRELOAD_ASSETS = ["card-calling.webp", "card-ledger.webp", "icon-coffer.webp", "icon-folddoc.webp", "icon-ledger.webp", "icon-letterbox.webp", "icon-lotus.webp", "icon-redknot.webp", "incense-coil.webp", "lotus-rank.webp", "map-changan.webp", "map-panorama.webp", "paper-folded.webp", "paper-ledger.webp", "paper-scroll.webp", "paper-whisper.webp", "seal-chi.webp", "seal-storm.webp", "shrine-model.webp", "slip-ledger.webp", "slip-title.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "ticket-notice.webp", "axle-plain.webp", "bg-lacquer-red.webp", "bg-silk-aged.webp", "board-temple.webp", "brocade-band.webp", "hanging-fish.webp", "plaque-entry.webp", "plaque-header.webp", "ribbon-knot.webp", "silk-board-core.webp"];
   var SEL = {
     entry: "mz-entry",
     entryEnter: "mz-entry-enter",
@@ -414,7 +415,7 @@
   background-image:
     radial-gradient(120% 105% at 50% 42%, rgba(60,42,18,0) 45%, rgba(60,42,18,.24) 100%),
     linear-gradient(rgba(207,192,160,.42), rgba(207,192,160,.42)),
-    url('${A}bg-silk-aged.png');
+    url('${A}bg-silk-aged.webp');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, 512px 512px;
 }
@@ -439,7 +440,7 @@
   background-image:
     linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
     linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
-    url('${A2}bg-lacquer-red.png');
+    url('${A2}bg-lacquer-red.webp');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, 512px 512px;
   box-shadow: inset 0 0 30px rgba(40,18,6,.3);
@@ -454,14 +455,14 @@
   font-size: var(--fs-plaque); letter-spacing: var(--ls-plaque); text-indent: var(--ls-plaque);   /* 抵消末字字距，题字真居中 */
   font-weight: 600;
   border-style: solid; border-color: transparent; border-width: 0 6px;
-  border-image: url('${A2}plaque-header.png') 0 60 fill / 0 6px stretch;
+  border-image: url('${A2}plaque-header.webp') 0 60 fill / 0 6px stretch;
   filter: drop-shadow(0 3px 7px rgba(0,0,0,.5));
 }
 
 /* ==== 信息榜（九宫 fill 切片，框条与榜芯随行数拉伸） ==== */
 #mz-board { flex: none;
   border-style: solid; border-color: transparent; border-width: 23px 24px 23px;
-  border-image: url('${A2}board-temple.png') 60 64 60 fill / 23px 24px 23px stretch;
+  border-image: url('${A2}board-temple.webp') 60 64 60 fill / 23px 24px 23px stretch;
   filter: drop-shadow(0 2px 3px rgba(70,50,20,.4)) drop-shadow(0 8px 16px rgba(70,50,20,.28)); }
 #mz-board .mz-face { padding: 7px 10px 5px; }
 #mz-board .mz-grp + .mz-grp { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(120,96,54,.3); }
@@ -483,7 +484,7 @@
 #mz-minimap:hover { translate: 0 -2px; }
 #mz-minimap .mz-map-wrap { position: relative; }
 #mz-minimap .mz-map-wrap img { width: 100%; }
-/* 坐标对应 map-panorama.png 上的南郊寺庙，换图必须重标 */
+/* 坐标对应 map-panorama.webp 上的南郊寺庙，换图必须重标 */
 #mz-minimap .mz-map-pin { position: absolute; left: 54%; top: 85%; width: 9px; height: 9px; border-radius: 50%;
   background: var(--cinnabar); border: 1.5px solid var(--paper-hi); box-shadow: 0 0 6px var(--cinnabar); }
 #mz-minimap .mz-map-pin::after { content: attr(data-label); position: absolute; left: 13px; top: -4px;
@@ -510,8 +511,8 @@
 /* ==== 玩法入口条（小匾：浅楠木芯细朱框九宫切片） ==== */
 .mz-zone { position: relative; padding: 3px 6px 4px; margin: 0; cursor: pointer;
   border-style: solid; border-color: transparent; border-width: 14px;
-  border-image: url('${A2}plaque-entry.png') 160 / 14px stretch;
-  background: url('${A2}silk-board-core.png') center / cover; background-clip: border-box;
+  border-image: url('${A2}plaque-entry.webp') 160 / 14px stretch;
+  background: url('${A2}silk-board-core.webp') center / cover; background-clip: border-box;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,.4));
   transition: transform var(--t-fast) var(--ease-out), filter var(--t-fast) var(--ease-out); }
 .mz-zone:hover { transform: translateY(-2px); filter: drop-shadow(0 5px 8px rgba(0,0,0,.45)); }
@@ -644,7 +645,7 @@
 .mz-ff-voice:hover, .mz-ff-voice.mz-open { color: var(--cinnabar); }
 /* 心声卡：素花笺纸底＋花押叠印右下角 */
 .mz-vc { display: none; gap: 14px; padding: 17px 22px 16px; margin: 0 0 22px;
-  position: relative; background: url('${A3}paper-whisper.png');
+  position: relative; background: url('${A3}paper-whisper.webp');
   background-size: 100% 100%;
   filter: drop-shadow(0 5px 14px rgba(60,40,15,.28)); }
 .mz-vc.mz-show { display: flex; animation: mz-reveal var(--t-slow) var(--ease-paper) both; }
@@ -652,10 +653,10 @@
 .mz-vc::after { content: ''; position: absolute; right: 24px; bottom: 16px; width: 44px; height: 44px;
   background: var(--stamp) center / contain no-repeat;
   opacity: .5; mix-blend-mode: multiply; pointer-events: none; }
-.mz-vc.mz-su   { --stamp: url('${A3}stamp-angelica.png'); }
-.mz-vc.mz-xiao { --stamp: url('${A3}stamp-pomegranate.png'); }
-.mz-vc.mz-pei  { --stamp: url('${A3}stamp-orchid.png'); }
-.mz-vc.mz-ye   { --stamp: url('${A3}stamp-peach.png'); }
+.mz-vc.mz-su   { --stamp: url('${A3}stamp-angelica.webp'); }
+.mz-vc.mz-xiao { --stamp: url('${A3}stamp-pomegranate.webp'); }
+.mz-vc.mz-pei  { --stamp: url('${A3}stamp-orchid.webp'); }
+.mz-vc.mz-ye   { --stamp: url('${A3}stamp-peach.webp'); }
 .mz-vc-img { flex: none; width: 118px; aspect-ratio: 832 / 1216; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(165deg, #4a3626, #2b1d13 60%, #1d130c);
@@ -690,17 +691,17 @@
 .mz-axle .mz-rod {
   display: block; height: 22px;
   border-style: solid; border-color: transparent; border-width: 0 10px;
-  border-image: url('${A3}axle-plain.png') 0 50 fill / 0 10px stretch;
+  border-image: url('${A3}axle-plain.webp') 0 50 fill / 0 10px stretch;
   filter: drop-shadow(0 3px 6px rgba(0,0,0,.45));
 }
 .mz-axle .mz-band {
   display: block; height: 22px; margin: -5px 14px 0;
-  background: #5c2b22 url('${A3}brocade-band.png') 0 0 / 128px 128px repeat;
+  background: #5c2b22 url('${A3}brocade-band.webp') 0 0 / 128px 128px repeat;
   box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 4px 6px rgba(0,0,0,.25);
 }
 .mz-axle .mz-knot {
   position: absolute; left: 50%; top: 9px; width: 26px; height: 38px; transform: translateX(-50%);
-  background: url('${A3}ribbon-knot.png') center top / contain no-repeat;
+  background: url('${A3}ribbon-knot.webp') center top / contain no-repeat;
   filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
 }
 /* 正文与书写区共用同一张纸 */
@@ -709,7 +710,7 @@
   background-color: #dfd4b8;
   background-image:
     linear-gradient(180deg, rgba(80,55,20,.12), rgba(80,55,20,0) 28px),
-    url('${A3}paper-scroll.png');
+    url('${A3}paper-scroll.webp');
   background-size: 100% 28px, 512px 512px;
   background-repeat: no-repeat, repeat;
   background-position: top, 0 0;
@@ -738,7 +739,7 @@
 #mz-delbar button:hover { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
 #mz-jump { position: absolute; z-index: 5; bottom: 84px; left: calc(50% + var(--scroll-w) / 2 - 62px);
   width: 34px; height: 62px; border: none; padding: 0; cursor: pointer; display: none;
-  background: url('${A3}hanging-fish.png') center / contain no-repeat;
+  background: url('${A3}hanging-fish.webp') center / contain no-repeat;
   filter: drop-shadow(0 4px 8px rgba(60,40,15,.4));
   transform-origin: top center; transition: filter var(--t-fast) var(--ease-out), rotate var(--t-mid) var(--ease-out); }
 #mz-jump.mz-show { display: block; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
@@ -765,7 +766,7 @@
 #mz-writing textarea::placeholder { color: var(--ink-faint); opacity: .75; }
 #mz-send {
   width: 46px; height: 48px; flex: none; border: none;
-  background: url('${A3}seal-chi.png') center/contain no-repeat;
+  background: url('${A3}seal-chi.webp') center/contain no-repeat;
   color: #fff4dc; cursor: pointer;
   font-family: inherit; font-size: 20px; font-weight: 600;
   display: flex; align-items: center; justify-content: center;
@@ -813,16 +814,16 @@
 #mz-lift.mz-show { display: flex; }
 #mz-lift .mz-held { width: min(940px, 94vw); height: min(620px, 84vh);
   position: relative; display: flex; flex-direction: column;
-  background-color: #dfd4b8; background-image: url('${A4}paper-scroll.png'); background-size: 512px 512px;
+  background-color: #dfd4b8; background-image: url('${A4}paper-scroll.webp'); background-size: 512px 512px;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) drop-shadow(0 24px 48px rgba(0,0,0,.55)); }
 #mz-lift .mz-held::before { content: ''; position: absolute; inset: 9px; pointer-events: none; z-index: 1;
   border: 1px solid rgba(139,103,42,.5); }
-/* 题签 slip-title.png 竖三切片：签头签尾固定、签身拉伸；窗内排版须避让左上题签区（宽约46px、入纸约70px） */
+/* 题签 slip-title.webp 竖三切片：签头签尾固定、签身拉伸；窗内排版须避让左上题签区（宽约46px、入纸约70px） */
 #mz-lift .mz-held h3 { position: absolute; top: -34px; left: 26px; z-index: 2;
   writing-mode: vertical-rl; letter-spacing: 6px; padding: 16px 13px 18px;
   font-size: 15px; font-weight: 600; color: var(--side-title);
   border-style: solid; border-color: transparent; border-width: 15px 0 13px;
-  border-image: url('${A4}slip-title.png') 140 0 120 fill / 15px 0 13px stretch;
+  border-image: url('${A4}slip-title.webp') 140 0 120 fill / 15px 0 13px stretch;
   filter: drop-shadow(0 3px 6px rgba(0,0,0,.4)); }
 #mz-lift .mz-held .mz-held-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; padding: 30px 34px 26px; }
 /* 收窗叉桌面端不显（点遮罩即关），手机端与开坛窗的显隐见 phone.js */
@@ -861,7 +862,7 @@
 .mz-gate-opening { display: flex; flex-direction: column; min-height: 0; }
 .mz-gate-card { position: relative; padding: 14px 16px 12px; flex: 1; min-height: 0;
   border-style: solid; border-color: transparent; border-width: 11px;
-  border-image: url('${A4}card-calling.png') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
+  border-image: url('${A4}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
   display: flex; flex-direction: column; gap: 8px; }
 .mz-gate-img { flex: 1; min-height: 160px; aspect-ratio: 16 / 7; background: #cbbc98 center / cover no-repeat; box-shadow: inset 0 0 0 1px rgba(139,103,42,.45); }
 .mz-gate-card b { font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; }
@@ -875,7 +876,7 @@
 .mz-gate-sect:last-child { margin-bottom: 0; }
 .mz-gate-sect { position: relative; display: flex; align-items: baseline; gap: 14px; text-align: left; cursor: pointer; font-family: inherit;
   padding: 9px 16px; margin-bottom: 8px; border-style: solid; border-color: transparent; border-width: 16px;
-  border-image: url('${A4}plaque-entry.png') 160 / 16px stretch; background: url('${A4}silk-board-core.png') center / cover; background-clip: border-box;
+  border-image: url('${A4}plaque-entry.webp') 160 / 16px stretch; background: url('${A4}silk-board-core.webp') center / cover; background-clip: border-box;
   color: var(--ink-dim); transition: filter var(--t-mid) var(--ease-out), translate var(--t-fast) var(--ease-out); }
 .mz-gate-sect:hover { filter: brightness(1.04); translate: 0 -1px; }
 .mz-gate-sect:active { translate: 0 1px; transition-duration: .06s; }
@@ -909,7 +910,7 @@
 @keyframes rite-ring { 0% { opacity: 0; scale: 1; } 15% { opacity: 1; } 100% { opacity: 0; scale: 3.4; } }
 .mz-rite-seal { position: relative; width: 164px; height: 164px; rotate: -3deg; padding: 14px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
-  background: var(--cinnabar) url('${A4}paper-scroll.png') center / 256px; background-blend-mode: multiply;
+  background: var(--cinnabar) url('${A4}paper-scroll.webp') center / 256px; background-blend-mode: multiply;
   box-shadow: inset 0 0 0 3px rgba(255,240,214,.92), inset 0 0 0 7px var(--cinnabar), 0 0 0 1px rgba(160,52,38,.35), 0 10px 24px rgba(60,10,0,.35);
   animation: rite-stamp .62s var(--ease-paper) both; }
 .mz-rite-seal span { writing-mode: vertical-rl; font-size: 52px; line-height: 62px; font-weight: 600; letter-spacing: 6px;
@@ -947,7 +948,7 @@
 .mz-pane.mz-on { display: flex; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 @keyframes mz-reveal { from { opacity: 0; translate: 0 4px; } }
 .mz-folio { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px;
-  background: #f4efe0 url('${A5}paper-folded.png') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32);
+  background: #f4efe0 url('${A5}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32);
   box-shadow: inset 0 0 0 4px rgba(255,252,244,.35); }
 .mz-grid { display: grid; gap: 12px; align-content: start; grid-auto-rows: max-content; }
 .mz-grid.mz-c2 { grid-template-columns: repeat(2, 1fr); }
@@ -955,7 +956,7 @@
 .mz-grid.mz-c4 { grid-template-columns: repeat(4, 1fr); }
 .mz-card { position: relative; padding: 11px 13px 10px;
   border-style: solid; border-color: transparent; border-width: 11px;
-  border-image: url('${A5}card-calling.png') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
+  border-image: url('${A5}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
   font-size: 14.5px; line-height: 1.8; color: var(--ink-dim); min-height: 68px; }
 .mz-card b { display: block; font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; margin-bottom: 2px; }
 .mz-card .mz-k { color: var(--ink-faint); letter-spacing: 1px; margin-right: 6px; }
@@ -964,7 +965,7 @@
 .mz-card .mz-tag.mz-gold { color: #9a7420; }
 .mz-card.mz-empty { display: flex; align-items: center; justify-content: center; background: none; box-shadow: none;
   border-image: none; border: 1px dashed rgba(139,103,42,.4); padding: 21px 23px 20px; color: var(--ink-faint); letter-spacing: 4px; text-indent: 4px; font-size: 14px; }
-.mz-card.mz-empty.mz-lotus { background: url('${A5}icon-lotus.png') center / 34px no-repeat; background-color: transparent; }
+.mz-card.mz-empty.mz-lotus { background: url('${A5}icon-lotus.webp') center / 34px no-repeat; background-color: transparent; }
 .mz-card.mz-empty.mz-lotus::before { content: ''; position: absolute; inset: 0; background: rgba(255,250,238,.55); }
 .mz-card.mz-empty.mz-lotus span { position: relative; }
 .mz-card.mz-empty.mz-lotus span { opacity: .9; background: rgba(255,252,244,.8); padding: 0 4px; }
@@ -1050,11 +1051,11 @@
 .mz-thumbs i.mz-lock:hover { opacity: 1; }
 /* 位阶莲瓣：四瓣对应一灌至四灌，待度零瓣，未亮去色压淡 */
 .mz-lotus-row { display: flex; align-items: center; gap: 10px; font-size: 14.5px; letter-spacing: 1px; color: var(--ink-dim); flex: none; }
-.mz-lotus-row i { width: 26px; height: 28px; background: url('${A5}lotus-rank.png') center / contain no-repeat;
+.mz-lotus-row i { width: 26px; height: 28px; background: url('${A5}lotus-rank.webp') center / contain no-repeat;
   filter: grayscale(1) opacity(.32); }
 .mz-lotus-row i.mz-lit { filter: none; }
 .mz-lotus-row b { color: var(--cinnabar); font-weight: 600; margin-left: auto; }
-.mz-voice-sheet { flex: none; position: relative; min-height: 180px; box-sizing: content-box; padding: 14px 18px 16px; background: url('${A5}paper-whisper.png') center / 100% 100% no-repeat;
+.mz-voice-sheet { flex: none; position: relative; min-height: 180px; box-sizing: content-box; padding: 14px 18px 16px; background: url('${A5}paper-whisper.webp') center / 100% 100% no-repeat;
   font-size: 15px; line-height: 2; color: var(--ink-dim); filter: drop-shadow(0 3px 8px rgba(60,40,15,.22)); }
 .mz-voice-sheet::after { content: ''; position: absolute; right: 16px; bottom: 10px; width: 36px; height: 36px;
   background: var(--stamp) center / contain no-repeat; opacity: .5; mix-blend-mode: multiply; }
@@ -1064,10 +1065,10 @@
   background: var(--cinnabar); box-shadow: 0 0 0 2px rgba(255,252,244,.9); }
 .mz-timeline .mz-memo b { color: var(--cinnabar); font-weight: 600; letter-spacing: 1px; margin-right: 8px; }
 .mz-timeline .mz-memo small { color: var(--ink-faint); letter-spacing: .5px; }
-.mz-su   { --stamp: url('${A5}stamp-angelica.png'); }
-.mz-xiao { --stamp: url('${A5}stamp-pomegranate.png'); }
-.mz-pei  { --stamp: url('${A5}stamp-orchid.png'); }
-.mz-ye   { --stamp: url('${A5}stamp-peach.png'); }
+.mz-su   { --stamp: url('${A5}stamp-angelica.webp'); }
+.mz-xiao { --stamp: url('${A5}stamp-pomegranate.webp'); }
+.mz-pei  { --stamp: url('${A5}stamp-orchid.webp'); }
+.mz-ye   { --stamp: url('${A5}stamp-peach.webp'); }
 
 .mz-names button.mz-off { opacity: .45; cursor: default; }
 .mz-names button.mz-off:hover { color: inherit; }
@@ -1123,7 +1124,7 @@
 .mz-atlas .mz-lbl.mz-cur { color: var(--cinnabar); font-weight: 600; font-size: 13px; }
 /* 风波印章三档色靠 hue-rotate 偏移朱砂本色 */
 .mz-atlas .mz-storm { position: absolute; top: 8px; right: 8px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
-  background: url('${A5}seal-storm.png') center / contain no-repeat;
+  background: url('${A5}seal-storm.webp') center / contain no-repeat;
   font-size: 16px; letter-spacing: 0; font-weight: 700; color: var(--cinnabar); }
 .mz-atlas .mz-storm.mz-low { filter: hue-rotate(120deg) saturate(.7); } .mz-atlas .mz-storm.mz-mid { filter: hue-rotate(-25deg); } .mz-atlas .mz-storm.mz-high { filter: none; }
 .mz-atlas .mz-zones { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -1174,7 +1175,7 @@
 /* 入卷题签配色对齐酒馆内入口面板（绢纸 #f3ead2／入卷红 #9b2f22） */
 .mz-entry-tab { position: relative; display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 6px 13px 6px 6px;
   font-family: 'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif; font-size: var(--fs-label); letter-spacing: var(--ls-label); text-indent: var(--ls-label);
-  color: #3a2c1a; background: #f3ead2 url('${A6}paper-scroll.png') center / 512px; border: 1px solid rgba(139,103,42,.5);
+  color: #3a2c1a; background: #f3ead2 url('${A6}paper-scroll.webp') center / 512px; border: 1px solid rgba(139,103,42,.5);
   box-shadow: 0 2px 4px rgba(0,0,0,.35), 0 10px 20px rgba(0,0,0,.28);
   transition: translate var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
 .mz-entry-tab::before { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(139,103,42,.26); pointer-events: none; }
@@ -1184,7 +1185,7 @@
 .mz-entry-tab:active { translate: 0 1px; transition-duration: .06s; }
 .mz-entry-tab svg { width: 13px; height: 13px; fill: none; stroke: #9b2f22; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .mz-vartree { flex: 1; min-height: 0; overflow: auto; font-size: 13.5px; line-height: 1.9; color: var(--ink-dim); padding: 8px 12px;
-  background: #f4efe0 url('${A6}paper-folded.png') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32); }
+  background: #f4efe0 url('${A6}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32); }
 .mz-vartree details { padding-left: 14px; }
 .mz-vartree summary { cursor: pointer; color: var(--ink); letter-spacing: 1px; list-style: none; }
 .mz-vartree summary::before { content: '▸'; display: inline-block; width: 14px; color: var(--ink-faint); transition: rotate var(--t-fast) var(--ease-out); }
@@ -1196,11 +1197,11 @@
 .mz-portrait .mz-pic img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
 /* ==== 罪业密簿黑账变体（七窗唯此一扇走暗面） ==== */
 #mz-lift.mz-sin { --ink: #e3d4ac; --ink-dim: #c3b28a; --ink-faint: #94845f; }
-#mz-lift.mz-sin .mz-held { background-color: #151515; background-image: url('${A6}paper-ledger.png'); }
-#mz-lift.mz-sin .mz-held h3 { border-image-source: url('${A6}slip-ledger.png'); }
+#mz-lift.mz-sin .mz-held { background-color: #151515; background-image: url('${A6}paper-ledger.webp'); }
+#mz-lift.mz-sin .mz-held h3 { border-image-source: url('${A6}slip-ledger.webp'); }
 #mz-lift.mz-sin .mz-held::before { border-color: rgba(176,74,56,.5); }
-#mz-lift.mz-sin .mz-folio { background: #151515 url('${A6}paper-ledger.png') 0 0 / 512px 512px repeat; border-color: rgba(176,74,56,.4); box-shadow: inset 0 0 0 4px rgba(0,0,0,.22); }
-#mz-lift.mz-sin .mz-card { border-image: url('${A6}card-ledger.png') 52 fill / 11px stretch; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+#mz-lift.mz-sin .mz-folio { background: #151515 url('${A6}paper-ledger.webp') 0 0 / 512px 512px repeat; border-color: rgba(176,74,56,.4); box-shadow: inset 0 0 0 4px rgba(0,0,0,.22); }
+#mz-lift.mz-sin .mz-card { border-image: url('${A6}card-ledger.webp') 52 fill / 11px stretch; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 #mz-lift.mz-sin .mz-card.mz-empty { border-image: none; border: 1px dashed rgba(176,74,56,.35); background: none; box-shadow: none; }
 #mz-lift.mz-sin .mz-form input { border-bottom-color: rgba(227,212,172,.4); }
 #mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35); }
@@ -1262,7 +1263,7 @@
     background-image:
       linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
       linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
-      url('${A7}bg-lacquer-red.png');
+      url('${A7}bg-lacquer-red.webp');
     background-repeat: no-repeat, no-repeat, repeat; background-size: 100% 100%, 100% 100%, 512px 512px;
     border-top: 1px solid rgba(240,200,140,.3); box-shadow: 0 -4px 14px rgba(0,0,0,.35); }
   #mz-mbar button { flex: 1; min-width: 0; border: none; background: none; cursor: pointer; font-family: inherit;
@@ -1275,7 +1276,7 @@
   /* 天机菜单：低频钮（变量／数据库／退出）都在这，退出两步远不误触 */
   #mz-mmenu { display: flex; flex-direction: column; position: absolute; right: 8px; bottom: calc(var(--bar-tot) + 10px); z-index: 30; min-width: 150px;
     padding: 4px 6px; border-style: solid; border-color: transparent; border-width: 14px;
-    border-image: url('${A7}plaque-entry.png') 160 / 14px stretch; background: url('${A7}silk-board-core.png') center / cover; background-clip: border-box;
+    border-image: url('${A7}plaque-entry.webp') 160 / 14px stretch; background: url('${A7}silk-board-core.webp') center / cover; background-clip: border-box;
     filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); opacity: 0; pointer-events: none; translate: 0 8px;
     transition: opacity var(--t-mid) var(--ease-out), translate var(--t-mid) var(--ease-out); }
   #mz-mmenu.mz-open { opacity: 1; pointer-events: auto; translate: 0 0; }
@@ -2888,7 +2889,7 @@
   var thoughtFoldOpen = /* @__PURE__ */ new Set();
   var lastRenderedRef = /* @__PURE__ */ new Map();
   function crisisLineHtml(name) {
-    return '<div class="mz-crisis-line"><img src="' + asset("ticket-notice.png") + '" alt="官府朱票"><div class="mz-ticket-text"><b>' + escapeHtml(name) + '</b><div class="mz-sub">' + FORM_MSG.朱票副题 + "</div></div></div>";
+    return '<div class="mz-crisis-line"><img src="' + asset("ticket-notice.webp") + '" alt="官府朱票"><div class="mz-ticket-text"><b>' + escapeHtml(name) + '</b><div class="mz-sub">' + FORM_MSG.朱票副题 + "</div></div></div>";
   }
   function syncCrisisLine(log, name) {
     if (!log) return;
@@ -3003,10 +3004,10 @@
   }
   function thoughtFoldHtml(thought, mid, open) {
     const midAttr = mid == null ? "" : ' data-fold-mid="' + mid + '"';
-    return '<div class="mz-thought' + (open ? " mz-open" : "") + '"' + midAttr + '><button class="mz-th-head" title="推演"><span class="mz-rule mz-l"></span><img src="' + asset("incense-coil.png") + '" alt="推演"><span class="mz-rule mz-r"></span></button><div class="mz-th-body">' + escapeHtml(thought) + "</div></div>";
+    return '<div class="mz-thought' + (open ? " mz-open" : "") + '"' + midAttr + '><button class="mz-th-head" title="推演"><span class="mz-rule mz-l"></span><img src="' + asset("incense-coil.webp") + '" alt="推演"><span class="mz-rule mz-r"></span></button><div class="mz-th-body">' + escapeHtml(thought) + "</div></div>";
   }
   function thinkingHtml() {
-    return '<div class="mz-thinking"><span class="mz-rule mz-l"></span><img src="' + asset("incense-coil.png") + '" alt="推演中"><span class="mz-rule mz-r"></span></div>';
+    return '<div class="mz-thinking"><span class="mz-rule mz-l"></span><img src="' + asset("incense-coil.webp") + '" alt="推演中"><span class="mz-rule mz-r"></span></div>';
   }
 
   // src/09-board.js
@@ -3367,7 +3368,7 @@
     const cur = zoneName(D.时空.当前地界);
     const t = parseTime(D.时空.时间);
     const y = Math.max(0, t.年序号);
-    return '<section class="mz-win mz-atlas-win mz-on"><div class="mz-atlas"><div class="mz-mapbox"><img src="' + asset("map-changan.png") + '" alt="长安城坊地图"><svg viewBox="0 0 1024 1024" preserveAspectRatio="none">' + ZONES.map((z) => '<path data-zone="' + z + '"' + (z === cur ? ' class="mz-cur"' : "") + ' d="' + ZONE_PATHS[z] + '"><title>' + z + "</title></path>").join("") + "</svg>" + ZONES.map((z) => {
+    return '<section class="mz-win mz-atlas-win mz-on"><div class="mz-atlas"><div class="mz-mapbox"><img src="' + asset("map-changan.webp") + '" alt="长安城坊地图"><svg viewBox="0 0 1024 1024" preserveAspectRatio="none">' + ZONES.map((z) => '<path data-zone="' + z + '"' + (z === cur ? ' class="mz-cur"' : "") + ' d="' + ZONE_PATHS[z] + '"><title>' + z + "</title></path>").join("") + "</svg>" + ZONES.map((z) => {
       const l = ZONE_LABELS[z];
       return '<span class="mz-lbl' + (z === cur ? " mz-cur" : "") + '" style="left:' + l[1] + "%;top:" + l[2] + '%">' + l[0] + "</span>";
     }).join("") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + '</ul><div class="mz-doomline"><span>灭佛大势 ' + YEARS[y] + " " + DOOM[y] + '</span><div class="mz-yrs">' + YEAR_SHORT.map((s, i) => '<span class="' + (i === y ? "mz-cur" : i < y ? "mz-past" : "") + '">' + s + "</span>").join("") + "</div></div></div></div></section>";
@@ -3803,12 +3804,12 @@
 
   // src/07-shell.js
   var ZONE_DEFS = [
-    { side: "l", key: "同心缕", lift: "同心缕", ico: "icon-redknot.png" },
-    { side: "l", key: "库藏", lift: "库藏", ico: "icon-coffer.png" },
-    { side: "l", key: "教务", lift: "教务", ico: "icon-letterbox.png" },
-    { side: "r", key: "营造", lift: "营造", ico: "shrine-model.png" },
-    { side: "r", key: "法事", lift: "法事", ico: "icon-folddoc.png" },
-    { side: "r", key: "罪业", lift: "罪业", ico: "icon-ledger.png" }
+    { side: "l", key: "同心缕", lift: "同心缕", ico: "icon-redknot.webp" },
+    { side: "l", key: "库藏", lift: "库藏", ico: "icon-coffer.webp" },
+    { side: "l", key: "教务", lift: "教务", ico: "icon-letterbox.webp" },
+    { side: "r", key: "营造", lift: "营造", ico: "shrine-model.webp" },
+    { side: "r", key: "法事", lift: "法事", ico: "icon-folddoc.webp" },
+    { side: "r", key: "罪业", lift: "罪业", ico: "icon-ledger.webp" }
   ];
   function zoneShell(z) {
     return `<div class="mz-zone" data-lift="${z.lift}" data-zone="${z.key}"><h5><span class="mz-z-ico"><img src="${asset(z.ico)}" alt="${z.key}"></span>${z.key}</h5><div class="mz-zone-rows"></div></div>`;
@@ -3839,14 +3840,14 @@
     </div>
     <button id="${SEL.jump}" title="回至卷尾"></button>
     <div id="${SEL.crisis}">
-      <img src="${asset("ticket-notice.png")}" alt="官府朱票">
+      <img src="${asset("ticket-notice.webp")}" alt="官府朱票">
       <div class="mz-ticket-text"><b></b><div class="mz-sub"></div></div>
     </div>
   </div>
   <div class="mz-rside">
     <div class="mz-plaque">行事</div>
     <div id="${SEL.minimap}" data-lift="舆图">
-      <div class="mz-map-wrap"><img src="${asset("map-panorama.png")}" alt="长安舆图"><div class="mz-map-pin"></div></div>
+      <div class="mz-map-wrap"><img src="${asset("map-panorama.webp")}" alt="长安舆图"><div class="mz-map-pin"></div></div>
       <div class="mz-doom"><div class="mz-lbl"><span>灭佛大势</span><b></b></div><div class="mz-bar"><i></i></div>
         <div class="mz-where" data-stat="地界"><span class="mz-w-zone"></span><span class="mz-w-sub"></span></div>
         <div class="mz-storm" data-stat="风波"><span>风波</span><b></b></div></div>
@@ -3981,6 +3982,17 @@
       renderEntry();
     }
   }
+  var warmed = false;
+  function warmAssets() {
+    if (warmed) return;
+    warmed = true;
+    const run = () => {
+      for (const n of PRELOAD_ASSETS) doc.createElement("img").src = asset(n);
+    };
+    const w = doc.defaultView;
+    if (w && typeof w.requestIdleCallback === "function") w.requestIdleCallback(run, { timeout: 3e3 });
+    else setTimeout(run, 300);
+  }
   var busy2 = false;
   function fade(root, cls, then) {
     busy2 = true;
@@ -4036,6 +4048,7 @@
       if (!isShellVisible()) return;
       ensureHideStyle().disabled = false;
       if (needGate) ensureGate();
+      warmAssets();
     });
   }
   var toggleShell = typeof errorCatched === "function" ? errorCatched(toggleShellImpl) : toggleShellImpl;
