@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.32";
+  var CDN_TAG = "1.0.33";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1448,14 +1448,14 @@
   }
   function gateHtml() {
     const late = gateLate();
-    const swipes = late ? [] : openingSwipes();
-    const info = late ? null : readOpenings();
+    const info = readOpenings();
+    const swipes = late ? info && !isPanelText(info.swipes[info.cur]) ? [info.cur] : [] : openingSwipes();
     if (swipes.length && page >= swipes.length) page = swipes.length - 1;
-    const curSwipe = swipes[page];
+    const curSwipe = late ? swipes[0] : swipes[page];
     const meta = OPENINGS_META[curSwipe != null ? curSwipe - 1 : 0] || OPENINGS_META[0];
-    const multi = swipes.length > 1;
+    const multi = !late && swipes.length > 1;
     const nav = multi ? `<div class="mz-gate-nav"><button data-gate="prev" ${page === 0 ? "disabled" : ""}>${ICO.chev}</button><span>${page + 1} / ${swipes.length}</span><button data-gate="next" ${page === swipes.length - 1 ? "disabled" : ""}>${ICO.chev}</button></div>` : "";
-    const opening = late ? "" : `<div class="mz-gate-opening">
+    const opening = `<div class="mz-gate-opening">
         <h4>开场白</h4>
         <div class="mz-gate-card">
           <div class="mz-gate-img"${meta.img ? ` style="background-image:url('${meta.img}')"` : ""}></div>
