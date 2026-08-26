@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.34";
+  var CDN_TAG = "1.0.35";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -2883,7 +2883,14 @@
     } catch (e) {
       console.warn("[密宗前端] 应用酒馆显示正则失败, 按原文显示:", e);
     }
-    return text.replace(/<rt(?:\s[^>]*)?>[\s\S]*?<\/rt>/gi, "").replace(/<\/?ruby(?:\s[^>]*)?>/gi, "");
+    return text.replace(/<ruby(?:\s[^>]*)?>([\s\S]*?)<\/ruby\s*>/gi, (m, inner) => {
+      const rt = [];
+      const base = inner.replace(/<rp(?:\s[^>]*)?>[\s\S]*?<\/rp\s*>/gi, "").replace(/<rt(?:\s[^>]*)?>([\s\S]*?)<\/rt\s*>/gi, (x, t) => {
+        rt.push(t.trim());
+        return "";
+      });
+      return base.trim() + (rt.length ? "（" + rt.join("") + "）" : "");
+    }).replace(/<rt(?:\s[^>]*)?>([\s\S]*?)<\/rt\s*>/gi, "（$1）");
   }
   function optionsHtml(opts) {
     return '<div class="mz-opts"><div class="mz-opt-head"><i></i>行事<i></i></div>' + opts.map(
