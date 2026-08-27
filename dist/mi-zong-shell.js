@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.47";
+  var CDN_TAG = "1.0.48";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -408,8 +408,9 @@
 :where(#mz-shell-root) img { display: block; -webkit-user-drag: none; user-select: none; }
 
 /* ==== 整体三栏 ==== */
+/* 酒馆 html 带 transform，fixed 的包含块是 html 而非视口；手机端 body 又 fixed 使 html 高 0，尺寸不能靠 inset 撑 */
 #mz-shell-root {
-  position: fixed; inset: 0; z-index: 9000; display: flex;
+  position: fixed; inset: 0; width: 100vw; width: 100dvw; height: 100vh; height: 100dvh; z-index: 9000; display: flex;
   font-family: 'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;
   color: var(--ink);
   background-color: #cfc0a0;
@@ -816,7 +817,8 @@
   var A4 = ASSET_BASE;
   var lift_default = `
 /* ==== 浮窗（无框素纸＋竖排朱漆悬签＋内圈暗金细线） ==== */
-#mz-lift { position: fixed; inset: 0; z-index: 40; background: var(--scrim); backdrop-filter: blur(3px);
+/* 壳内浮层一律 absolute 以壳根为包含块（fixed 会以酒馆带 transform 的 html 为包含块，手机端高 0） */
+#mz-lift { position: absolute; inset: 0; z-index: 40; background: var(--scrim); backdrop-filter: blur(3px);
   display: none; align-items: center; justify-content: center; }
 #mz-lift.mz-show { display: flex; }
 #mz-lift .mz-held { width: min(940px, 94vw); height: min(620px, 84vh);
@@ -1239,7 +1241,7 @@
 #mz-lift.mz-sin .mz-sheet { background: rgba(0,0,0,.28); border-color: rgba(176,74,56,.4); box-shadow: inset 0 0 0 3px rgba(0,0,0,.2); }
 
 /* 立绘大图灯箱 */
-#mz-viewer { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.78);
+#mz-viewer { position: absolute; inset: 0; z-index: 60; background: rgba(0,0,0,.78);
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   cursor: zoom-out; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 #mz-viewer img { max-width: 92vw; max-height: 88vh; box-shadow: 0 12px 48px rgba(0,0,0,.6); }
