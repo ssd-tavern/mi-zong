@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.45";
+  var CDN_TAG = "1.0.46";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -180,9 +180,9 @@
   var ZONE_ROWS = { 同心缕: 4, 库藏: 2, 教务: 3, 营造: 2, 法事: 3, 罪业: 3 };
   var UNLOCK_COND = { 教务: "信众满十人开启", 法事: "信众满二十人开启", 罪业: "信众满五十人开启", 库藏: "建成库房开启", 同心缕: "结识女主开启" };
   var CRAFT = [
-    { kind: "药品", price: 15, shop: "丹房", words: ["丹房"] },
-    { kind: "道具", price: 30, shop: "机关声光室", words: ["机关", "声光"] },
-    { kind: "法器", price: 50, shop: "熔金工坊", words: ["熔金", "工坊", "作坊"] }
+    { kind: "药品", price: 15, shop: "丹房", words: ["丹房"], note: "一料一用，一炉多份在效用里注份数" },
+    { kind: "道具", price: 30, shop: "机关声光室", words: ["机关", "声光"], note: "造神机关，常驻不耗" },
+    { kind: "法器", price: 50, shop: "熔金工坊", words: ["熔金", "工坊", "作坊"], note: "仪轨用具，常驻不耗" }
   ];
   var ALTAR_WORDS = ["密坛", "坛城", "坛场"];
   var BLUEPRINTS = [
@@ -1015,8 +1015,23 @@
 .mz-sheet input, .mz-sheet textarea { width: 100%; box-sizing: border-box; }
 .mz-sheet .mz-none { padding: 0; font-size: 13px; }
 .mz-build { flex: 1; min-width: 0; }
-.mz-loan { flex: none; width: 340px; align-self: flex-start; }
-.mz-craft { max-width: 720px; }
+/* 撑满型经折页：内容纵向铺满余高 */
+.mz-folio.mz-fill { display: flex; flex-direction: column; gap: 12px; }
+.mz-folio.mz-fill > .mz-wrow { flex: 1; min-height: 0; align-items: stretch; }
+.mz-folio.mz-fill > .mz-grid { flex: 1; }
+.mz-form .mz-grow { flex: 1; min-width: 0; }
+/* 债契：放贷契纸横排一行铺顶 */
+.mz-loan { flex: none; }
+.mz-loan-row { display: flex; align-items: flex-end; gap: 18px; }
+.mz-loan-row label:not(.mz-grow) input { width: 130px; }
+.mz-loan-row .mz-build-foot { margin: 0; }
+/* 工坊：左作坊选卡竖排／右契纸撑满 */
+.mz-shoplist { flex: none; width: 250px; gap: 8px; }
+.mz-picks.mz-col { grid-template-columns: minmax(0, 1fr); }
+.mz-pick .mz-shopline { color: #9a7420; }
+.mz-pick.mz-off .mz-shopline { color: #96500f; }
+.mz-craft { flex: 1; min-width: 0; }
+.mz-craft .mz-grow textarea { height: 100%; }
 .mz-form textarea { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none; resize: none;
   font-family: inherit; font-size: 15.5px; line-height: 1.7; color: var(--ink); padding: 3px 2px; caret-color: var(--cinnabar); }
 .mz-sheet .mz-wh { margin-top: 2px; }
@@ -1341,7 +1356,13 @@
   .mz-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mz-bplist { width: 100%; }
   .mz-bps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .mz-loan { width: 100%; }
+  .mz-loan-row { flex-wrap: wrap; }
+  .mz-loan-row label:not(.mz-grow) input { width: 100%; }
+  .mz-loan-row label { flex: 1 1 40%; }
+  .mz-loan-row .mz-grow { flex: 1 1 100%; }
+  .mz-loan-row .mz-build-foot { flex: 1 1 100%; }
+  .mz-shoplist { width: 100%; }
+  .mz-picks.mz-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .mz-form input.mz-w { width: 100%; }
   #mz-lift.mz-gate .mz-held { width: 100%; height: calc(100% - 56px); max-height: none; }
   .mz-gate-cols { display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
@@ -3479,8 +3500,8 @@
       return card("<b>" + esc3(名) + "</b>" + kv("欠额", cn(Number(v.欠额) || 0) + "贯") + "<br>" + kv("已收息", money(已)) + (v.详情 ? "<br>" + kv("详情", v.详情) : "") + '<div class="mz-bar-line"><span>利不过本</span><div class="mz-bar"><i style="width:' + pct + '%"></i></div><span>' + (pct >= 100 ? "已停息" : cn(pct) + "分") + "</span></div>");
     }).join("") : '<div class="mz-none">簿中无名</div>';
     const whys = loanWhys(D, 0);
-    const loanForm = '<form class="mz-form mz-sheet mz-loan" onsubmit="return false">' + wh("无尽藏放贷") + '<label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="整数贯" inputmode="numeric"></label><label>抵押<input name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-none">月息五分，利不过本；按月自动入账，簿共' + cn(total) + '／五条</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + "</div></form>";
-    return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-grid mz-c2">' + hCards + "</div>", "handle") + pane("罪业", "debt", '<div class="mz-folio"><div class="mz-wrow"><div class="mz-wcol" style="flex:1">' + wh("债契", cn(ds.length) + "契") + '<div class="mz-grid mz-c2">' + dCards + "</div></div>" + loanForm + "</div></div>", "handle") + "</section>";
+    const loanForm = '<form class="mz-form mz-sheet mz-loan" onsubmit="return false">' + wh("无尽藏放贷") + '<div class="mz-loan-row"><label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="整数贯" inputmode="numeric"></label><label class="mz-grow">抵押<input name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-build-foot">' + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + '</div></div><div class="mz-none">月息五分，利不过本，按月自动入账　库中 ' + money(总文(D)) + "　簿共" + cn(total) + "／五条</div></form>";
+    return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-grid mz-c2">' + hCards + "</div>", "handle") + pane("罪业", "debt", '<div class="mz-folio mz-fill">' + loanForm + wh("债契", cn(ds.length) + "契") + '<div class="mz-grid mz-c3">' + dCards + "</div></div>", "handle") + "</section>";
   }
   function riteHtml(D) {
     const orders = Object.entries(D.教务.法事委托);
@@ -3529,16 +3550,16 @@
     const ready = CRAFT.map((c) => shopReady(D, c));
     const pickWhys = CRAFT.map((c) => craftPickWhys(D, c));
     const firstOk = pickWhys.findIndex((w) => !w.length);
-    const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
+    const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + c.note + '</small><small class="mz-shopline">' + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
     const gate = craftGateWhys(D);
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
-    const craftForm = '<form class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("作坊") + '<div class="mz-picks">' + shops + "</div>" + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label>效用<input name="效用" placeholder="饮之如坠云雾，半个时辰方醒"></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("开炉", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form>";
+    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("开炉", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>";
     return '<section class="mz-win mz-on">' + tabs("库藏", [
       { id: "drug", label: "药品", n: cn(kindCount(D.资粮.库藏, "药品")) },
       { id: "tool", label: "道具", n: cn(kindCount(D.资粮.库藏, "道具")) },
       { id: "ritual", label: "法器", n: cn(kindCount(D.资粮.库藏, "法器")) },
       { id: "craft", label: "工坊", n: crList.length ? "可制" + crList.join("／") : "无坊" }
-    ], "共" + cn(total) + "／" + cn(cap) + "屉") + pane("库藏", "drug", paneOf("药品"), "drug") + pane("库藏", "tool", paneOf("道具"), "drug") + pane("库藏", "ritual", paneOf("法器"), "drug") + pane("库藏", "craft", '<div class="mz-folio">' + craftForm + "</div>", "drug") + "</section>";
+    ], "共" + cn(total) + "／" + cn(cap) + "屉") + pane("库藏", "drug", paneOf("药品"), "drug") + pane("库藏", "tool", paneOf("道具"), "drug") + pane("库藏", "ritual", paneOf("法器"), "drug") + pane("库藏", "craft", '<div class="mz-folio mz-fill">' + craftForm + "</div>", "drug") + "</section>";
   }
   function winHtml(name, D) {
     switch (name) {
