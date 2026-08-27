@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.46";
+  var CDN_TAG = "1.0.47";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -206,7 +206,7 @@
     升殿: (殿) => "【兴造】表殿改建" + 殿 + "，匠人已开工动土。",
     升造: (名, 旧, 新, 奇效) => "【兴造】" + 名 + "自" + 旧 + "改造为" + 新 + "，匠人已动工。" + (奇效 ? "奇效议定：" + 奇效 : ""),
     工巧: (名, 类) => "【工巧】" + 类 + "「" + 名 + "」已拨资开炉。",
-    放贷: (户, 贯) => "【无尽藏】放贷" + 贯 + "贯与" + 户 + "，立契画押。",
+    放贷: (户, 贯2) => "【无尽藏】放贷" + 贯2 + "贯与" + 户 + "，立契画押。",
     勒索: (名) => "【勒索】以罪业密簿所载把柄，向" + 名 + "开口勒索。",
     朱票副题: "祸事临门 须教主亲周旋"
   };
@@ -239,11 +239,11 @@
   }
   function money(文) {
     文 = Math.max(0, Math.round(+文 || 0));
-    const 贯 = Math.floor(文 / 1e3), 零 = 文 % 1e3;
-    if (!贯) return 零 ? cn(零) + "文" : "零贯";
-    return cn(贯) + "贯" + (零 ? cn(零) + "文" : "");
+    const 贯2 = Math.floor(文 / 1e3), 零 = 文 % 1e3;
+    if (!贯2) return 零 ? cn(零) + "文" : "零贯";
+    return cn(贯2) + "贯" + (零 ? cn(零) + "文" : "");
   }
-  var 总文 = (sd) => (Number(_.get(sd, "资粮.铜钱")) || 0) * 1e3 + (Number(_.get(sd, "资粮.零头文")) || 0);
+  var 总文 = (sd) => Math.round((Number(_.get(sd, "资粮.铜钱")) || 0) * 1e3);
   function parseTime(s) {
     const seg = String(s || "").split("/").map((x) => x.trim());
     const y = YEARS.indexOf(seg[0]);
@@ -336,6 +336,7 @@
   var obj = (v) => v && typeof v === "object" && !Array.isArray(v) ? v : {};
   var str = (v) => v == null ? "" : String(v);
   var num = (v) => Math.max(0, Math.round(Number(v) || 0));
+  var 贯 = (v) => Math.max(0, Math.round((Number(v) || 0) * 1e3) / 1e3);
   function readMVU(sdArg) {
     const sd = sdArg || currentStat() || {};
     const g = (p) => _.get(sd, p);
@@ -346,7 +347,7 @@
     });
     return {
       时空: { 时间: str(g("时空.时间")), 当前地界: str(g("时空.当前地界")), 已结算至: str(g("时空.已结算至")) },
-      资粮: { 铜钱: num(g("资粮.铜钱")), 零头文: Math.min(999, num(g("资粮.零头文"))), 库藏: obj(g("资粮.库藏")), 罪业密簿: obj(g("资粮.罪业密簿")) },
+      资粮: { 铜钱: 贯(g("资粮.铜钱")), 库藏: obj(g("资粮.库藏")), 罪业密簿: obj(g("资粮.罪业密簿")) },
       道场: { 宗风: str(g("道场.宗风")), 表殿等级: str(g("道场.表殿等级")) || "破败草庵", 敕额: g("道场.敕额") === true || g("道场.敕额") === "true", 地宫设施: obj(g("道场.地宫设施")) },
       教务: { 法事委托: obj(g("教务.法事委托")), 神迹传闻: obj(g("教务.神迹传闻")), 信众: num(g("教务.信众")), 上次法会: str(g("教务.上次法会")) },
       核心女主: girls,
@@ -3358,8 +3359,8 @@
   var pane = (win, id, inner, first) => '<div class="mz-pane' + (tabOf(win, first) === id ? " mz-on" : "") + '" data-pane="' + id + '">' + inner + "</div>";
   var wh = (t, b) => '<div class="mz-wh">' + t + (b ? " <b>" + b + "</b>" : "") + "</div>";
   var sealBtn = (label, act, ok, why, extra) => '<button class="mz-seal-btn' + (extra || "") + '"' + (act ? ' data-act="' + act + '"' : "") + (ok ? "" : " disabled") + ">" + label + "</button>" + (!ok && why ? '<span class="mz-why">' + why + "</span>" : "");
-  var lack = (D, 贯) => {
-    const diff = 贯 * 1e3 - 总文(D);
+  var lack = (D, 贯2) => {
+    const diff = 贯2 * 1e3 - 总文(D);
     return diff > 0 ? "钱不足，差" + money(diff) : "";
   };
   var gradeWhy = (D, g) => g === "精工" && !Object.keys(D.执事名册).length ? "须执事带工" : g === "天工" && D.教务.信众 < 50 ? "须信众五十人" : "";
@@ -3398,12 +3399,12 @@
   };
   var craftGateWhys = (D) => Object.keys(D.资粮.库藏).length >= storeCap(D) ? ["屉已满"] : [];
   var craftWhys = (D, c) => craftGateWhys(D).concat(craftPickWhys(D, c));
-  var loanWhys = (D, 贯) => {
+  var loanWhys = (D, 贯2) => {
     const w = [];
     const unlocked2 = HALLS.indexOf(D.道场.表殿等级) >= 1 || facilities(D).some((f) => f.名.includes("无尽藏") && f.档次 !== "粗成");
     if (!unlocked2) w.push("须表殿达庄严精舍，或地宫有精工以上无尽藏柜坊");
     if (Object.keys(D.资粮.罪业密簿).length >= LIMITS.罪业密簿) w.push("簿已满");
-    const l = 贯 > 0 ? lack(D, 贯) : "";
+    const l = 贯2 > 0 ? lack(D, 贯2) : "";
     if (l) w.push(l);
     return w;
   };
@@ -3706,20 +3707,20 @@
     }
     if (act === "loan") {
       const v = formVals(btn);
-      const 贯 = Math.round(Number(v.本金));
+      const 贯2 = Math.round(Number(v.本金));
       if (!v.欠户) {
         hint(btn, "先填欠户");
         return;
       }
-      if (!(贯 > 0)) {
+      if (!(贯2 > 0)) {
         hint(btn, "本金须为整数贯");
         return;
       }
-      commitForm({ tag: "无尽藏", check: (D) => loanWhys(D, 贯).join(" "), mutate: (sd) => {
-        sd.资粮.铜钱 -= 贯;
+      commitForm({ tag: "无尽藏", check: (D) => loanWhys(D, 贯2).join(" "), mutate: (sd) => {
+        sd.资粮.铜钱 -= 贯2;
         sd.资粮.罪业密簿 = sd.资粮.罪业密簿 || {};
-        sd.资粮.罪业密簿[v.欠户] = { 类别: "债契", 欠额: 贯, 已收息: 0, 详情: v.抵押 ? "押 " + v.抵押 : "", 价值: "月息五分，利不过本" };
-      }, message: FORM_MSG.放贷(v.欠户, cn(贯)) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+        sd.资粮.罪业密簿[v.欠户] = { 类别: "债契", 欠额: 贯2, 已收息: 0, 详情: v.抵押 ? "押 " + v.抵押 : "", 价值: "月息五分，利不过本" };
+      }, message: FORM_MSG.放贷(v.欠户, cn(贯2)) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
     }
   }
   function openViewer(src, title) {
