@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.50";
+  var CDN_TAG = "1.0.51";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -725,11 +725,10 @@
 .mz-turn.mz-gm { line-height: 2.08; font-size: var(--fs-body); letter-spacing: .3px; line-break: strict; text-wrap: pretty; text-align: justify; }
 .mz-turn.mz-gm p + p { margin-top: .9em; }
 .mz-quote { color: var(--cinnabar); }
-/* 谕印是 flex 末项且基线对齐：多行谕文时印守在首行右端，各行右边缘统一在印左 */
-.mz-turn.mz-zhu { display: flex; justify-content: flex-end; align-items: baseline; gap: 10px; text-align: right; color: var(--cinnabar); font-size: var(--fs-body); line-height: 2.08; letter-spacing: .3px; padding-right: 2px; }
-.mz-turn.mz-zhu .mz-text { min-width: 0; }
+/* 谕印随文跟在末行之后（款后钤印），各行右齐纸边不为印让列 */
+.mz-turn.mz-zhu { text-align: right; color: var(--cinnabar); font-size: var(--fs-body); line-height: 2.08; letter-spacing: .3px; padding-right: 2px; }
 .mz-turn.mz-zhu.mz-editing::after { content: none; }
-.mz-turn.mz-zhu::after { content: '谕'; flex: none; font-size: 16px; color: var(--paper-hi);
+.mz-turn.mz-zhu::after { content: '谕'; display: inline-block; margin-left: 10px; font-size: 16px; color: var(--paper-hi);
   width: 24px; height: 24px; line-height: 24px; text-align: center;
   background: var(--cinnabar); border-radius: 4px; translate: 0 -2px; opacity: .82; }
 
@@ -1186,7 +1185,7 @@
 .mz-turn.mz-selable { cursor: pointer; outline: 1px dashed rgba(139,103,42,.45); outline-offset: 6px; transition: outline-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
 .mz-turn.mz-selable:hover { outline-color: var(--cinnabar); }
 .mz-turn.mz-delsel { outline: 1px solid var(--cinnabar); background: rgba(160,52,38,.07); }
-.mz-story-edit { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.mz-story-edit { display: flex; flex-direction: column; gap: 8px; }
 .mz-story-edit textarea { width: 100%; resize: none; border: none; outline: none; font-family: inherit; font-size: 16px; line-height: 26px;
   color: var(--cinnabar); background: transparent; text-align: right; caret-color: var(--cinnabar);
   background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(118,94,56,.28) 25px 26px); background-attachment: local; }
