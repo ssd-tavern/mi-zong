@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.51";
+  var CDN_TAG = "1.0.52";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["card-calling.webp", "card-ledger.webp", "icon-coffer.webp", "icon-folddoc.webp", "icon-ledger.webp", "icon-letterbox.webp", "icon-lotus.webp", "icon-redknot.webp", "incense-coil.webp", "lotus-rank.webp", "map-changan.webp", "map-panorama.webp", "paper-folded.webp", "paper-ledger.webp", "paper-scroll.webp", "paper-whisper.webp", "seal-chi.webp", "seal-storm.webp", "shrine-model.webp", "slip-ledger.webp", "slip-title.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "ticket-notice.webp", "axle-plain.webp", "bg-lacquer-red.webp", "bg-silk-aged.webp", "board-temple.webp", "brocade-band.webp", "hanging-fish.webp", "plaque-entry.webp", "plaque-header.webp", "ribbon-knot.webp", "silk-board-core.webp"];
+  var PRELOAD_ASSETS = ["card-calling.webp", "card-ledger.webp", "icon-coffer.webp", "icon-folddoc.webp", "icon-ledger.webp", "icon-letterbox.webp", "icon-lotus.webp", "icon-redknot.webp", "incense-coil.webp", "lotus-rank.webp", "map-changan.webp", "map-panorama.webp", "paper-folded.webp", "paper-ledger.webp", "paper-scroll.webp", "paper-whisper.webp", "seal-chi.webp", "seal-storm.webp", "shrine-model.webp", "slip-ledger.webp", "slip-title.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "bloom-angelica.webp", "bloom-pomegranate.webp", "bloom-orchid.webp", "bloom-peach.webp", "ticket-notice.webp", "axle-plain.webp", "bg-lacquer-red.webp", "bg-silk-aged.webp", "board-temple.webp", "brocade-band.webp", "hanging-fish.webp", "plaque-entry.webp", "plaque-header.webp", "ribbon-knot.webp", "silk-board-core.webp"];
   var SEL = {
     entry: "mz-entry",
     entryEnter: "mz-entry-enter",
@@ -640,9 +640,12 @@
 .mz-ff-voice { display: inline-flex; align-items: center; gap: 7px; border: none; background: none; cursor: pointer;
   font-family: inherit; font-size: 12.5px; letter-spacing: 1px; color: var(--ink-dim); padding: 3px 4px;
   transition: color var(--t-fast) var(--ease-out); }
-.mz-ff-voice .mz-ava { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center;
-  justify-content: center; font-size: 11px; color: var(--paper-hi); background: linear-gradient(160deg, #7a5a35, #4a3821);
-  box-shadow: 0 0 0 1px rgba(120,96,54,.5); }
+/* 名签团花：每女主一朵设色花头，与心声卡灰调花押同花异色 */
+.mz-ff-voice .mz-bloom { width: 22px; height: 22px; flex: none; background: var(--bloom) center / contain no-repeat; }
+.mz-bloom.mz-su   { --bloom: url('${A3}bloom-angelica.webp'); }
+.mz-bloom.mz-xiao { --bloom: url('${A3}bloom-pomegranate.webp'); }
+.mz-bloom.mz-pei  { --bloom: url('${A3}bloom-orchid.webp'); }
+.mz-bloom.mz-ye   { --bloom: url('${A3}bloom-peach.webp'); }
 /* 新语红点：楼尾整行共用一枚，不逐人配点 */
 .mz-ff > .mz-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--cinnabar);
   box-shadow: 0 0 6px var(--cinnabar); animation: breathe 2.6s ease-in-out infinite; }
@@ -2895,7 +2898,7 @@
     const open = String(footOpen.get(mid) || "").split(":");
     const openKey = open[0] === "stat" ? open.join(":") : "";
     const openName2 = open[0] === "voice" ? open[1] : "";
-    const row2 = '<div class="mz-ff">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + '<span class="mz-ff-gap"></span>' + (voices.length ? '<span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '"><span class="mz-ava">' + n[0] + "</span>" + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') : "") + "</div>";
+    const row2 = '<div class="mz-ff">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + '<span class="mz-ff-gap"></span>' + (voices.length ? '<span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '"><span class="mz-bloom ' + STAMP[n] + '"></span>' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') : "") + "</div>";
     let panel = "";
     if (openKey) {
       const it = items.find((x) => x.key === openKey);
