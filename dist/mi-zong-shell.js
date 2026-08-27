@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.48";
+  var CDN_TAG = "1.0.49";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -720,9 +720,9 @@
   background-repeat: no-repeat, repeat;
   background-position: top, 0 0;
 }
-#mz-paper { flex: 1; overflow-y: auto; padding: 32px 44px 22px; }
+#mz-paper { flex: 1; overflow-y: auto; scrollbar-gutter: stable both-edges; padding: 32px 44px 22px; }
 .mz-turn { margin-bottom: 22px; }
-.mz-turn.mz-gm { line-height: 2.08; font-size: var(--fs-body); letter-spacing: .3px; line-break: strict; text-wrap: pretty; }
+.mz-turn.mz-gm { line-height: 2.08; font-size: var(--fs-body); letter-spacing: .3px; line-break: strict; text-wrap: pretty; text-align: justify; }
 .mz-turn.mz-gm p + p { margin-top: .9em; }
 .mz-quote { color: var(--cinnabar); }
 .mz-turn.mz-zhu { text-align: right; color: var(--cinnabar); font-size: var(--fs-body); line-height: 2.08; letter-spacing: .3px; padding-right: 2px; }
