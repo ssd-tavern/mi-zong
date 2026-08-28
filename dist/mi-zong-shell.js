@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.61";
+  var CDN_TAG = "1.0.62";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -405,8 +405,8 @@
 }
 
 :where(#mz-shell-root), :where(#mz-shell-root) * { margin: 0; padding: 0; box-sizing: border-box; }
-/* 宿主的标签级默认样式（酒馆主题 h5{margin} 之类）能击穿零特异性重置，类级再压一层，仍低于壳内自身的类规则 */
-.mz-shell :where(h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,blockquote,figure,figcaption,fieldset,hr,pre,menu,table,th,td,details,summary) { margin: 0; padding: 0; }
+/* 宿主的标签级默认样式（酒馆主题 h5{margin}、small{color} 之类）能击穿零特异性重置，类级再压一层，仍低于壳内自身的类规则 */
+.mz-shell :where(h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,blockquote,figure,figcaption,fieldset,hr,pre,menu,table,th,td,details,summary,a,b,i,em,strong,small,u,s,mark,code,kbd,samp,abbr,cite,q,sub,sup,dfn,var,ins,del) { margin: 0; padding: 0; color: inherit; background: none; }
 :where(#mz-shell-root) svg { display: block; overflow: visible; }
 :where(#mz-shell-root) img { display: block; -webkit-user-drag: none; user-select: none; }
 
