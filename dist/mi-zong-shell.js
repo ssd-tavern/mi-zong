@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.56";
+  var CDN_TAG = "1.0.57";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,8 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["card-calling.webp", "card-ledger.webp", "icon-coffer.webp", "icon-folddoc.webp", "icon-ledger.webp", "icon-letterbox.webp", "icon-lotus.webp", "icon-redknot.webp", "incense-coil.webp", "lotus-rank.webp", "map-changan.webp", "map-panorama.webp", "paper-folded.webp", "paper-ledger.webp", "paper-scroll.webp", "paper-whisper.webp", "seal-chi.webp", "seal-storm.webp", "shrine-model.webp", "slip-ledger.webp", "slip-title.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "ticket-notice.webp", "axle-plain.webp", "bg-lacquer-red.webp", "bg-silk-aged.webp", "board-temple.webp", "brocade-band.webp", "hanging-fish.webp", "plaque-entry.webp", "plaque-header.webp", "ribbon-knot.webp", "silk-board-core.webp"];
+  var PRELOAD_ASSETS = ["card-calling.webp", "card-ledger.webp", "icon-coffer.webp", "icon-folddoc.webp", "icon-ledger.webp", "icon-letterbox.webp", "icon-lotus.webp", "icon-redknot.webp", "incense-coil.webp", "lotus-rank.webp", "paper-folded.webp", "paper-ledger.webp", "paper-scroll.webp", "paper-whisper.webp", "seal-chi.webp", "seal-storm.webp", "shrine-model.webp", "slip-ledger.webp", "slip-title.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "ticket-notice.webp", "axle-plain.webp", "bg-lacquer-red.webp", "bg-silk-aged.webp", "board-temple.webp", "brocade-band.webp", "hanging-fish.webp", "plaque-entry.webp", "plaque-header.webp", "ribbon-knot.webp", "silk-board-core.webp", "map-changan.webp", "map-panorama.webp"];
+  var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
     entryEnter: "mz-entry-enter",
@@ -1467,7 +1468,7 @@
   ];
   var chosenSect = null;
   var page = 0;
-  var busy = false;
+  var gateBusy = false;
   function isPanelText(text) {
     return /^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(String(text || ""));
   }
@@ -1568,8 +1569,8 @@
     return _.cloneDeep(_.omit(v.stat_data, ["$internal"]));
   }
   async function confirmGate(btn) {
-    if (busy || !chosenSect) return;
-    busy = true;
+    if (gateBusy || !chosenSect) return;
+    gateBusy = true;
     btn.disabled = true;
     try {
       const late = gateLate();
@@ -1606,7 +1607,7 @@
       const again = doc.querySelector("#" + SEL.lift + ' .mz-gate-foot button[data-gate="confirm"]');
       if (again) again.disabled = false;
     } finally {
-      busy = false;
+      gateBusy = false;
     }
   }
   function playRite() {
@@ -4059,23 +4060,25 @@
     }
   }
   var warmed = false;
+  var busy = false;
   function warmAssets() {
     if (warmed) return;
     warmed = true;
-    const w = doc.defaultView;
-    const idle = (fn) => w && typeof w.requestIdleCallback === "function" ? w.requestIdleCallback(fn, { timeout: 2e3 }) : setTimeout(fn, 200);
     let i = 0;
-    const next = () => {
+    const lane = () => {
       if (i >= PRELOAD_ASSETS.length) return;
+      if (sending || busy || gateBusy) {
+        setTimeout(lane, 300);
+        return;
+      }
       const img = doc.createElement("img");
-      img.onload = img.onerror = () => idle(next);
+      img.onload = img.onerror = lane;
       img.src = asset(PRELOAD_ASSETS[i++]);
     };
-    idle(next);
+    for (let n = 0; n < PRELOAD_LANES; n++) lane();
   }
-  var busy2 = false;
   function fade(root, cls, then) {
-    busy2 = true;
+    busy = true;
     root.classList.add(cls);
     let fired = false;
     const go = () => {
@@ -4083,7 +4086,7 @@
       fired = true;
       root.removeEventListener("animationend", go);
       root.classList.remove(cls);
-      busy2 = false;
+      busy = false;
       then();
     };
     root.addEventListener("animationend", function h(e) {
@@ -4094,7 +4097,7 @@
     setTimeout(go, 400);
   }
   function toggleShellImpl() {
-    if (busy2) return;
+    if (busy) return;
     const root = doc.getElementById(SHELL_ID);
     if (isShellVisible()) {
       commitUserEditIfOpen();
