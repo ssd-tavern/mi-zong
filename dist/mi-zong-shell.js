@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.68";
+  var CDN_TAG = "1.0.69";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1531,7 +1531,9 @@
   }
   function gateNeeded() {
     if (safeLastMessageId() === 0 && onPanelSwipe()) return true;
-    return !readMVU().道场.宗风;
+    const D = readMVU();
+    if (D._empty && gateLate()) return false;
+    return !D.道场.宗风;
   }
   var gateLate = () => {
     const id = safeLastMessageId();
