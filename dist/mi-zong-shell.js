@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.58";
+  var CDN_TAG = "1.0.59";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["card-calling.webp", "card-ledger.webp", "icon-coffer.webp", "icon-folddoc.webp", "icon-ledger.webp", "icon-letterbox.webp", "icon-lotus.webp", "icon-redknot.webp", "incense-coil.webp", "lotus-rank.webp", "paper-folded.webp", "paper-ledger.webp", "paper-scroll.webp", "paper-whisper.webp", "seal-chi.webp", "seal-storm.webp", "shrine-model.webp", "slip-ledger.webp", "slip-title.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "ticket-notice.webp", "axle-plain.webp", "bg-lacquer-red.webp", "bg-silk-aged.webp", "board-temple.webp", "brocade-band.webp", "hanging-fish.webp", "plaque-entry.webp", "plaque-header.webp", "ribbon-knot.webp", "silk-board-core.webp", "map-changan.webp", "map-panorama.webp"];
+  var PRELOAD_ASSETS = ["bg-silk-aged.webp", "bg-lacquer-red.webp", "paper-scroll.webp", "board-temple.webp", "plaque-header.webp", "plaque-entry.webp", "silk-board-core.webp", "axle-plain.webp", "brocade-band.webp", "ribbon-knot.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp"];
   var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
