@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.60";
+  var CDN_TAG = "1.0.61";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -405,6 +405,8 @@
 }
 
 :where(#mz-shell-root), :where(#mz-shell-root) * { margin: 0; padding: 0; box-sizing: border-box; }
+/* 宿主的标签级默认样式（酒馆主题 h5{margin} 之类）能击穿零特异性重置，类级再压一层，仍低于壳内自身的类规则 */
+.mz-shell :where(h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,blockquote,figure,figcaption,fieldset,hr,pre,menu,table,th,td,details,summary) { margin: 0; padding: 0; }
 :where(#mz-shell-root) svg { display: block; overflow: visible; }
 :where(#mz-shell-root) img { display: block; -webkit-user-drag: none; user-select: none; }
 
@@ -441,7 +443,7 @@
 /* ==== 侧栏骨架 ==== */
 .mz-side, .mz-rside {
   width: var(--side-w); flex: none; display: flex; flex-direction: column;
-  padding: 8px 13px 6px; gap: clamp(4px, 1vh, 22px); overflow-y: auto;
+  padding: 8px 13px 6px; gap: clamp(4px, 1.5vh, 22px); overflow-y: auto;
   background-image:
     linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
     linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
@@ -3988,6 +3990,7 @@
     style.textContent = SHELL_CSS;
     const root = doc.createElement("div");
     root.id = SHELL_ID;
+    root.className = "mz-shell";
     root.dataset.owner = SHELL_TOKEN;
     root.innerHTML = skeletonHtml();
     doc.body.appendChild(root);
