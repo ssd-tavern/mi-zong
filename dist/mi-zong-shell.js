@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.62";
+  var CDN_TAG = "1.0.63";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -624,10 +624,12 @@
 .mz-opt:hover .mz-num { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
 
 /* ==== 楼尾静默行（变量牌居左＋心声名签居右） ==== */
-.mz-ff { display: flex; align-items: center; gap: 10px; margin: 12px 0 14px; }
-.mz-ff-gap { flex: 1; }
+.mz-ff { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 12px 0 14px; }
+/* 基准 0＋min-content 下限：单枚变量牌塞不进名签旁边时右块才整块换行，不叫牌面压到名签上 */
+.mz-ff-vars { flex: 1 1 0; min-width: min-content; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; }
+.mz-ff-side { flex: none; margin-left: auto; display: flex; align-items: center; gap: 10px; }
 .mz-ff .mz-ff-label { font-size: 11px; letter-spacing: 2px; color: var(--ink-faint); }
-.mz-ff-var { display: inline-flex; align-items: baseline; gap: 5px; border: none; background: none; cursor: pointer;
+.mz-ff-var { display: inline-flex; flex: none; white-space: nowrap; align-items: baseline; gap: 5px; border: none; background: none; cursor: pointer;
   font-family: inherit; font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); padding: 3px 4px;
   transition: color var(--t-fast) var(--ease-out); }
 .mz-ff-var:hover { color: var(--ink-dim); }
@@ -645,7 +647,7 @@
   font-family: inherit; font-size: 12.5px; letter-spacing: 1px; color: var(--ink-dim); padding: 3px 4px;
   transition: color var(--t-fast) var(--ease-out); }
 /* 新语红点：楼尾整行共用一枚，不逐人配点 */
-.mz-ff > .mz-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--cinnabar);
+.mz-ff-side > .mz-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--cinnabar);
   box-shadow: 0 0 6px var(--cinnabar); animation: breathe 2.6s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity: .95; } 50% { opacity: .4; } }
 .mz-ff-voice:hover, .mz-ff-voice.mz-open { color: var(--cinnabar); }
@@ -789,7 +791,9 @@
 #mz-send:active { translate: 0 2px; }
 
 /* ==== 危机段（桌面端不显，手机端替代悬浮朱票，见 phone.js） ==== */
+/* translateZ 提独立合成层：滤镜结果被缓存，滚动时不逐帧重算，否则投影闪烁 */
 .mz-crisis-line { display: none; position: relative; width: 196px; margin: 8px auto 22px;
+  transform: translateZ(0);
   filter: drop-shadow(0 2px 2px rgba(0,0,0,.5)) drop-shadow(0 8px 14px rgba(0,0,0,.28)); }
 .mz-crisis-line img { width: 100%; }
 .mz-crisis-line .mz-ticket-text { position: absolute; top: 12%; left: 10%; right: 19%; bottom: 12%;
@@ -1292,6 +1296,10 @@
   #mz-jump { bottom: calc(var(--bar-tot) + 62px); left: auto; right: 14px; }
   /* iOS Safari 聚焦字号 <16px 的输入框会放大页面 */
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
+  /* ==== 楼尾：变量在上自行折行，心声整块在下贴右（同行放不下四名签，不叫牌面与名签互挤） ==== */
+  .mz-ff-vars { flex: 1 1 100%; }
+  .mz-ff-vars:empty { display: none; }
+
   /* 手机端撤悬浮朱票，换卷末危机段 */
   #mz-shell-root[data-crisis] #mz-crisis { display: none; }
   .mz-crisis-line { display: block; }
@@ -1396,6 +1404,9 @@
 #mz-shell-root .mz-story-edit textarea { color: var(--cinnabar) !important; }
 #mz-shell-root .mz-form input, #mz-shell-root .mz-build textarea { border: none !important; border-bottom: 1px solid rgba(118,94,56,.5) !important; }
 #mz-lift.mz-sin .mz-form input { border-bottom-color: rgba(227,212,172,.4) !important; }
+#mz-shell-root .mz-form ::placeholder { color: rgba(118,94,56,.42) !important; }
+#mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35) !important; }
+#mz-writing textarea::placeholder { color: var(--ink-faint) !important; opacity: .75 !important; }
 `;
 
   // src/03-theme.js
@@ -2900,7 +2911,7 @@
     const open = String(footOpen.get(mid) || "").split(":");
     const openKey = open[0] === "stat" ? open.join(":") : "";
     const openName2 = open[0] === "voice" ? open[1] : "";
-    const row2 = '<div class="mz-ff">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + '<span class="mz-ff-gap"></span>' + (voices.length ? '<span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') : "") + "</div>";
+    const row2 = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length ? '<div class="mz-ff-side"><span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') + "</div>" : "") + "</div>";
     let panel = "";
     if (openKey) {
       const it = items.find((x) => x.key === openKey);
