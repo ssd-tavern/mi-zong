@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.63";
+  var CDN_TAG = "1.0.64";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -365,6 +365,8 @@
   var tokens_default = `
 /* ==== 配色（单主题：漆黑鎏金＋旧纸中栏） ==== */
 #mz-shell-root {
+  /* 一次切断宿主 body 的继承（投影、字体平滑、字号、color-scheme 都从那来），壳要什么下面重新声明 */
+  all: initial;
   /* 字阶八档，见 前端信息架构.md「字体与字阶」 */
   --fs-title: 28px; --ls-title: 14px;
   --fs-plaque: 14px; --ls-plaque: 6px;
@@ -405,17 +407,21 @@
 }
 
 :where(#mz-shell-root), :where(#mz-shell-root) * { margin: 0; padding: 0; box-sizing: border-box; }
-/* 宿主的标签级默认样式（酒馆主题 h5{margin}、small{color} 之类）能击穿零特异性重置，类级再压一层，仍低于壳内自身的类规则 */
-.mz-shell :where(h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,blockquote,figure,figcaption,fieldset,hr,pre,menu,table,th,td,details,summary,a,b,i,em,strong,small,u,s,mark,code,kbd,samp,abbr,cite,q,sub,sup,dfn,var,ins,del) { margin: 0; padding: 0; color: inherit; background: none; }
-:where(#mz-shell-root) svg { display: block; overflow: visible; }
-:where(#mz-shell-root) img { display: block; -webkit-user-drag: none; user-select: none; }
+/* revert 把宿主的标签级作者样式整体退回浏览器默认，不枚举属性——枚举漏一条就破一次 */
+.mz-shell :where(a,abbr,address,article,aside,b,bdi,bdo,blockquote,br,button,caption,cite,code,col,colgroup,dd,del,details,dfn,div,dl,dt,em,fieldset,figcaption,figure,footer,form,h1,h2,h3,h4,h5,h6,header,hr,i,img,input,ins,kbd,label,legend,li,main,mark,menu,meter,nav,ol,optgroup,option,output,p,picture,pre,progress,q,rp,rt,ruby,s,samp,section,select,small,span,strong,sub,summary,sup,table,tbody,td,textarea,tfoot,th,thead,time,tr,u,ul,var,video,wbr) { all: revert; margin: 0; padding: 0; box-sizing: border-box; color: inherit; background: none; }
+/* SVG 不入清单：x／y／width／d 在 SVG2 也是表现属性，revert 会连图形抹平；子元素只挡宿主的 * 规则 */
+.mz-shell :where(svg) { all: revert; display: block; overflow: visible; box-sizing: border-box; }
+.mz-shell :where(svg) * { text-shadow: none; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; }
+.mz-shell :where(img) { display: block; -webkit-user-drag: none; user-select: none; }
 
 /* ==== 整体三栏 ==== */
 /* 酒馆 html 带 transform，fixed 的包含块是 html 而非视口；手机端 body 又 fixed 使 html 高 0，尺寸不能靠 inset 撑 */
 #mz-shell-root {
   position: fixed; inset: 0; width: 100vw; width: 100dvw; height: 100vh; height: 100dvh; z-index: 9000; display: flex;
   font-family: 'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;
-  color: var(--ink);
+  color: var(--ink); font-size: 16px; -webkit-locale: 'zh';
+  box-sizing: border-box; direction: ltr; unicode-bidi: isolate;
+  -webkit-tap-highlight-color: transparent;
   background-color: #cfc0a0;
   background-image:
     radial-gradient(120% 105% at 50% 42%, rgba(60,42,18,0) 45%, rgba(60,42,18,.24) 100%),
@@ -424,7 +430,8 @@
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, 512px 512px;
 }
-#mz-shell-root ::-webkit-scrollbar { width: 9px; }
+#mz-shell-root ::-webkit-scrollbar { width: 9px; height: 9px; }
+#mz-shell-root ::-webkit-scrollbar-corner { background: transparent; }
 #mz-shell-root ::-webkit-scrollbar-track { background: linear-gradient(90deg,
   transparent calc(50% - .5px), rgba(var(--gold-rgb), .25) calc(50% - .5px),
   rgba(var(--gold-rgb), .25) calc(50% + .5px), transparent calc(50% + .5px)); }
@@ -1213,7 +1220,9 @@
 #mz-delbar button.mz-armed { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
 #mz-corner button[data-corner="acu"] { display: none; }
 #mz-shell-root[data-acu] #mz-corner button[data-corner="acu"] { display: block; }
-#mz-entry { position: fixed; z-index: 8999; display: none; --fs-label: 12.5px; --ls-label: 3px; }
+#mz-entry { all: initial; position: fixed; z-index: 8999; display: none; box-sizing: border-box;
+  direction: ltr; unicode-bidi: isolate; -webkit-locale: 'zh'; -webkit-tap-highlight-color: transparent;
+  --fs-label: 12.5px; --ls-label: 3px; }
 #mz-entry.mz-tab { display: block; }
 /* 入卷题签配色对齐酒馆内入口面板（绢纸 #f3ead2／入卷红 #9b2f22） */
 .mz-entry-tab { position: relative; display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 6px 13px 6px 6px;
@@ -1398,14 +1407,15 @@
   var armor_default = `
 #mz-shell-root input, #mz-shell-root textarea {
   background-color: transparent !important; color: var(--ink) !important;
-  box-shadow: none !important; border-radius: 0 !important; font-family: inherit !important; }
+  box-shadow: none !important; border-radius: 0 !important; font-family: inherit !important;
+  border: none !important; }
 #mz-shell-root input:focus, #mz-shell-root textarea:focus { outline: none !important; }
 #mz-writing textarea, #mz-shell-root .mz-story-edit textarea { border: none !important; }
 #mz-shell-root .mz-story-edit textarea { color: var(--cinnabar) !important; }
-#mz-shell-root .mz-form input, #mz-shell-root .mz-build textarea { border: none !important; border-bottom: 1px solid rgba(118,94,56,.5) !important; }
+#mz-shell-root .mz-form input, #mz-shell-root .mz-form textarea, #mz-shell-root .mz-build textarea { border: none !important; border-bottom: 1px solid rgba(118,94,56,.5) !important; }
 #mz-lift.mz-sin .mz-form input { border-bottom-color: rgba(227,212,172,.4) !important; }
-#mz-shell-root .mz-form ::placeholder { color: rgba(118,94,56,.42) !important; }
-#mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35) !important; }
+#mz-shell-root .mz-form ::placeholder { color: rgba(118,94,56,.42) !important; opacity: 1 !important; }
+#mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35) !important; opacity: 1 !important; }
 #mz-writing textarea::placeholder { color: var(--ink-faint) !important; opacity: .75 !important; }
 `;
 
@@ -4173,6 +4183,7 @@
     if (!el) {
       el = doc.createElement("div");
       el.id = SEL.entry;
+      el.className = "mz-shell";
       el.dataset.owner = SHELL_TOKEN;
       doc.body.appendChild(el);
     }
@@ -4181,7 +4192,7 @@
   function hideEntry() {
     const el = doc.getElementById(SEL.entry);
     if (el) {
-      el.className = "";
+      el.className = "mz-shell";
       el.innerHTML = "";
     }
   }
@@ -4196,11 +4207,11 @@
   function renderEntry() {
     const el = ensureEntry();
     if (onPanelFloor()) {
-      el.className = "";
+      el.className = "mz-shell";
       el.innerHTML = "";
       return;
     }
-    el.className = "mz-tab";
+    el.className = "mz-shell mz-tab";
     el.innerHTML = `<button class="mz-entry-tab" id="${SEL.entryEnter}" title="入卷 ${CARD_TITLE}"><i>入</i><span>${CARD_TITLE}</span>${ICO.chev}</button>`;
     positionPill();
     const enter = doc.getElementById(SEL.entryEnter);
@@ -4208,7 +4219,7 @@
   }
   function positionPill() {
     const el = doc.getElementById(SEL.entry);
-    if (!el || el.className !== "mz-tab") return;
+    if (!el || !el.classList.contains("mz-tab")) return;
     const chat = doc.getElementById("chat");
     if (chat) {
       const r = chat.getBoundingClientRect();
