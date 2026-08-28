@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.64";
+  var CDN_TAG = "1.0.65";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -481,9 +481,10 @@
 #mz-board .mz-face { padding: 7px 10px 5px; }
 #mz-board .mz-grp + .mz-grp { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(120,96,54,.3); }
 #mz-board .mz-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-  font-size: 12.5px; line-height: 1.7; color: var(--ink-dim); white-space: nowrap; }
-#mz-board .mz-row span { letter-spacing: 2px; }
-#mz-board .mz-row b { color: var(--ink); font-weight: 600; font-size: 14px; letter-spacing: .5px; }
+  font-size: 12.5px; line-height: 1.7; color: var(--ink-dim); }
+#mz-board .mz-row span { flex: none; letter-spacing: 2px; white-space: nowrap; }
+/* 终局铜钱能到「一万二千八百贯九百九十九文」，比行宽长；读数自行折行右对齐，签名留在首行 */
+#mz-board .mz-row b { min-width: 0; text-align: right; color: var(--ink); font-weight: 600; font-size: 14px; letter-spacing: .5px; }
 #mz-board .mz-row b.mz-warn { color: #96500f; }
 #mz-board .mz-row b.mz-good { color: #4a6926; }
 #mz-board .mz-row b.mz-fest { color: var(--cinnabar); }
