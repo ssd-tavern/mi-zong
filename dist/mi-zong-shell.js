@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.54";
+  var CDN_TAG = "1.0.55";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -202,11 +202,11 @@
   var KIND_SHORT = { 药品: "药", 道具: "具", 法器: "器" };
   var LIMITS = { 库藏: 12, 罪业密簿: 5, 法事委托: 3, 神迹传闻: 3, 执事名册: 12, 明妃录: 6 };
   var FORM_MSG = {
-    兴造: (名, 档, 奇效) => "【兴造】" + 名 + "（" + 档 + "）已破土动工。" + (奇效 ? "奇效议定：" + 奇效 : ""),
-    升殿: (殿) => "【兴造】表殿改建" + 殿 + "，匠人已开工动土。",
-    升造: (名, 旧, 新, 奇效) => "【兴造】" + 名 + "自" + 旧 + "改造为" + 新 + "，匠人已动工。" + (奇效 ? "奇效议定：" + 奇效 : ""),
-    工巧: (名, 类) => "【工巧】" + 类 + "「" + 名 + "」已拨资开炉。",
-    放贷: (户, 贯2) => "【无尽藏】放贷" + 贯2 + "贯与" + 户 + "，立契画押。",
+    兴造: (名, 档, 奇效, 贯2) => "【兴造】" + 名 + "（" + 档 + "）已破土动工，账房已扣" + cn(贯2) + "贯，此笔不再入账。" + (奇效 ? "奇效议定：" + 奇效 : ""),
+    升殿: (殿, 贯2) => "【兴造】表殿改建" + 殿 + "，匠人已开工动土，账房已扣" + cn(贯2) + "贯，此笔不再入账。",
+    升造: (名, 旧, 新, 奇效, 贯2) => "【兴造】" + 名 + "自" + 旧 + "改造为" + 新 + "，匠人已动工，账房已扣" + cn(贯2) + "贯，此笔不再入账。" + (奇效 ? "奇效议定：" + 奇效 : ""),
+    工巧: (名, 类, 贯2) => "【工巧】" + 类 + "「" + 名 + "」已拨资开炉，账房已扣" + cn(贯2) + "贯，此笔不再入账。",
+    放贷: (户, 贯2) => "【无尽藏】放贷" + cn(贯2) + "贯与" + 户 + "，立契画押，账房已出" + cn(贯2) + "贯，此笔不再入账。",
     勒索: (名) => "【勒索】以罪业密簿所载把柄，向" + 名 + "开口勒索。",
     朱票副题: "祸事临门 须教主亲周旋"
   };
@@ -3294,7 +3294,8 @@
       return false;
     }
     closeLift();
-    return sendText(message + "\n" + patchBlock(ops), { carryStat: stat });
+    const text = typeof message === "function" ? message(扣款) : message;
+    return sendText(text + "\n" + patchBlock(ops), { carryStat: stat });
   }
   function patchBlock(ops) {
     return "<UpdateVariable>\n<JSONPatch>\n" + JSON.stringify(ops) + "\n</JSONPatch>\n</UpdateVariable>";
@@ -3633,7 +3634,7 @@
       commitForm({ tag: "兴造", check: (D) => hallWhys(D).join(" "), mutate: (sd) => {
         sd.资粮.铜钱 -= HALL_PRICE.庄严精舍;
         sd.道场.表殿等级 = "庄严精舍";
-      }, message: FORM_MSG.升殿("庄严精舍") }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (贯2) => FORM_MSG.升殿("庄严精舍", 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "upgrade" || act === "upgrade-go" || act === "upgrade-cancel") {
@@ -3665,7 +3666,7 @@
         sd.资粮.铜钱 -= UPGRADE_PRICE[新];
         cur.档次 = 新;
         if (奇效) cur.奇效 = 奇效;
-      }, message: FORM_MSG.升造(名, f.档次, 新, 奇效) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (贯2) => FORM_MSG.升造(名, f.档次, 新, 奇效, 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "build") {
@@ -3684,7 +3685,7 @@
         sd.资粮.铜钱 -= GRADE_PRICE[档];
         sd.道场.地宫设施 = sd.道场.地宫设施 || {};
         sd.道场.地宫设施[v.名称] = Object.assign({ 用途: v.用途 || "", 档次: 档 }, 奇效 ? { 奇效 } : {});
-      }, message: FORM_MSG.兴造(v.名称, 档, 奇效) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (贯2) => FORM_MSG.兴造(v.名称, 档, 奇效, 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       bpSel = null;
       return;
     }
@@ -3704,7 +3705,7 @@
         sd.资粮.铜钱 -= c.price;
         sd.资粮.库藏 = sd.资粮.库藏 || {};
         sd.资粮.库藏[v.物名] = { 类别: 类, 效用: v.效用 || "" };
-      }, message: FORM_MSG.工巧(v.物名, 类) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (贯2) => FORM_MSG.工巧(v.物名, 类, 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "loan") {
@@ -3722,7 +3723,7 @@
         sd.资粮.铜钱 -= 贯2;
         sd.资粮.罪业密簿 = sd.资粮.罪业密簿 || {};
         sd.资粮.罪业密簿[v.欠户] = { 类别: "债契", 欠额: 贯2, 已收息: 0, 详情: v.抵押 ? "押 " + v.抵押 : "", 价值: "月息五分，利不过本" };
-      }, message: FORM_MSG.放贷(v.欠户, cn(贯2)) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (扣) => FORM_MSG.放贷(v.欠户, 扣) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
     }
   }
   function openViewer(src, title) {
