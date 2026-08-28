@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.67";
+  var CDN_TAG = "1.0.68";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1129,20 +1129,24 @@
 .mz-names button.mz-off { opacity: .45; }
 .mz-names button.mz-off:hover { color: inherit; }
 
-/* 营造表殿页：三阶次第横排大卡，升级钮与注脚沉底 */
-.mz-halls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; flex: 1; min-height: 0; }
-.mz-hall { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 16px; min-height: 168px;
-  color: var(--ink-faint); border: 1px dashed rgba(139,103,42,.4); }
-.mz-hall + .mz-hall::before { content: ''; position: absolute; left: -21px; top: 50%; width: 14px; height: 1px; background: rgba(139,103,42,.5); }
-.mz-hall b { font-size: 18px; letter-spacing: 4px; text-indent: 4px; color: inherit; font-weight: 600; }
-.mz-hall p { font-size: 14px; letter-spacing: 1px; line-height: 2; color: var(--ink-faint); }
-.mz-hall small { margin-top: auto; font-size: 13px; letter-spacing: 1px; color: #9a7420; }
-.mz-hall .mz-tag { position: absolute; top: 14px; right: 16px; font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); }
-.mz-hall.mz-done { border-style: solid; color: var(--ink-dim); background: rgba(139,103,42,.08); }
-.mz-hall.mz-cur { border: 1px solid #9a7420; color: #9a7420; background: rgba(216,164,68,.12); box-shadow: inset 0 0 0 1px rgba(216,164,68,.35); }
-.mz-hall.mz-cur p { color: var(--ink-dim); }
-.mz-hall .mz-chi { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; text-align: center; font-size: 11px; line-height: 22px; color: #fff4dc; background: var(--cinnabar); }
-.mz-hall-act { display: flex; align-items: center; gap: 6px; flex: none; margin-top: 4px; }
+/* 营造表殿页：三阶竖向次第轴，线只连到末阶、节点分已成／当下／未启 */
+.mz-halls { display: flex; flex-direction: column; gap: 32px; flex: none; margin-left: 6px; padding-left: 22px; }
+.mz-hall { position: relative; display: flex; flex-direction: column; gap: 5px; color: var(--ink-faint); }
+.mz-hall::before { content: ''; position: absolute; left: -26px; top: 6px; width: 10px; height: 10px; border-radius: 50%;
+  background: rgba(255,252,244,.95); box-shadow: 0 0 0 1px rgba(139,103,42,.5); }
+.mz-hall::after { content: ''; position: absolute; left: -22px; top: 20px; bottom: -34px; width: 2px; background: rgba(139,103,42,.3); }
+.mz-hall:last-child::after { content: none; }
+.mz-hall.mz-done::before { background: rgba(139,103,42,.5); box-shadow: 0 0 0 2px rgba(255,252,244,.9); }
+.mz-hall.mz-cur::before { background: var(--cinnabar); box-shadow: 0 0 0 2px rgba(255,252,244,.9); }
+.mz-hall-top { display: flex; align-items: baseline; gap: 12px; }
+.mz-hall b { font-size: 17px; letter-spacing: 4px; text-indent: 4px; color: var(--ink-dim); font-weight: 600; }
+.mz-hall.mz-cur b { color: #9a7420; }
+.mz-hall .mz-tag { font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); }
+.mz-hall.mz-cur .mz-tag { color: var(--cinnabar); }
+.mz-hall p { font-size: 14px; letter-spacing: 1px; line-height: 1.9; }
+.mz-hall .mz-chi { align-self: center; width: 20px; height: 20px; text-align: center; font-size: 11px; line-height: 20px; color: #fff4dc; background: var(--cinnabar); }
+.mz-hall-act { display: flex; align-items: center; gap: 12px; margin-top: 3px; }
+.mz-hall-act small { flex: none; white-space: nowrap; font-size: 13px; letter-spacing: 1px; color: #9a7420; }
 .mz-hall-act .mz-why { margin-left: 0; }
 .mz-hall-note { margin-top: auto; padding-top: 12px; border-top: 1px dashed rgba(139,103,42,.35);
   font-size: 13px; letter-spacing: 1px; line-height: 1.9; color: var(--ink-faint); }
@@ -1389,9 +1393,8 @@
   .mz-portrait .mz-pic { width: 220px; flex: none; }
   .mz-thumbs { width: 100%; gap: 6px; }
   .mz-grid.mz-c3, .mz-grid.mz-c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .mz-halls { grid-template-columns: minmax(0, 1fr); gap: 10px; flex: none; }
-  .mz-hall { min-height: 0; padding: 12px 14px 11px; }
-  .mz-hall + .mz-hall::before { content: none; }
+  .mz-halls { gap: 24px; margin-left: 2px; }
+  .mz-hall-act { flex-wrap: wrap; gap: 6px 10px; }
   .mz-hall-note { margin-top: 0; }
   .mz-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mz-bplist { width: 100%; }
@@ -3511,15 +3514,17 @@
   }
   function hallPane(D, hall) {
     const hi = Math.max(0, HALLS.indexOf(hall));
-    const halls = HALLS.map((h, i) => '<div class="mz-hall' + (i < hi ? " mz-done" : i === hi ? " mz-cur" : "") + '"><span class="mz-tag">' + (i < hi ? "已成" : i === hi ? "当下" : "未启") + "</span><b>" + h + "</b><p>" + HALL_LOOK[h] + "</p><small>" + (i <= hi ? "" : i === 1 ? "二百贯" : "一千贯　须得敕额") + "</small>" + (h === "敕赐法堂" && D.道场.敕额 ? '<span class="mz-chi">敕</span>' : "") + "</div>").join("");
-    let act = "";
-    if (hi === 0) {
-      const whys = hallWhys(D);
-      act = sealBtn("升 庄严精舍", "hall", !whys.length, whys.join(" "), " mz-lg");
-    } else if (hi === 1) {
-      act = '<span class="mz-why">升敕赐法堂须得敕额，须教主亲身周旋</span>';
-    }
-    return '<div class="mz-folio mz-fill"><div class="mz-halls">' + halls + '</div><div class="mz-hall-act">' + act + '</div><div class="mz-hall-note">' + HALL_NOTE + "</div></div>";
+    const rows = HALLS.map((h, i) => {
+      let act = "";
+      if (i > hi) {
+        const price = "<small>" + (i === 1 ? "二百贯" : "一千贯　须得敕额") + "</small>";
+        const whys = i === 1 ? hallWhys(D) : [];
+        const tail = i !== hi + 1 ? "" : i === 1 ? sealBtn("升 庄严精舍", "hall", !whys.length, whys.join(" ")) : '<span class="mz-why">须教主亲身周旋</span>';
+        act = '<div class="mz-hall-act">' + price + tail + "</div>";
+      }
+      return '<div class="mz-hall' + (i < hi ? " mz-done" : i === hi ? " mz-cur" : "") + '"><div class="mz-hall-top"><b>' + h + "</b>" + (h === "敕赐法堂" && D.道场.敕额 ? '<span class="mz-chi">敕</span>' : "") + '<span class="mz-tag">' + (i < hi ? "已成" : i === hi ? "当下" : "未启") + "</span></div><p>" + HALL_LOOK[h] + "</p>" + act + "</div>";
+    }).join("");
+    return '<div class="mz-folio mz-fill"><div class="mz-halls">' + rows + '</div><div class="mz-hall-note">' + HALL_NOTE + "</div></div>";
   }
   function cavePane(D, fs) {
     const upSel = upgradeSel && fs.find((x) => x.名 === upgradeSel);
