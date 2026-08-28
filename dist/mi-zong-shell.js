@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.66";
+  var CDN_TAG = "1.0.67";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1129,7 +1129,7 @@
 .mz-names button.mz-off { opacity: .45; }
 .mz-names button.mz-off:hover { color: inherit; }
 
-/* 营造·表殿页：三阶次第横排大卡，升级钮与注脚沉底 */
+/* 营造表殿页：三阶次第横排大卡，升级钮与注脚沉底 */
 .mz-halls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; flex: 1; min-height: 0; }
 .mz-hall { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 16px; min-height: 168px;
   color: var(--ink-faint); border: 1px dashed rgba(139,103,42,.4); }
