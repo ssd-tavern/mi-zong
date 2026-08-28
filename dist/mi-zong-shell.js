@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.57";
+  var CDN_TAG = "1.0.58";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -4064,16 +4064,29 @@
   function warmAssets() {
     if (warmed) return;
     warmed = true;
-    let i = 0;
+    const queue = PRELOAD_ASSETS.slice();
+    const retried = /* @__PURE__ */ new Set();
     const lane = () => {
-      if (i >= PRELOAD_ASSETS.length) return;
+      if (!queue.length) return;
       if (sending || busy || gateBusy) {
         setTimeout(lane, 300);
         return;
       }
+      const name = queue.shift();
       const img = doc.createElement("img");
-      img.onload = img.onerror = lane;
-      img.src = asset(PRELOAD_ASSETS[i++]);
+      img.onload = lane;
+      img.onerror = () => {
+        if (retried.has(name)) {
+          lane();
+          return;
+        }
+        retried.add(name);
+        setTimeout(() => {
+          queue.push(name);
+          lane();
+        }, 3e3);
+      };
+      img.src = asset(name);
     };
     for (let n = 0; n < PRELOAD_LANES; n++) lane();
   }
@@ -4218,7 +4231,7 @@
       console.warn("[密宗前端] 变量更新渲染失败", e);
     }
   };
-  onEvent("mag_variable_update_ended", onVarUpdateEnded);
+  onEvent("mag_variable_update_ended", (v, b) => setTimeout(() => onVarUpdateEnded(v, b), 0));
   var onVarInitialized = (variables) => {
     try {
       if (variables && variables.stat_data) setLastStat(_.cloneDeep(_.omit(variables.stat_data, ["$internal"])));
