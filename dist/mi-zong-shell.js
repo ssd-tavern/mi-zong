@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.65";
+  var CDN_TAG = "1.0.66";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -172,6 +172,8 @@
   var HALLS = ["破败草庵", "庄严精舍", "敕赐法堂"];
   var HALL_Q = { 破败草庵: "mz-q1", 庄严精舍: "mz-q2", 敕赐法堂: "mz-q4" };
   var HALL_PRICE = { 庄严精舍: 200, 敕赐法堂: 1e3 };
+  var HALL_LOOK = { 破败草庵: "殿宇残破，泥佛落尘，山门外少有人来", 庄严精舍: "殿阁修整一新，钟磬有声，香客不再却步", 敕赐法堂: "朝廷题额高悬，自此有名分在身" };
+  var HALL_NOTE = "地面愈清贫，地下愈安稳。表面殿宇若修得金碧辉煌，反而引来大寺与官府的眼睛。";
   var GRADES = ["粗成", "精工", "天工"];
   var GRADE_Q = { 粗成: "mz-q1", 精工: "mz-q2", 天工: "mz-q4" };
   var GRADE_PRICE = { 粗成: 25, 精工: 100, 天工: 200 };
@@ -1127,17 +1129,23 @@
 .mz-names button.mz-off { opacity: .45; }
 .mz-names button.mz-off:hover { color: inherit; }
 
-/* 营造：表殿三级阶梯 */
-.mz-steps { display: flex; align-items: stretch; gap: 0; flex: none; }
-.mz-step { flex: 1; position: relative; padding: 11px 14px 10px; text-align: center; font-size: 15px; letter-spacing: 2px; color: var(--ink-faint);
-  border: 1px dashed rgba(139,103,42,.4); }
-.mz-step + .mz-step { margin-left: 26px; }
-.mz-step + .mz-step::before { content: ''; position: absolute; left: -20px; top: 50%; width: 14px; height: 1px; background: rgba(139,103,42,.5); }
-.mz-step small { display: block; font-size: 12px; letter-spacing: .5px; margin-top: 2px; opacity: .85; }
-.mz-step.mz-done { border-style: solid; color: var(--ink-dim); background: rgba(139,103,42,.08); }
-.mz-step.mz-cur { border: 1px solid #9a7420; color: #9a7420; background: rgba(216,164,68,.12); box-shadow: inset 0 0 0 1px rgba(216,164,68,.35); font-weight: 600; }
-.mz-step .mz-chi { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; font-size: 11px; line-height: 22px; color: #fff4dc; background: var(--cinnabar); }
-.mz-step-act { display: flex; align-items: center; gap: 6px; flex: none; font-size: 12px; color: var(--ink-faint); letter-spacing: 1px; }
+/* 营造·表殿页：三阶次第横排大卡，升级钮与注脚沉底 */
+.mz-halls { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; flex: 1; min-height: 0; }
+.mz-hall { position: relative; display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 16px; min-height: 168px;
+  color: var(--ink-faint); border: 1px dashed rgba(139,103,42,.4); }
+.mz-hall + .mz-hall::before { content: ''; position: absolute; left: -21px; top: 50%; width: 14px; height: 1px; background: rgba(139,103,42,.5); }
+.mz-hall b { font-size: 18px; letter-spacing: 4px; text-indent: 4px; color: inherit; font-weight: 600; }
+.mz-hall p { font-size: 14px; letter-spacing: 1px; line-height: 2; color: var(--ink-faint); }
+.mz-hall small { margin-top: auto; font-size: 13px; letter-spacing: 1px; color: #9a7420; }
+.mz-hall .mz-tag { position: absolute; top: 14px; right: 16px; font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); }
+.mz-hall.mz-done { border-style: solid; color: var(--ink-dim); background: rgba(139,103,42,.08); }
+.mz-hall.mz-cur { border: 1px solid #9a7420; color: #9a7420; background: rgba(216,164,68,.12); box-shadow: inset 0 0 0 1px rgba(216,164,68,.35); }
+.mz-hall.mz-cur p { color: var(--ink-dim); }
+.mz-hall .mz-chi { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; text-align: center; font-size: 11px; line-height: 22px; color: #fff4dc; background: var(--cinnabar); }
+.mz-hall-act { display: flex; align-items: center; gap: 6px; flex: none; margin-top: 4px; }
+.mz-hall-act .mz-why { margin-left: 0; }
+.mz-hall-note { margin-top: auto; padding-top: 12px; border-top: 1px dashed rgba(139,103,42,.35);
+  font-size: 13px; letter-spacing: 1px; line-height: 1.9; color: var(--ink-faint); }
 
 /* 罪业：利不过本进度条 */
 .mz-bar-line { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--ink-faint); letter-spacing: .5px; margin-top: 4px; }
@@ -1381,6 +1389,10 @@
   .mz-portrait .mz-pic { width: 220px; flex: none; }
   .mz-thumbs { width: 100%; gap: 6px; }
   .mz-grid.mz-c3, .mz-grid.mz-c4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mz-halls { grid-template-columns: minmax(0, 1fr); gap: 10px; flex: none; }
+  .mz-hall { min-height: 0; padding: 12px 14px 11px; }
+  .mz-hall + .mz-hall::before { content: none; }
+  .mz-hall-note { margin-top: 0; }
   .mz-picks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mz-bplist { width: 100%; }
   .mz-bps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -3494,16 +3506,22 @@
   var WONDER_PH = "入浴者心防天然松动，灌顶事半功倍";
   function buildHtml(D) {
     const hall = D.道场.表殿等级;
+    const fs = facilities(D);
+    return '<section class="mz-win mz-on">' + tabs("营造", [{ id: "hall", label: "表殿", n: hall }, { id: "cave", label: "地宫", n: cn(fs.length) + "处" }, { id: "build", label: "兴造" }]) + pane("营造", "hall", hallPane(D, hall), "hall") + pane("营造", "cave", cavePane(D, fs), "hall") + pane("营造", "build", buildPane(D, fs), "hall") + "</section>";
+  }
+  function hallPane(D, hall) {
     const hi = Math.max(0, HALLS.indexOf(hall));
-    const steps = HALLS.map((h, i) => '<div class="mz-step ' + (i < hi ? "mz-done" : i === hi ? "mz-cur" : "") + '">' + h + "<small>" + (i === hi ? "当下" : i < hi ? "已成" : i === 1 ? "二百贯" : "一千贯 须得敕额") + "</small>" + (h === "敕赐法堂" && D.道场.敕额 ? '<span class="mz-chi">敕</span>' : "") + "</div>").join("");
+    const halls = HALLS.map((h, i) => '<div class="mz-hall' + (i < hi ? " mz-done" : i === hi ? " mz-cur" : "") + '"><span class="mz-tag">' + (i < hi ? "已成" : i === hi ? "当下" : "未启") + "</span><b>" + h + "</b><p>" + HALL_LOOK[h] + "</p><small>" + (i <= hi ? "" : i === 1 ? "二百贯" : "一千贯　须得敕额") + "</small>" + (h === "敕赐法堂" && D.道场.敕额 ? '<span class="mz-chi">敕</span>' : "") + "</div>").join("");
     let act = "";
     if (hi === 0) {
       const whys = hallWhys(D);
-      act = '<div class="mz-step-act">' + sealBtn("升 庄严精舍", "hall", !whys.length, whys.join(" ")) + "</div>";
+      act = sealBtn("升 庄严精舍", "hall", !whys.length, whys.join(" "), " mz-lg");
     } else if (hi === 1) {
-      act = '<div class="mz-step-act"><span class="mz-why">升敕赐法堂须得敕额，须教主亲身周旋</span></div>';
+      act = '<span class="mz-why">升敕赐法堂须得敕额，须教主亲身周旋</span>';
     }
-    const fs = facilities(D);
+    return '<div class="mz-folio mz-fill"><div class="mz-halls">' + halls + '</div><div class="mz-hall-act">' + act + '</div><div class="mz-hall-note">' + HALL_NOTE + "</div></div>";
+  }
+  function cavePane(D, fs) {
     const upSel = upgradeSel && fs.find((x) => x.名 === upgradeSel);
     const upNext = upSel ? GRADES[GRADES.indexOf(upSel.档次) + 1] : null;
     const upBar = upSel && upNext ? '<form class="mz-form mz-sheet mz-upform" onsubmit="return false">' + wh("改造", esc3(upSel.名) + " " + esc3(upSel.档次) + " 升 " + upNext + " " + cn(UPGRADE_PRICE[upNext]) + "贯") + '<label class="mz-wonder mz-live">奇效<textarea name="奇效" rows="2" placeholder="' + WONDER_PH + '"></textarea><small>升作天工须议定奇效，写入即成定局</small></label><div class="mz-build-foot">' + sealBtn("罢", "upgrade-cancel", true) + sealBtn("议定改造", "upgrade-go", true, "", " mz-lg") + "</div></form>" : "";
@@ -3514,7 +3532,11 @@
       const why = upgradeWhys(D, f.名, f.档次, next).join(" ");
       return '<div class="mz-card mz-up' + (upgradeSel === f.名 ? " mz-on" : "") + '">' + body + '<div class="mz-up-foot"><button class="mz-seal-btn" data-act="upgrade" data-name="' + esc3(f.名) + '"' + (why ? " disabled" : "") + ">升 " + next + '<span class="mz-price">' + cn(UPGRADE_PRICE[next]) + "贯</span></button>" + (why ? '<span class="mz-why">' + why + "</span>" : "") + "</div></div>";
     }).join("") : '<div class="mz-none">未辟</div>';
+    return '<div class="mz-folio">' + upBar + '<div class="mz-grid mz-c3">' + cards + "</div></div>";
+  }
+  function buildPane(D, fs) {
     const NOTE = { 粗成: "草创堪用，暗藏破绽", 精工: "坚实可靠，无虞", 天工: "鬼斧神工，议定奇效" };
+    const offAll = GRADES.every((g) => buildWhys(D, g).length);
     const picks = GRADES.map((g) => {
       const whys = buildWhys(D, g);
       return '<label class="mz-pick' + (whys.length ? " mz-off" : "") + '"><input type="radio" name="档次" value="' + g + '"' + (whys.length ? " disabled" : "") + "><b>" + g + '</b><span class="mz-price">' + cn(GRADE_PRICE[g]) + "贯</span><small>" + (whys.length ? whys.join(" ") : NOTE[g]) + "</small></label>";
@@ -3523,8 +3545,8 @@
     const bpRows = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span></div>" : '<button type="button" class="mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + '</b><span class="mz-tag">未建</span></button>').join("");
     const bpList = '<div class="mz-wcol mz-bplist">' + wh("蓝图", "地面") + '<div class="mz-bps">' + bpRows("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-bps">' + bpRows("地下") + "</div></div>";
     const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名]);
-    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", true, "", " mz-lg") + "</div></form>";
-    return '<section class="mz-win mz-on">' + tabs("营造", [{ id: "cave", label: "道场", n: hall + "／地宫" + cn(fs.length) + "处" }, { id: "build", label: "兴造" }]) + pane("营造", "cave", wh("表殿") + '<div class="mz-steps">' + steps + "</div>" + act + wh("地宫设施", cn(fs.length) + "处") + '<div class="mz-folio">' + upBar + '<div class="mz-grid mz-c3">' + cards + "</div></div>", "cave") + pane("营造", "build", '<div class="mz-folio"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div></div>", "cave") + "</section>";
+    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", !offAll, "钱不足", " mz-lg") + "</div></form>";
+    return '<div class="mz-folio"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div></div>";
   }
   function sinHtml(D) {
     const hs = handles(D), ds = debts(D);
