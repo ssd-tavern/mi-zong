@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.55";
+  var CDN_TAG = "1.0.56";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -145,7 +145,7 @@
     曲江池畔: ["曲江池", 74.2, 69.7],
     皇城宫阙: ["皇城", 48, 36.1]
   };
-  var MINIMAP_PIN = { 城南道场: ["城南道场", 54, 85], 长安: ["长安", 55, 42] };
+  var MINIMAP_PIN = { 城南道场: ["城南道场", 54, 85], 长安: ["长安", 55, 42], 城外: ["城外", 60, 12] };
   var YEARS = ["会昌元年", "会昌二年", "会昌三年", "会昌四年", "会昌五年"];
   var YEAR_SHORT = ["元年", "二年", "三年", "四年", "五年"];
   var DOOM = ["赵归真入宫建醮", "勒令违戒僧尼还俗", "泽潞用兵搜刮铜钱", "强拆私刹禁绝俗讲", "敕命尽毁天下佛寺"];
@@ -507,6 +507,7 @@
 #mz-minimap .mz-where { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(255,240,214,.12); }
 #mz-minimap .mz-storm { margin-top: 3px; }
 #mz-minimap .mz-w-zone { flex: none; }
+#mz-minimap.mz-abroad .mz-w-zone::before { content: '城外'; font-size: 10px; letter-spacing: 1px; color: #d89a56; margin-right: 5px; }
 #mz-minimap .mz-w-sub, #mz-minimap .mz-storm b { font-size: 13px; letter-spacing: 1px; font-weight: 500; color: #efe3c8; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 #mz-minimap .mz-storm b.mz-warn { color: #f0b072; }
 #mz-minimap .mz-storm b.mz-good { color: #b9cc8a; }
@@ -1163,6 +1164,10 @@
 .mz-atlas .mz-zlist li { list-style: none; padding: 4px 8px; display: flex; justify-content: space-between; }
 .mz-atlas .mz-zlist li.mz-cur { color: var(--cinnabar); font-weight: 600; background: rgba(160,52,38,.07); box-shadow: inset 2px 0 0 var(--cinnabar); }
 .mz-atlas .mz-zlist li small { color: var(--ink-faint); font-weight: 400; letter-spacing: .5px; }
+.mz-atlas .mz-zlist li.mz-abroad { margin-top: 6px; border-top: 1px dashed rgba(50,24,10,.3); }
+.mz-atlas .mz-abroad-mark { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; font-size: 13px; letter-spacing: 1px; font-weight: 600; color: var(--cinnabar);
+  background: rgba(234,223,194,.9); outline: 1px solid rgba(160,52,38,.45); }
+.mz-atlas .mz-abroad-mark b { font-weight: 400; font-size: 11px; color: var(--ink-dim); margin-right: 6px; }
 .mz-doomline { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; letter-spacing: 1px; color: var(--ink-faint); margin-top: auto; }
 .mz-doomline .mz-yrs { display: flex; gap: 4px; }
 .mz-doomline .mz-yrs span { flex: 1; text-align: center; padding: 4px 0; border: 1px solid rgba(139,103,42,.35); }
@@ -3160,7 +3165,9 @@
     const mm = doc.getElementById(SEL.minimap);
     if (!mm) return;
     const z = zoneName(D.时空.当前地界);
-    const pin = MINIMAP_PIN[z] || (ZONES.includes(z) ? MINIMAP_PIN.长安 : null);
+    const abroad = !!z && !ZONES.includes(z);
+    mm.classList.toggle("mz-abroad", abroad);
+    const pin = MINIMAP_PIN[z] || (abroad ? MINIMAP_PIN.城外 : z ? MINIMAP_PIN.长安 : null);
     const pinEl = mm.querySelector(".mz-map-pin");
     if (pinEl) {
       pinEl.style.display = pin ? "" : "none";
@@ -3412,12 +3419,13 @@
   };
   function atlasHtml(D) {
     const cur = zoneName(D.时空.当前地界);
+    const abroad = !!cur && !ZONES.includes(cur);
     const t = parseTime(D.时空.时间);
     const y = Math.max(0, t.年序号);
     return '<section class="mz-win mz-atlas-win mz-on"><div class="mz-atlas"><div class="mz-mapbox"><img src="' + asset("map-changan.webp") + '" alt="长安城坊地图"><svg viewBox="0 0 1024 1024" preserveAspectRatio="none">' + ZONES.map((z) => '<path data-zone="' + z + '"' + (z === cur ? ' class="mz-cur"' : "") + ' d="' + ZONE_PATHS[z] + '"><title>' + z + "</title></path>").join("") + "</svg>" + ZONES.map((z) => {
       const l = ZONE_LABELS[z];
       return '<span class="mz-lbl' + (z === cur ? " mz-cur" : "") + '" style="left:' + l[1] + "%;top:" + l[2] + '%">' + l[0] + "</span>";
-    }).join("") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + '</ul><div class="mz-doomline"><span>灭佛大势 ' + YEARS[y] + " " + DOOM[y] + '</span><div class="mz-yrs">' + YEAR_SHORT.map((s, i) => '<span class="' + (i === y ? "mz-cur" : i < y ? "mz-past" : "") + '">' + s + "</span>").join("") + "</div></div></div></div></section>";
+    }).join("") + (abroad ? '<div class="mz-abroad-mark"><b>城外</b>' + esc3(cur) + "</div>" : "") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + (abroad ? '<li class="mz-cur mz-abroad"><span>' + esc3(cur) + "</span><small>此刻在外</small></li>" : "") + '</ul><div class="mz-doomline"><span>灭佛大势 ' + YEARS[y] + " " + DOOM[y] + '</span><div class="mz-yrs">' + YEAR_SHORT.map((s, i) => '<span class="' + (i === y ? "mz-cur" : i < y ? "mz-past" : "") + '">' + s + "</span>").join("") + "</div></div></div></div></section>";
   }
   var bondSel = CAST[0];
   var bondTheme = null;
