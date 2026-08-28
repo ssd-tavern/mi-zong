@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.53";
+  var CDN_TAG = "1.0.54";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -3552,10 +3552,10 @@
     const ready = CRAFT.map((c) => shopReady(D, c));
     const pickWhys = CRAFT.map((c) => craftPickWhys(D, c));
     const firstOk = pickWhys.findIndex((w) => !w.length);
-    const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + c.note + '</small><small class="mz-shopline">' + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
+    const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" form="mz-craft-form" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + c.note + '</small><small class="mz-shopline">' + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
     const gate = craftGateWhys(D);
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
-    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("开炉", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>";
+    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form id="mz-craft-form" class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("开炉", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>";
     return '<section class="mz-win mz-on">' + tabs("库藏", [
       { id: "drug", label: "药品", n: cn(kindCount(D.资粮.库藏, "药品")) },
       { id: "tool", label: "道具", n: cn(kindCount(D.资粮.库藏, "道具")) },
@@ -3587,7 +3587,8 @@
   function formVals(el) {
     const form = el.closest("form");
     const out = {};
-    if (form) form.querySelectorAll("input[name], textarea[name]").forEach((i) => {
+    if (form) Array.from(form.elements).forEach((i) => {
+      if (!i.name || i.tagName !== "INPUT" && i.tagName !== "TEXTAREA") return;
       if (i.type === "radio") {
         if (i.checked) out[i.name] = i.value;
         else out[i.name] = out[i.name] || "";
