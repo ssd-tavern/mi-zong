@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.70";
+  var CDN_TAG = "1.0.69";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["bg-silk-aged.webp", "bg-lacquer-red.webp", "eave-tang.webp", "paper-scroll.webp", "plaque-header.webp", "plaque-entry.webp", "silk-board-core.webp", "axle-plain.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp"];
+  var PRELOAD_ASSETS = ["bg-silk-aged.webp", "bg-lacquer-red.webp", "paper-scroll.webp", "board-temple.webp", "plaque-header.webp", "plaque-entry.webp", "silk-board-core.webp", "axle-plain.webp", "brocade-band.webp", "ribbon-knot.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp"];
   var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
@@ -369,8 +369,9 @@
 #mz-shell-root {
   /* 一次切断宿主 body 的继承（投影、字体平滑、字号、color-scheme 都从那来），壳要什么下面重新声明 */
   all: initial;
-  /* 字阶七档，见 前端信息架构.md「字体与字阶」 */
+  /* 字阶八档，见 前端信息架构.md「字体与字阶」 */
   --fs-title: 28px; --ls-title: 14px;
+  --fs-plaque: 14px; --ls-plaque: 6px;
   --fs-name: 15.5px; --ls-name: 3px;
   --fs-label: 12.5px; --ls-label: 3px;
   --fs-body: 17.5px;
@@ -402,8 +403,6 @@
   --scrim: rgba(30,22,10,.55);
   --scroll-w: clamp(620px, 46vw, 700px);
   --side-w: clamp(240px, 18vw, 320px);
-  /* 山门四尺寸：瓦檐高／题额藏檐下／题额高／门楣高，见 前端信息架构.md「山门」 */
-  --eave-h: 44px; --tuck: 10px; --title-h: 64px; --lintel-h: 16px;
   --bar-tot: calc(60px + env(safe-area-inset-bottom, 0px));
   /* 断点走容器查询：外壳本身即视口，预览页可框定外壳尺寸直接看 */
   container-type: size; container-name: mz;
@@ -425,10 +424,10 @@
   color: var(--ink); font-size: 16px; -webkit-locale: 'zh';
   box-sizing: border-box; direction: ltr; unicode-bidi: isolate;
   -webkit-tap-highlight-color: transparent;
-  background-color: #c6b697;
+  background-color: #cfc0a0;
   background-image:
-    radial-gradient(120% 105% at 50% 42%, rgba(60,42,18,0) 45%, rgba(60,42,18,.28) 100%),
-    linear-gradient(rgba(198,182,151,.46), rgba(198,182,151,.46)),
+    radial-gradient(120% 105% at 50% 42%, rgba(60,42,18,0) 45%, rgba(60,42,18,.24) 100%),
+    linear-gradient(rgba(207,192,160,.42), rgba(207,192,160,.42)),
     url('${A}bg-silk-aged.webp');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, 512px 512px;
@@ -465,38 +464,38 @@
 .mz-side { border-right: 1px solid rgba(240,200,140,.25); }
 .mz-rside { border-left: 1px solid rgba(240,200,140,.25); }
 
-/* ==== 山门：瓦檐横贯全屏，两侧栏为门墙，题额挂檐下 ==== */
-.mz-side, .mz-rside { padding-top: calc(var(--eave-h) + 12px); }
-.mz-eave { position: absolute; left: 0; right: 0; top: 0; height: var(--eave-h); z-index: 3; pointer-events: none;
-  filter: drop-shadow(0 4px 5px rgba(0,0,0,.42)); }
-/* 瓦檐三切片：两端鸱尾段固定，中段恰二十垄瓦 round 平铺（源图 1536×260，切 322／361） */
-.mz-eave { border-style: solid; border-color: transparent; border-width: 0 calc(var(--eave-h) * 361 / 260) 0 calc(var(--eave-h) * 322 / 260);
-  border-image: url('${A2}eave-tang.webp') 0 361 0 322 fill / 0 calc(var(--eave-h) * 361 / 260) 0 calc(var(--eave-h) * 322 / 260) round; }
+/* 栏头匾额（横向三切片：两端框角固定，中段匾心拉伸） */
+.mz-plaque {
+  flex: none; display: flex; align-items: center; justify-content: center;
+  height: 44px; color: #e4c479;
+  font-size: var(--fs-plaque); letter-spacing: var(--ls-plaque); text-indent: var(--ls-plaque);   /* 抵消末字字距，题字真居中 */
+  font-weight: 600;
+  border-style: solid; border-color: transparent; border-width: 0 6px;
+  border-image: url('${A2}plaque-header.webp') 0 60 fill / 0 6px stretch;
+  filter: drop-shadow(0 3px 7px rgba(0,0,0,.5));
+}
 
-/* ==== 题额（黑漆匾九宫切片，框条恒 6px，DOM 在左栏＝手机端进「寺况」屉顶；桌面端绝对定位到檐下门洞正上方） ==== */
-#mz-board { position: absolute; left: 0; right: 0; top: calc(var(--eave-h) - var(--tuck)); margin: 0 auto; z-index: 2;
-  width: fit-content; max-width: calc(100% - 2 * var(--side-w) - 40px); height: var(--title-h);
-  border-style: solid; border-color: transparent; border-width: 6px;
-  border-image: url('${A2}plaque-header.webp') 50 fill / 6px stretch;
-  filter: drop-shadow(0 3px 7px rgba(0,0,0,.5)); }
-#mz-board .mz-face { height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 1px; padding: 0 22px; }
-#mz-board .mz-grp { display: flex; justify-content: center; align-items: baseline; gap: 22px; white-space: nowrap; line-height: 1.45; }
-#mz-board .mz-it { display: inline-flex; align-items: baseline; gap: 6px; min-width: 0; }
-#mz-board .mz-it > span { font-size: var(--fs-tag); letter-spacing: var(--ls-tag); color: #b39a7e; }
-#mz-board .mz-it > b { font-size: var(--fs-read); letter-spacing: var(--ls-read); font-weight: 500; color: #efe3c8; }
-#mz-board .mz-it > b.mz-hour { font-size: 15px; font-weight: 700; }
-#mz-board .mz-it > b.mz-warn { color: #f0b072; }
-#mz-board .mz-it > b.mz-good { color: #b9cc8a; }
-#mz-board .mz-it > b.mz-red { color: #f09a7e; }
-#mz-board .mz-it > b.mz-fest { color: #f0a08a; }
-#mz-board .mz-it > b.mz-dim { color: #8d8170; font-weight: 400; }
-/* 地界子地点可长，省略号兜底 */
-#mz-board .mz-it[data-stat="地界"] > b { max-width: 11em; overflow: hidden; text-overflow: ellipsis; }
-#mz-board .mz-it.mz-doom .mz-bar { display: inline-block; width: 56px; height: 4px; margin-left: 4px; vertical-align: middle;
-  background: rgba(255,240,214,.12); }
-#mz-board .mz-it.mz-doom .mz-bar i { display: block; height: 100%; background: linear-gradient(90deg, #7a4a20, #a4623a); }
+/* ==== 信息榜（九宫 fill 切片，框条与榜芯随行数拉伸） ==== */
+#mz-board { flex: none;
+  border-style: solid; border-color: transparent; border-width: 23px 24px 23px;
+  border-image: url('${A2}board-temple.webp') 60 64 60 fill / 23px 24px 23px stretch;
+  filter: drop-shadow(0 2px 3px rgba(70,50,20,.4)) drop-shadow(0 8px 16px rgba(70,50,20,.28)); }
+#mz-board .mz-face { padding: 7px 10px 5px; }
+#mz-board .mz-grp + .mz-grp { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(120,96,54,.3); }
+#mz-board .mz-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  font-size: 12.5px; line-height: 1.7; color: var(--ink-dim); }
+#mz-board .mz-row span { flex: none; letter-spacing: 2px; white-space: nowrap; }
+/* 终局铜钱能到「一万二千八百贯九百九十九文」，比行宽长；读数自行折行右对齐，签名留在首行 */
+#mz-board .mz-row b { min-width: 0; text-align: right; color: var(--ink); font-weight: 600; font-size: 14px; letter-spacing: .5px; }
+#mz-board .mz-row b.mz-warn { color: #96500f; }
+#mz-board .mz-row b.mz-good { color: #4a6926; }
+#mz-board .mz-row b.mz-fest { color: var(--cinnabar); }
+#mz-board .mz-row b.mz-dim { color: var(--ink-faint); font-weight: 500; }
+#mz-board .mz-solo { font-size: 13.5px; letter-spacing: 2px; color: var(--ink); line-height: 1.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#mz-board .mz-solo b { font-size: 15px; font-weight: 700; }
+#mz-board .mz-solo.mz-dim { font-size: 12px; letter-spacing: 1.5px; color: var(--ink-faint); }
 
-/* ==== 舆图缩略（右栏顶部常驻，只剩画与钉点） ==== */
+/* ==== 舆图缩略（右栏顶部常驻） ==== */
 #mz-minimap { flex: none; cursor: pointer; border: 1px solid rgba(50,24,10,.5);
   filter: drop-shadow(0 2px 3px rgba(70,50,20,.35)) drop-shadow(0 8px 16px rgba(70,50,20,.25)); transition: translate var(--t-fast) var(--ease-out); }
 #mz-minimap:hover { translate: 0 -2px; }
@@ -508,6 +507,24 @@
 #mz-minimap .mz-map-pin::after { content: attr(data-label); position: absolute; left: 13px; top: -4px;
   font-size: 10.5px; letter-spacing: 1px; color: var(--ink-dim); white-space: nowrap;
   background: rgba(234,223,194,.82); padding: 1px 5px; }
+/* 灭佛进度带 */
+#mz-minimap .mz-doom { background: #241a0d; border-top: 1px solid rgba(var(--gold-rgb), .3); padding: 7px 10px 8px; }
+#mz-minimap .mz-doom .mz-lbl { display: flex; justify-content: space-between; font-size: 11.5px; letter-spacing: 2px;
+  color: #b39a7e; margin-bottom: 5px; }
+#mz-minimap .mz-doom .mz-lbl b { color: #d89a56; font-weight: 500; }
+#mz-minimap .mz-doom .mz-bar { height: 5px; background: rgba(255,240,214,.10); }
+#mz-minimap .mz-doom .mz-bar i { display: block; height: 100%; width: 18%; background: linear-gradient(90deg, #7a4a20, #a4623a); }
+/* 地界／风波 */
+#mz-minimap .mz-where, #mz-minimap .mz-storm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+  font-size: 11.5px; letter-spacing: 2px; color: #b39a7e; white-space: nowrap; }
+#mz-minimap .mz-where { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(255,240,214,.12); }
+#mz-minimap .mz-storm { margin-top: 3px; }
+#mz-minimap .mz-w-zone { flex: none; }
+#mz-minimap.mz-abroad .mz-w-zone::before { content: '城外'; font-size: 10px; letter-spacing: 1px; color: #d89a56; margin-right: 5px; }
+#mz-minimap .mz-w-sub, #mz-minimap .mz-storm b { font-size: 13px; letter-spacing: 1px; font-weight: 500; color: #efe3c8; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#mz-minimap .mz-storm b.mz-warn { color: #f0b072; }
+#mz-minimap .mz-storm b.mz-good { color: #b9cc8a; }
+#mz-minimap .mz-storm b.mz-red { color: #f09a7e; }
 
 /* ==== 玩法入口条（小匾：浅楠木芯细朱框九宫切片） ==== */
 .mz-zone { position: relative; padding: 3px 6px 4px; margin: 0; cursor: pointer;
@@ -680,17 +697,30 @@
 .mz-vc-empty { font-size: 13.5px; line-height: 2; color: var(--ink-faint);
   border-left: 2px solid rgba(160,52,38,.3); padding-left: 12px; }
 
-/* ==== 中栏门洞：题额下一道门楣，纸从门楣垂下（输入区并进纸尾） ==== */
-.mz-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; position: relative;
-  padding-top: calc(var(--eave-h) - var(--tuck) + var(--title-h)); }
-.mz-lintel { flex: none; position: relative; z-index: 2; width: calc(var(--scroll-w) + 20px); height: var(--lintel-h); margin-bottom: -4px;
-  border-style: solid; border-color: transparent; border-width: 0 8px;
-  border-image: url('${A3}axle-plain.webp') 0 50 fill / 0 8px stretch;
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+/* ==== 中栏挂轴瀑布流（天杆压卷首，输入区并进纸尾） ==== */
+.mz-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; position: relative; }
 #mz-scroll {
-  width: var(--scroll-w); flex: 1; min-height: 0;
+  width: var(--scroll-w); flex: 1; min-height: 0; margin-top: 2px;
   display: flex; flex-direction: column;
   filter: drop-shadow(0 12px 26px rgba(70,50,20,.35));
+}
+/* 卷首天杆三切片：铜箍固定，杆身拉伸 */
+.mz-axle { position: relative; flex: none; margin: 0 -14px -6px; z-index: 2; }
+.mz-axle .mz-rod {
+  display: block; height: 22px;
+  border-style: solid; border-color: transparent; border-width: 0 10px;
+  border-image: url('${A3}axle-plain.webp') 0 50 fill / 0 10px stretch;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,.45));
+}
+.mz-axle .mz-band {
+  display: block; height: 22px; margin: -5px 14px 0;
+  background: #5c2b22 url('${A3}brocade-band.webp') 0 0 / 128px 128px repeat;
+  box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 4px 6px rgba(0,0,0,.25);
+}
+.mz-axle .mz-knot {
+  position: absolute; left: 50%; top: 9px; width: 26px; height: 38px; transform: translateX(-50%);
+  background: url('${A3}ribbon-knot.webp') center top / contain no-repeat;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
 }
 /* 正文与书写区共用同一张纸 */
 #mz-sheet {
@@ -782,7 +812,7 @@
 .mz-crisis-line .mz-ticket-text .mz-sub { font-size: 9px; color: var(--ink-dim); margin-top: 3px; letter-spacing: .3px; line-height: 1.5; }
 
 /* ==== 朱票事件层（本月危机非空时骑钉在卷轴右肩） ==== */
-#mz-crisis { display: none; position: absolute; z-index: 9; top: calc(var(--eave-h) - var(--tuck) + var(--title-h) + 22px);
+#mz-crisis { display: none; position: absolute; z-index: 9; top: 30px;
   /* 卷外空隙不够时向纸内让位，不压侧栏 */
   left: min(calc(50% + var(--scroll-w) / 2 - 100px), calc(100% - 204px));
   width: 212px; rotate: 4deg; cursor: grab; touch-action: none;
@@ -1253,10 +1283,10 @@
 #mz-crisis.mz-moved { left: var(--cx); top: var(--cy); }
 @keyframes mz-flash { 0% { color: var(--cinnabar); text-shadow: 0 0 10px rgba(160,52,38,.55); translate: 0 -2px; }
   30% { color: var(--cinnabar); text-shadow: 0 0 0 rgba(160,52,38,0); translate: 0 0; } }
-.mz-flash b { animation: mz-flash 1.4s var(--ease-out); }
+.mz-flash b, .mz-flash .mz-w-sub, .mz-flash.mz-solo { animation: mz-flash 1.4s var(--ease-out); }
 @keyframes mz-flash-dark { 0% { color: #f6c083; text-shadow: 0 0 10px rgba(240,176,114,.7); translate: 0 -2px; }
   30% { color: #f6c083; text-shadow: 0 0 0 rgba(240,176,114,0); translate: 0 0; } }
-#mz-board .mz-flash b { animation-name: mz-flash-dark; }
+#mz-minimap .mz-flash b, #mz-minimap .mz-flash .mz-w-sub { animation-name: mz-flash-dark; }
 #mz-paper.mz-paper-in { animation: mz-paper-in .8s var(--ease-out) both; }
 @keyframes mz-paper-in { from { opacity: 0; translate: 0 10px; } }
 #mz-shell-root.mz-shell-in { animation: mz-shell-in .28s var(--ease-out) both; pointer-events: none; }
@@ -1273,20 +1303,12 @@
 #mz-mbar, #mz-mscrim, #mz-mmenu { display: none; }
 
 @container mz (max-width: 920px) {
-  /* ==== 中栏：纸铺满，山门瓦檐与门楣不进手机，底部让出底栏 ==== */
+  /* ==== 中栏：挂轴铺满，天杆收进纸内，底部让出底栏 ==== */
   .mz-main { --scroll-w: 100%; padding-top: env(safe-area-inset-top, 0px); padding-bottom: var(--bar-tot); }
-  #mz-scroll { width: 100%; filter: none; }
-  .mz-eave, .mz-lintel { display: none; }
-  #mz-crisis { top: 30px; }
-  /* ==== 题额收进「寺况」屉顶：黑漆匾竖排键值 ==== */
-  #mz-board { position: static; margin: 0; width: auto; max-width: none; height: auto; }
-  #mz-board .mz-face { padding: 6px 12px 5px; }
-  #mz-board .mz-it.mz-doom > b { flex: 1; text-align: right; }
-  #mz-board .mz-grp { flex-direction: column; align-items: stretch; gap: 2px; white-space: normal; }
-  #mz-board .mz-grp + .mz-grp { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,240,214,.12); }
-  #mz-board .mz-it { display: flex; justify-content: space-between; }
-  #mz-board .mz-it > b { text-align: right; }
-  #mz-board .mz-it[data-stat="地界"] > b { max-width: none; }
+  #mz-scroll { width: 100%; margin-top: 0; filter: none; }
+  .mz-axle { margin: 0 0 -6px; }
+  .mz-axle .mz-band { margin: -5px 10px 0; height: 18px; }
+  .mz-axle .mz-knot { top: 6px; width: 22px; height: 32px; }
   #mz-paper { padding: 22px 18px 16px; }
   .mz-turn.mz-gm, .mz-turn.mz-zhu { font-size: 16px; line-height: 1.95; }
   #mz-writing { padding: 8px 10px 10px; }
@@ -2658,20 +2680,20 @@
       }
       return;
     }
-    const item2 = e.target.closest("[data-foot-item]");
-    if (item2) {
+    const item = e.target.closest("[data-foot-item]");
+    if (item) {
       e.stopPropagation();
-      const wrap = item2.closest(".mz-ff-wrap");
+      const wrap = item.closest(".mz-ff-wrap");
       if (wrap) {
         const mid = +wrap.dataset.footMid;
-        const key = item2.dataset.footItem;
+        const key = item.dataset.footItem;
         const cur = String(footOpen.get(mid) || "");
         const isVoice = key.indexOf("voice:") === 0;
         const same = isVoice ? cur.indexOf(key + ":") === 0 : cur === key;
         if (same) footOpen.delete(mid);
         else footOpen.set(mid, isVoice ? key + ":voice" : key);
         if (isVoice) voiceSeen.add(mid);
-        refreshFoot(item2);
+        refreshFoot(item);
       }
     }
   }
@@ -3116,9 +3138,8 @@
     if (key === "同心缕") return CAST.some((n) => girlUnlocked(D, n));
     return false;
   }
-  var item = (k, v, cls, stat, title) => '<span class="mz-it"' + (stat ? ' data-stat="' + stat + '"' : "") + (title ? ' title="' + esc2(title) + '"' : "") + "><span>" + k + "</span><b" + (cls ? ' class="' + cls + '"' : "") + ">" + v + "</b></span>";
   function boardHtml(D) {
-    if (D._empty) return '<div class="mz-grp"><span class="mz-it mz-dim"><b class="mz-dim">此则无账目</b></span></div>';
+    if (D._empty) return '<div class="mz-grp"><div class="mz-solo mz-dim">此则无账目</div></div>';
     const t = parseTime(D.时空.时间);
     const dateTxt = t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " "));
     const fest = festivalState(t);
@@ -3149,13 +3170,7 @@
       levy = left ? "还剩" + cn(left) + "日" : "今日当缴";
       levyCls = left <= 6 ? "mz-warn" : "";
     }
-    const y = Math.max(0, t.年序号);
-    const z = zoneName(D.时空.当前地界), sub = zoneSub(D.时空.当前地界);
-    const abroad = !!z && !ZONES.includes(z);
-    const whereKey = abroad ? "城外" : sub ? esc2(z) : "地界";
-    const whereVal = abroad ? esc2(z + (sub ? " " + sub : "")) : esc2(sub || z);
-    const storm = D.暗流.风波;
-    return '<div class="mz-grp mz-sky">' + item(dateTxt, esc2(t.时辰), "mz-hour", "时间", D.时空.时间.replace(/\//g, " ")) + item("宵禁", gate.文, gate.cls) + item("节令", esc2(festTxt), festCls) + '<span class="mz-it mz-doom" title="灭佛大势 ' + YEAR_SHORT[y] + " " + DOOM[y] + '"><span>灭佛</span><b>' + YEAR_SHORT[y] + " " + DOOM[y] + '</b><i class="mz-bar"><i style="width:' + (y * 20 + 10) + '%"></i></i></span></div><div class="mz-grp mz-ground">' + item(whereKey, whereVal, abroad ? "mz-abroad" : "", "地界", D.时空.当前地界.replace(/\//g, " ")) + item("铜钱", money(总文(D)), "", "铜钱") + item("信众", cn(D.教务.信众) + "人", "", "信众") + item("常例", levy, levyCls) + item("风波", esc2(storm), STORM_CLS[storm] || "", "风波") + "</div>";
+    return '<div class="mz-grp"><div class="mz-solo" data-stat="时间" title="' + esc2(D.时空.时间.replace(/\//g, " ")) + '">' + dateTxt + " <b>" + esc2(t.时辰) + '</b></div><div class="mz-row"><span>宵禁</span><b class="' + gate.cls + '">' + gate.文 + '</b></div><div class="mz-row"><span>常例</span><b class="' + levyCls + '">' + levy + '</b></div><div class="mz-row"><span>节令</span><b class="' + festCls + '">' + esc2(festTxt) + '</b></div></div><div class="mz-grp"><div class="mz-row" data-stat="铜钱"><span>铜钱</span><b>' + money(总文(D)) + '</b></div><div class="mz-row" data-stat="信众"><span>信众</span><b>' + cn(D.教务.信众) + "人</b></div></div>";
   }
   var row = (k, v, cls) => '<div class="mz-r-row"><span>' + k + "</span><b" + (cls ? ' class="' + cls + '"' : "") + ">" + v + "</b></div>";
   function zoneRowsHtml(key, D) {
@@ -3193,6 +3208,7 @@
     if (!mm) return;
     const z = zoneName(D.时空.当前地界);
     const abroad = !!z && !ZONES.includes(z);
+    mm.classList.toggle("mz-abroad", abroad);
     const pin = MINIMAP_PIN[z] || (abroad ? MINIMAP_PIN.城外 : z ? MINIMAP_PIN.长安 : null);
     const pinEl = mm.querySelector(".mz-map-pin");
     if (pinEl) {
@@ -3203,7 +3219,27 @@
         pinEl.dataset.label = pin[0];
       }
     }
-    mm.title = D.时空.当前地界.replace(/\//g, " ");
+    const t = parseTime(D.时空.时间);
+    const y = Math.max(0, t.年序号);
+    const lbl = mm.querySelector(".mz-doom .mz-lbl b");
+    if (lbl) lbl.textContent = YEAR_SHORT[y] + " " + DOOM[y];
+    const bar = mm.querySelector(".mz-doom .mz-bar i");
+    if (bar) bar.style.width = y * 20 + 10 + "%";
+    const wz = mm.querySelector(".mz-w-zone"), ws = mm.querySelector(".mz-w-sub");
+    const sub = zoneSub(D.时空.当前地界);
+    if (wz) wz.textContent = z;
+    if (ws) {
+      ws.textContent = sub;
+      ws.style.display = sub ? "" : "none";
+    }
+    const where = mm.querySelector(".mz-where");
+    if (where) where.title = D.时空.当前地界.replace(/\//g, " ");
+    const storm = D.暗流.风波;
+    const sb = mm.querySelector(".mz-storm b");
+    if (sb) {
+      sb.textContent = storm;
+      sb.className = STORM_CLS[storm] || "";
+    }
   }
   function renderCrisis(D) {
     const root = doc.getElementById(SHELL_ID);
@@ -3901,7 +3937,7 @@
     { side: "l", key: "同心缕", lift: "同心缕", ico: "icon-redknot.webp" },
     { side: "l", key: "库藏", lift: "库藏", ico: "icon-coffer.webp" },
     { side: "l", key: "教务", lift: "教务", ico: "icon-letterbox.webp" },
-    { side: "l", key: "营造", lift: "营造", ico: "shrine-model.webp" },
+    { side: "r", key: "营造", lift: "营造", ico: "shrine-model.webp" },
     { side: "r", key: "法事", lift: "法事", ico: "icon-folddoc.webp" },
     { side: "r", key: "罪业", lift: "罪业", ico: "icon-ledger.webp" }
   ];
@@ -3910,14 +3946,14 @@
   }
   function skeletonHtml() {
     return `
-  <div class="mz-eave"></div>
   <div class="mz-side">
+    <div class="mz-plaque">寺况</div>
     <div id="${SEL.board}"><div class="mz-face"></div></div>
     ${ZONE_DEFS.filter((z) => z.side === "l").map(zoneShell).join("")}
   </div>
   <div class="mz-main">
-    <div class="mz-lintel"></div>
     <div id="mz-scroll">
+      <div class="mz-axle"><i class="mz-rod"></i><i class="mz-band"></i><i class="mz-knot"></i></div>
       <div id="mz-sheet">
         <div id="${SEL.paper}"></div>
         <div id="${SEL.status}"></div>
@@ -3939,8 +3975,12 @@
     </div>
   </div>
   <div class="mz-rside">
+    <div class="mz-plaque">行事</div>
     <div id="${SEL.minimap}" data-lift="舆图">
       <div class="mz-map-wrap"><img src="${asset("map-panorama.webp")}" alt="长安舆图"><div class="mz-map-pin"></div></div>
+      <div class="mz-doom"><div class="mz-lbl"><span>灭佛大势</span><b></b></div><div class="mz-bar"><i></i></div>
+        <div class="mz-where" data-stat="地界"><span class="mz-w-zone"></span><span class="mz-w-sub"></span></div>
+        <div class="mz-storm" data-stat="风波"><span>风波</span><b></b></div></div>
     </div>
     ${ZONE_DEFS.filter((z) => z.side === "r").map(zoneShell).join("")}
     <div id="${SEL.corner}">
