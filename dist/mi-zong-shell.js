@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "2.0.0";
+  var CDN_TAG = "2.0.1";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1030,9 +1030,9 @@
 .mz-pick .mz-shopline { color: #9a7420; }
 .mz-pick.mz-off .mz-shopline { color: #96500f; }
 .mz-craft { flex: 1; min-width: 0; }
-/* 效用框定高：不吃剩余高度，篮子长起来也挤不到它（原 height:100% 是整页唯一的弹性高，篮子一长就压它） */
+/* 效用框定高三行：效用文案一两句即止，不吃剩余高度（弹性高会被长起来的篮子先压） */
 .mz-craft .mz-grow { flex: none; }
-.mz-craft .mz-grow textarea { height: 220px; }
+.mz-craft .mz-grow textarea { height: 88px; }
 .mz-form textarea { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none; resize: none;
   font-family: inherit; font-size: 15.5px; line-height: 1.7; color: var(--ink); padding: 3px 2px; caret-color: var(--cinnabar); }
 .mz-sheet .mz-wh { margin-top: 2px; }
@@ -1089,7 +1089,11 @@
 .mz-portrait .mz-pic { aspect-ratio: 832 / 1216; width: 100%; background: linear-gradient(165deg, #4a3626, #2b1d13 60%, #1d130c) center / cover no-repeat;
   outline: 1px solid rgba(120,96,54,.5); outline-offset: -3px; display: flex; align-items: center; justify-content: center; }
 .mz-portrait .mz-pic span { writing-mode: vertical-rl; font-size: 11px; letter-spacing: 4px; color: rgba(216,204,178,.45); }
-/* 252 列宽＝立绘加两行缩略恰填 620 窗高 */
+/* 立绘列总高＝列宽×(1216/832)×7/5＋1.3px（主图＋恒两行缩略），浮窗随壳缩矮时以行高反解列宽 */
+@container mz (width > 900px) {
+  .mz-bond-win .mz-wrow { container-type: size; }
+  .mz-bond-win .mz-portrait { width: min(290px, calc((100cqh - 4px) / 2.047)); }
+}
 .mz-thumbs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; }
 .mz-thumbs i { width: auto; aspect-ratio: 832 / 1216; background: #3a2a1c; outline: 1px solid rgba(120,96,54,.4); cursor: pointer; opacity: .7; }
 .mz-thumbs i.mz-on { opacity: 1; outline-color: var(--cinnabar); }
@@ -1185,7 +1189,6 @@
 .mz-atlas .mz-zlist li { list-style: none; padding: 4px 8px; display: flex; justify-content: space-between; }
 .mz-atlas .mz-zlist li.mz-cur { color: var(--cinnabar); font-weight: 600; background: rgba(160,52,38,.07); box-shadow: inset 2px 0 0 var(--cinnabar); }
 .mz-atlas .mz-zlist li small { color: var(--ink-faint); font-weight: 400; letter-spacing: .5px; }
-.mz-atlas .mz-zlist li.mz-abroad { margin-top: 6px; border-top: 1px dashed rgba(50,24,10,.3); }
 .mz-atlas .mz-zlist li.mz-abroad:not(.mz-cur) { color: var(--ink-faint); }
 .mz-atlas .mz-abroad-mark { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; font-size: 13px; letter-spacing: 1px; font-weight: 600; color: var(--cinnabar);
   background: rgba(234,223,194,.9); outline: 1px solid rgba(160,52,38,.45); }
@@ -3231,67 +3234,45 @@
     ta.focus();
   }
   var committing = false;
-  async function commitForm({ tag, mutate, message, check }) {
-    if (committing) {
-      setStoryStatus("账房正在记档，稍待");
+  async function commitForm({ tag, mutate, message, check, fail }) {
+    const deny = (why) => {
+      if (fail) fail(why);
+      else setStoryStatus(why);
       return false;
-    }
-    if (sending) {
-      setStoryStatus("续写未毕，稍待再拨");
-      return false;
-    }
-    if (delMode) {
-      setStoryStatus("正在删记，了结了再拨款");
-      return false;
-    }
-    if (editState) {
-      setStoryStatus("改写未了，先存或弃");
-      return false;
-    }
+    };
+    if (committing) return deny("账房正在记档，稍待");
+    if (sending) return deny("续写未毕，稍待再拨");
+    if (delMode) return deny("正在删记，了结了再拨款");
+    if (editState) return deny("改写未了，先存或弃");
     committing = true;
     try {
-      return await commitFormImpl({ tag, mutate, message, check });
+      return await commitFormImpl({ tag, mutate, message, check }, deny);
     } finally {
       committing = false;
     }
   }
-  async function commitFormImpl({ tag, mutate, message, check }) {
+  async function commitFormImpl({ tag, mutate, message, check }, deny) {
     const lastId = safeLastMessageId();
-    if (lastId == null || lastId < 0) {
-      setStoryStatus("卷上尚无记录，无从记账");
-      return false;
-    }
+    if (lastId == null || lastId < 0) return deny("卷上尚无记录，无从记账");
     let v = null;
     try {
       v = getVariables({ type: "message", message_id: lastId });
     } catch (e) {
       dbg("commit:get", e);
     }
-    if (!v || !v.stat_data) {
-      setStoryStatus("眼下读不到账目，稍后再试");
-      return false;
-    }
+    if (!v || !v.stat_data) return deny("眼下读不到账目，稍后再试");
     const before = _.cloneDeep(_.omit(v.stat_data, ["$internal"]));
     const stat = _.cloneDeep(before);
     if (check) {
       const why = check(readMVU(stat), stat);
-      if (why) {
-        setStoryStatus(why);
-        return false;
-      }
+      if (why) return deny(why);
     }
     mutate(stat);
-    if (Number(stat.资粮 && stat.资粮.铜钱) < 0) {
-      setStoryStatus("钱不足");
-      return false;
-    }
+    if (Number(stat.资粮 && stat.资粮.铜钱) < 0) return deny("钱不足");
     const 扣款 = Math.max(0, Math.round((Number(_.get(before, "资粮.铜钱")) || 0) - (Number(_.get(stat, "资粮.铜钱")) || 0)));
     _.set(stat, "系统.代发", (tag || "代发") + "#" + 扣款 + "#" + Date.now());
     const ops = diffPatch(before, stat);
-    if (!ops) {
-      setStoryStatus("名目里不可含「/」「~」");
-      return false;
-    }
+    if (!ops) return deny("名目里不可含「/」「~」");
     closeLift();
     const text = typeof message === "function" ? message(扣款) : message;
     return sendText(text + "\n" + patchBlock(ops), { carryStat: stat });
@@ -3418,6 +3399,7 @@
     return [...new Set(w)];
   }
   var basketSum = (list) => list.reduce((n, it) => n + it.价, 0);
+  var badChar = (名) => /[/~]/.test(名) ? ["名目里不可含「/」「~」"] : [];
   function buildItem(名称, 用途, 档, 奇效) {
     return {
       名: 名称,
@@ -3425,7 +3407,7 @@
       价: GRADE_PRICE[档],
       项: 名称 + "（" + 档 + (奇效 ? "，奇效：" + 奇效 : "") + "）",
       单句: (贯2) => FORM_MSG.兴造(名称, 档, 奇效, 贯2),
-      whys: (D) => buildWhys(D, 档).concat(D.道场.地宫设施[名称] ? ["「" + 名称 + "」已在地宫，换个名目"] : []),
+      whys: (D) => badChar(名称).concat(档 === "天工" && !奇效 ? ["先议定奇效"] : [], buildWhys(D, 档), D.道场.地宫设施[名称] ? ["「" + 名称 + "」已在地宫，换个名目"] : []),
       mutate: (sd) => {
         sd.资粮.铜钱 -= GRADE_PRICE[档];
         sd.道场.地宫设施 = sd.道场.地宫设施 || {};
@@ -3440,7 +3422,7 @@
       价: c.price,
       项: c.kind + "「" + 物名 + "」",
       单句: (贯2) => FORM_MSG.工巧(物名, c.kind, 贯2),
-      whys: (D) => craftWhys(D, c).concat(D.资粮.库藏[物名] ? ["「" + 物名 + "」已在库藏，换个物名"] : []),
+      whys: (D) => badChar(物名).concat(craftWhys(D, c), D.资粮.库藏[物名] ? ["「" + 物名 + "」已在库藏，换个物名"] : []),
       mutate: (sd) => {
         sd.资粮.铜钱 -= c.price;
         sd.资粮.库藏 = sd.资粮.库藏 || {};
@@ -3463,13 +3445,14 @@
       tag: kind === "build" ? "兴造" : "工巧",
       check: (D, sd) => basketWhys(sd, 条).join(" "),
       mutate: (sd) => 条.forEach((it) => it.mutate(sd)),
-      message: (贯2) => 条.length === 1 ? 条[0].单句(贯2) : FORM_MSG[kind === "build" ? "兴造多" : "工巧多"](条.map((it) => it.项), 贯2)
+      message: (贯2) => 条.length === 1 ? 条[0].单句(贯2) : FORM_MSG[kind === "build" ? "兴造多" : "工巧多"](条.map((it) => it.项), 贯2),
+      fail: (why) => hint(btn, why)
     }).then((ok) => {
       if (!ok) return;
       if (kind === "build") {
-        buildBasket = [];
+        buildBasket = buildBasket.filter((x) => !条.includes(x));
         bpSel = null;
-      } else craftBasket = [];
+      } else craftBasket = craftBasket.filter((x) => !条.includes(x));
       rerender();
     }).catch((e) => hint(btn, "出错: " + (e && e.message || e)));
   }
@@ -3485,6 +3468,10 @@
       return;
     }
     list.push(it);
+    if (kind === "build") {
+      bpSel = null;
+      forgetFields(BUILD_FORM, ["名称", "用途", "档次", "奇效"]);
+    } else forgetFields(CRAFT_FORM, ["物名", "效用"]);
     rerender();
   }
   function atlasHtml(D) {
@@ -3526,7 +3513,7 @@
     const themes = unlockedThemes(bondSel, rank);
     const curTheme = pickedTheme(bondSel, rank);
     const lit = rankIdx(rank);
-    return '<section class="mz-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc3(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc3(curTheme[1]) + '" alt="' + esc3(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc3(t[0]) + '" data-theme="' + esc3(t[0]) + `" style="background-image:url('` + esc3(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc3(r) + '解锁"><span>' + esc3(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc3(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc3(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
+    return '<section class="mz-win mz-bond-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc3(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc3(curTheme[1]) + '" alt="' + esc3(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc3(t[0]) + '" data-theme="' + esc3(t[0]) + `" style="background-image:url('` + esc3(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc3(r) + '解锁"><span>' + esc3(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc3(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc3(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
   }
   var upgradeSel = null;
   var bpSel = null;
@@ -3535,6 +3522,7 @@
     bpSel = null;
   }
   var BUILD_FORM = "mz-form mz-sheet mz-build";
+  var CRAFT_FORM = "mz-form mz-sheet mz-craft";
   var WONDER_PH = "入浴者心防天然松动，灌顶事半功倍";
   function buildHtml(D) {
     const hall = D.道场.表殿等级;
@@ -3576,9 +3564,10 @@
       return '<label class="mz-pick' + (whys.length ? " mz-off" : "") + '"><input type="radio" name="档次" value="' + g + '"' + (whys.length ? " disabled" : "") + "><b>" + g + '</b><span class="mz-price">' + cn(GRADE_PRICE[g]) + "贯</span><small>" + (whys.length ? whys.join(" ") : NOTE[g]) + "</small></label>";
     }).join("");
     const built = Object.fromEntries(fs.map((f) => [f.名, f.档次]));
-    const bpRows = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span></div>" : '<button type="button" class="mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + '</b><span class="mz-tag">未建</span></button>').join("");
+    const inBasket = (名) => buildBasket.some((x) => x.名 === 名);
+    const bpRows = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span></div>" : inBasket(b.名) ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag">已入篮</span></div>' : '<button type="button" class="mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + '</b><span class="mz-tag">未建</span></button>').join("");
     const bpList = '<div class="mz-wcol mz-bplist">' + wh("蓝图", "地面") + '<div class="mz-bps">' + bpRows("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-bps">' + bpRows("地下") + "</div></div>";
-    const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名]);
+    const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名] && !inBasket(b.名));
     const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "build", !offAll, "钱不足", " mz-lg") + "</div></form>";
     return '<div class="mz-folio mz-fill"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div>" + basketHtml("build", buildBasket) + "</div>";
   }
@@ -3645,7 +3634,7 @@
     const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" form="mz-craft-form" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + c.note + '</small><small class="mz-shopline">' + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
     const gate = craftGateWhys(D);
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
-    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form id="mz-craft-form" class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>" + basketHtml("craft", craftBasket);
+    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form id="mz-craft-form" class="' + CRAFT_FORM + '" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>" + basketHtml("craft", craftBasket);
     return '<section class="mz-win mz-on">' + tabs("库藏", [
       { id: "drug", label: "药品", n: cn(kindCount(D.资粮.库藏, "药品")) },
       { id: "tool", label: "道具", n: cn(kindCount(D.资粮.库藏, "道具")) },
@@ -3749,7 +3738,7 @@
       commitForm({ tag: "兴造", check: (D) => hallWhys(D).join(" "), mutate: (sd) => {
         sd.资粮.铜钱 -= HALL_PRICE.庄严精舍;
         sd.道场.表殿等级 = "庄严精舍";
-      }, message: (贯2) => FORM_MSG.升殿("庄严精舍", 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (贯2) => FORM_MSG.升殿("庄严精舍", 贯2), fail: (why) => hint(btn, why) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "upgrade" || act === "upgrade-go" || act === "upgrade-cancel") {
@@ -3781,7 +3770,7 @@
         sd.资粮.铜钱 -= UPGRADE_PRICE[新];
         cur.档次 = 新;
         if (奇效) cur.奇效 = 奇效;
-      }, message: (贯2) => FORM_MSG.升造(名, f.档次, 新, 奇效, 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (贯2) => FORM_MSG.升造(名, f.档次, 新, 奇效, 贯2), fail: (why) => hint(btn, why) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
       return;
     }
     if (act === "build") {
@@ -3827,6 +3816,10 @@
         hint(btn, "先填欠户");
         return;
       }
+      if (/[/~]/.test(v.欠户)) {
+        hint(btn, "欠户里不可含「/」「~」");
+        return;
+      }
       if (!(贯2 > 0)) {
         hint(btn, "本金须为整数贯");
         return;
@@ -3835,7 +3828,7 @@
         sd.资粮.铜钱 -= 贯2;
         sd.资粮.罪业密簿 = sd.资粮.罪业密簿 || {};
         sd.资粮.罪业密簿[v.欠户] = { 类别: "债契", 欠额: 贯2, 已收息: 0, 详情: v.抵押 ? "押 " + v.抵押 : "", 价值: "月息五分，利不过本" };
-      }, message: (扣) => FORM_MSG.放贷(v.欠户, 扣) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      }, message: (扣) => FORM_MSG.放贷(v.欠户, 扣), fail: (why) => hint(btn, why) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
     }
   }
   function openViewer(src, title) {
