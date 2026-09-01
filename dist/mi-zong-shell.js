@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "1.0.69";
+  var CDN_TAG = "2.0.0";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,14 +17,15 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["bg-silk-aged.webp", "bg-lacquer-red.webp", "paper-scroll.webp", "board-temple.webp", "plaque-header.webp", "plaque-entry.webp", "silk-board-core.webp", "axle-plain.webp", "brocade-band.webp", "ribbon-knot.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp"];
+  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "plaque-entry.webp", "silk-board-core.webp"];
   var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
     entryEnter: "mz-entry-enter",
     shellHideStyle: "mz-shell-hide-style",
     shellStyle: "mz-shell-style",
-    board: "mz-board",
+    topbar: "mz-topbar",
+    doom: "mz-doom",
     minimap: "mz-minimap",
     paper: "mz-paper",
     status: "mz-status",
@@ -40,18 +41,32 @@
     jump: "mz-jump",
     crisis: "mz-crisis",
     corner: "mz-corner",
-    acuBtn: "mz-corner-acu",
     lift: "mz-lift",
     liftTitle: "mz-lift-title",
     liftBody: "mz-lift-body",
-    mbar: "mz-mbar",
-    mscrim: "mz-mscrim",
-    mmenu: "mz-mmenu"
+    mplaque: "mz-mplaque",
+    mscrim: "mz-mscrim"
   };
   function dbg(tag, e) {
     try {
       if (window.parent.localStorage.getItem("mzDebug")) console.warn("[密宗dbg]", tag, e);
     } catch (err) {
+    }
+  }
+  var FS_SCALES = [["1", "适中"], ["1.08", "大"], ["1.16", "特大"]];
+  var PREF_NS = "mzPref:";
+  function getPref(k, def) {
+    try {
+      const v = window.parent.localStorage.getItem(PREF_NS + k);
+      return v == null ? def : v;
+    } catch (e) {
+      return def;
+    }
+  }
+  function setPref(k, v) {
+    try {
+      window.parent.localStorage.setItem(PREF_NS + k, v);
+    } catch (e) {
     }
   }
   function safeLastMessageId() {
@@ -69,16 +84,16 @@
     regen: svg('<path d="M20 11a8 8 0 0 0-13.7-4.7L4 8.5"/><path d="M4 4v4.5h4.5"/><path d="M4 13a8 8 0 0 0 13.7 4.7L20 15.5"/><path d="M20 20v-4.5h-4.5"/>'),
     up: svg('<path d="M12 19V5M5 12l7-7 7 7"/>'),
     down: svg('<path d="M12 5v14M19 12l-7 7-7-7"/>'),
-    vars: svg('<path d="M4 6h16M4 12h16M4 18h10"/>'),
+    menu: svg('<path d="M4 6h16M4 12h16M4 18h10"/>'),
     close: svg('<path d="M5 5l14 14M19 5L5 19"/>'),
-    db: svg('<ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13"/><path d="M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/>'),
+    settings: svg('<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>'),
     chev: svg('<path d="M9 6l6 6-6 6"/>'),
     lock: svg('<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')
   };
 
   // src/05-data.js
   var CAST = ["苏白芷", "裴清砚", "叶玄薇", "萧夜沉"];
-  var CAST_HINT = { 苏白芷: "药铺医女", 裴清砚: "裴府才女", 叶玄薇: "玄都女冠", 萧夜沉: "西市胡姬" };
+  var CAST_HINT = { 苏白芷: "药铺医女", 裴清砚: "裴府才女", 叶玄薇: "玄都女冠", 萧夜沉: "西市女商" };
   var STAMP = { 苏白芷: "mz-su", 裴清砚: "mz-pei", 叶玄薇: "mz-ye", 萧夜沉: "mz-xiao" };
   var RANKS = ["待度欲种", "一灌·瓶灌", "二灌·密灌", "三灌·慧灌", "四灌·大乐"];
   var rankIdx = (r) => Math.max(0, RANKS.indexOf(String(r || "").trim()));
@@ -170,7 +185,6 @@
   ];
   var STORM_CLS = { 低: "mz-good", 中: "mz-warn", 高: "mz-red" };
   var HALLS = ["破败草庵", "庄严精舍", "敕赐法堂"];
-  var HALL_Q = { 破败草庵: "mz-q1", 庄严精舍: "mz-q2", 敕赐法堂: "mz-q4" };
   var HALL_PRICE = { 庄严精舍: 200, 敕赐法堂: 1e3 };
   var HALL_LOOK = { 破败草庵: "殿宇残破，泥佛落尘，山门外少有人来", 庄严精舍: "殿阁修整一新，钟磬有声，香客不再却步", 敕赐法堂: "朝廷题额高悬，自此有名分在身" };
   var HALL_NOTE = "地面愈清贫，地下愈安稳。表面殿宇若修得金碧辉煌，反而引来大寺与官府的眼睛。";
@@ -180,7 +194,6 @@
   var UPGRADE_PRICE = { 精工: 75, 天工: 100 };
   var STORE_CAP = { 无: 3, 粗成: 5, 精工: 8, 天工: 12 };
   var UNLOCK_FANS = { 教务: 10, 法事: 20, 罪业: 50 };
-  var ZONE_ROWS = { 同心缕: 4, 库藏: 2, 教务: 3, 营造: 2, 法事: 3, 罪业: 3 };
   var UNLOCK_COND = { 教务: "信众满十人开启", 法事: "信众满二十人开启", 罪业: "信众满五十人开启", 库藏: "建成库房开启", 同心缕: "结识女主开启" };
   var CRAFT = [
     { kind: "药品", price: 15, shop: "丹房", words: ["丹房"], note: "一料一用，一炉多份在效用里注份数" },
@@ -202,13 +215,14 @@
     { 名: "库房", 区: "地下", 用途: "收储制成的药品、道具与法器，分屉存放，随取随用。干燥土窖里搭起木架与屉匣，以石灰防潮，每屉贴签，教主一看便知存余几何。" },
     { 名: "无尽藏柜坊", 区: "地下", 用途: "以教团之名向外放贷，立契收息，借钱债将人拴住。账房模样的柜坊，柜内置契匣与算筹，金银另藏暗格，一本账簿记满城欠户。" }
   ];
-  var KIND_SHORT = { 药品: "药", 道具: "具", 法器: "器" };
   var LIMITS = { 库藏: 12, 罪业密簿: 5, 法事委托: 3, 神迹传闻: 3, 执事名册: 12, 明妃录: 6 };
   var FORM_MSG = {
     兴造: (名, 档, 奇效, 贯2) => "【兴造】" + 名 + "（" + 档 + "）已破土动工，账房已扣" + cn(贯2) + "贯，此笔不再入账。" + (奇效 ? "奇效议定：" + 奇效 : ""),
     升殿: (殿, 贯2) => "【兴造】表殿改建" + 殿 + "，匠人已开工动土，账房已扣" + cn(贯2) + "贯，此笔不再入账。",
     升造: (名, 旧, 新, 奇效, 贯2) => "【兴造】" + 名 + "自" + 旧 + "改造为" + 新 + "，匠人已动工，账房已扣" + cn(贯2) + "贯，此笔不再入账。" + (奇效 ? "奇效议定：" + 奇效 : ""),
     工巧: (名, 类, 贯2) => "【工巧】" + 类 + "「" + 名 + "」已拨资开炉，账房已扣" + cn(贯2) + "贯，此笔不再入账。",
+    兴造多: (项, 贯2) => "【兴造】" + cn(项.length) + "事同举：" + 项.join("、") + "已一并破土动工，账房共扣" + cn(贯2) + "贯，此笔不再入账。",
+    工巧多: (项, 贯2) => "【工巧】" + cn(项.length) + "事同炉：" + 项.join("、") + "已一并拨资开炉，账房共扣" + cn(贯2) + "贯，此笔不再入账。",
     放贷: (户, 贯2) => "【无尽藏】放贷" + cn(贯2) + "贯与" + 户 + "，立契画押，账房已出" + cn(贯2) + "贯，此笔不再入账。",
     勒索: (名) => "【勒索】以罪业密簿所载把柄，向" + 名 + "开口勒索。",
     朱票副题: "祸事临门 须教主亲周旋"
@@ -363,9 +377,8 @@
   }
 
   // src/css/tokens.js
-  var A = ASSET_BASE;
   var tokens_default = `
-/* ==== 配色（单主题：漆黑鎏金＋旧纸中栏） ==== */
+/* ==== 配色（单主题：漆黑鎏金侧栏＋绢纸主区） ==== */
 #mz-shell-root {
   /* 一次切断宿主 body 的继承（投影、字体平滑、字号、color-scheme 都从那来），壳要什么下面重新声明 */
   all: initial;
@@ -374,7 +387,9 @@
   --fs-plaque: 14px; --ls-plaque: 6px;
   --fs-name: 15.5px; --ls-name: 3px;
   --fs-label: 12.5px; --ls-label: 3px;
-  --fs-body: 17.5px;
+  /* 正文字号＝断点基准×设置里的倍数；窄屏基准另见 phone.js */
+  --fs-scale: 1;
+  --fs-body: calc(17.5px * var(--fs-scale));
   --fs-read: 13.5px; --ls-read: .5px;
   --fs-tag: 12px; --ls-tag: 2px;
   --fs-btn: 13.5px; --ls-btn: 2px; --fs-btn-lg: 16px; --ls-btn-lg: 6px;
@@ -401,8 +416,19 @@
   --good: #4a6926;
   --dim-rgb: 255,236,210;
   --scrim: rgba(30,22,10,.55);
-  --scroll-w: clamp(620px, 46vw, 700px);
-  --side-w: clamp(240px, 18vw, 320px);
+  /* 主区绢纸一组：值与 开场面板-正则.json 的内联样式逐字一致 */
+  --p-paper: #f3ead2;
+  --p-rule: rgba(139,103,42,.5);
+  --p-title: #2a1f12;
+  --p-ink: #3a2c1a;
+  --p-body: #5a4730;
+  --p-label: #8a6f3f;
+  --p-faint: #9a8a6a;
+  --p-hint: #8a7a5c;
+  --p-red: #9b2f22;
+  --read-col: 700px;
+  --side-w: clamp(260px, 22vw, 420px);
+  --top-h: 64px;
   --bar-tot: calc(60px + env(safe-area-inset-bottom, 0px));
   /* 断点走容器查询：外壳本身即视口，预览页可框定外壳尺寸直接看 */
   container-type: size; container-name: mz;
@@ -416,7 +442,7 @@
 .mz-shell :where(svg) * { text-shadow: none; -webkit-font-smoothing: auto; -moz-osx-font-smoothing: auto; }
 .mz-shell :where(img) { display: block; -webkit-user-drag: none; user-select: none; }
 
-/* ==== 整体三栏 ==== */
+/* ==== 整体两栏 ==== */
 /* 酒馆 html 带 transform，fixed 的包含块是 html 而非视口；手机端 body 又 fixed 使 html 高 0，尺寸不能靠 inset 撑 */
 #mz-shell-root {
   position: fixed; inset: 0; width: 100vw; width: 100dvw; height: 100vh; height: 100dvh; z-index: 9000; display: flex;
@@ -424,13 +450,7 @@
   color: var(--ink); font-size: 16px; -webkit-locale: 'zh';
   box-sizing: border-box; direction: ltr; unicode-bidi: isolate;
   -webkit-tap-highlight-color: transparent;
-  background-color: #cfc0a0;
-  background-image:
-    radial-gradient(120% 105% at 50% 42%, rgba(60,42,18,0) 45%, rgba(60,42,18,.24) 100%),
-    linear-gradient(rgba(207,192,160,.42), rgba(207,192,160,.42)),
-    url('${A}bg-silk-aged.webp');
-  background-repeat: no-repeat, no-repeat, repeat;
-  background-size: 100% 100%, 100% 100%, 512px 512px;
+  background-color: var(--p-paper);
 }
 #mz-shell-root ::-webkit-scrollbar { width: 9px; height: 9px; }
 #mz-shell-root ::-webkit-scrollbar-corner { background: transparent; }
@@ -447,22 +467,21 @@
 `;
 
   // src/css/sides.js
-  var A2 = ASSET_BASE;
+  var A = ASSET_BASE;
   var sides_default = `
 /* ==== 侧栏骨架 ==== */
-.mz-side, .mz-rside {
+.mz-side {
   width: var(--side-w); flex: none; display: flex; flex-direction: column;
-  padding: 8px 13px 6px; gap: clamp(4px, 1.5vh, 22px); overflow-y: auto;
+  padding: 8px 11px 8px; gap: 12px; overflow: hidden;
   background-image:
     linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
     linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
-    url('${A2}bg-lacquer-red.webp');
+    url('${A}bg-lacquer-red.webp');
   background-repeat: no-repeat, no-repeat, repeat;
   background-size: 100% 100%, 100% 100%, 512px 512px;
   box-shadow: inset 0 0 30px rgba(40,18,6,.3);
+  border-right: 1px solid rgba(240,200,140,.25);
 }
-.mz-side { border-right: 1px solid rgba(240,200,140,.25); }
-.mz-rside { border-left: 1px solid rgba(240,200,140,.25); }
 
 /* 栏头匾额（横向三切片：两端框角固定，中段匾心拉伸） */
 .mz-plaque {
@@ -471,31 +490,11 @@
   font-size: var(--fs-plaque); letter-spacing: var(--ls-plaque); text-indent: var(--ls-plaque);   /* 抵消末字字距，题字真居中 */
   font-weight: 600;
   border-style: solid; border-color: transparent; border-width: 0 6px;
-  border-image: url('${A2}plaque-header.webp') 0 60 fill / 0 6px stretch;
+  border-image: url('${A}plaque-header.webp') 0 60 fill / 0 6px stretch;
   filter: drop-shadow(0 3px 7px rgba(0,0,0,.5));
 }
 
-/* ==== 信息榜（九宫 fill 切片，框条与榜芯随行数拉伸） ==== */
-#mz-board { flex: none;
-  border-style: solid; border-color: transparent; border-width: 23px 24px 23px;
-  border-image: url('${A2}board-temple.webp') 60 64 60 fill / 23px 24px 23px stretch;
-  filter: drop-shadow(0 2px 3px rgba(70,50,20,.4)) drop-shadow(0 8px 16px rgba(70,50,20,.28)); }
-#mz-board .mz-face { padding: 7px 10px 5px; }
-#mz-board .mz-grp + .mz-grp { margin-top: 7px; padding-top: 7px; border-top: 1px solid rgba(120,96,54,.3); }
-#mz-board .mz-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-  font-size: 12.5px; line-height: 1.7; color: var(--ink-dim); }
-#mz-board .mz-row span { flex: none; letter-spacing: 2px; white-space: nowrap; }
-/* 终局铜钱能到「一万二千八百贯九百九十九文」，比行宽长；读数自行折行右对齐，签名留在首行 */
-#mz-board .mz-row b { min-width: 0; text-align: right; color: var(--ink); font-weight: 600; font-size: 14px; letter-spacing: .5px; }
-#mz-board .mz-row b.mz-warn { color: #96500f; }
-#mz-board .mz-row b.mz-good { color: #4a6926; }
-#mz-board .mz-row b.mz-fest { color: var(--cinnabar); }
-#mz-board .mz-row b.mz-dim { color: var(--ink-faint); font-weight: 500; }
-#mz-board .mz-solo { font-size: 13.5px; letter-spacing: 2px; color: var(--ink); line-height: 1.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-#mz-board .mz-solo b { font-size: 15px; font-weight: 700; }
-#mz-board .mz-solo.mz-dim { font-size: 12px; letter-spacing: 1.5px; color: var(--ink-faint); }
-
-/* ==== 舆图缩略（右栏顶部常驻） ==== */
+/* ==== 舆图缩略（侧栏舆图一组） ==== */
 #mz-minimap { flex: none; cursor: pointer; border: 1px solid rgba(50,24,10,.5);
   filter: drop-shadow(0 2px 3px rgba(70,50,20,.35)) drop-shadow(0 8px 16px rgba(70,50,20,.25)); transition: translate var(--t-fast) var(--ease-out); }
 #mz-minimap:hover { translate: 0 -2px; }
@@ -507,96 +506,73 @@
 #mz-minimap .mz-map-pin::after { content: attr(data-label); position: absolute; left: 13px; top: -4px;
   font-size: 10.5px; letter-spacing: 1px; color: var(--ink-dim); white-space: nowrap;
   background: rgba(234,223,194,.82); padding: 1px 5px; }
-/* 灭佛进度带 */
-#mz-minimap .mz-doom { background: #241a0d; border-top: 1px solid rgba(var(--gold-rgb), .3); padding: 7px 10px 8px; }
-#mz-minimap .mz-doom .mz-lbl { display: flex; justify-content: space-between; font-size: 11.5px; letter-spacing: 2px;
-  color: #b39a7e; margin-bottom: 5px; }
-#mz-minimap .mz-doom .mz-lbl b { color: #d89a56; font-weight: 500; }
-#mz-minimap .mz-doom .mz-bar { height: 5px; background: rgba(255,240,214,.10); }
-#mz-minimap .mz-doom .mz-bar i { display: block; height: 100%; width: 18%; background: linear-gradient(90deg, #7a4a20, #a4623a); }
-/* 地界／风波 */
-#mz-minimap .mz-where, #mz-minimap .mz-storm { display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
-  font-size: 11.5px; letter-spacing: 2px; color: #b39a7e; white-space: nowrap; }
-#mz-minimap .mz-where { margin-top: 8px; padding-top: 7px; border-top: 1px solid rgba(255,240,214,.12); }
-#mz-minimap .mz-storm { margin-top: 3px; }
-#mz-minimap .mz-w-zone { flex: none; }
-#mz-minimap.mz-abroad .mz-w-zone::before { content: '城外'; font-size: 10px; letter-spacing: 1px; color: #d89a56; margin-right: 5px; }
-#mz-minimap .mz-w-sub, #mz-minimap .mz-storm b { font-size: 13px; letter-spacing: 1px; font-weight: 500; color: #efe3c8; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-#mz-minimap .mz-storm b.mz-warn { color: #f0b072; }
-#mz-minimap .mz-storm b.mz-good { color: #b9cc8a; }
-#mz-minimap .mz-storm b.mz-red { color: #f09a7e; }
+/* ==== 舆图下状态整表：地界／(五读数 dup)／风波／灭佛大势带进度条，行式统一 ==== */
+#mz-minimap .mz-doom { background: #241a0d; border-top: 1px solid rgba(var(--gold-rgb), .3); padding: 6px 10px 8px; }
+.mz-doom .mz-sr-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
+  font-size: 12.5px; line-height: 1.9; letter-spacing: 2px; color: var(--side-text); white-space: nowrap; }
+.mz-doom .mz-sr-row + .mz-sr-row { border-top: 1px solid rgba(var(--gold-rgb), .12); }
+.mz-doom .mz-sr-row span { flex: none; }
+.mz-doom .mz-sr-row b { min-width: 0; text-align: right; letter-spacing: .5px; font-weight: 500;
+  color: var(--side-text-hi); overflow: hidden; text-overflow: ellipsis; }
+.mz-doom .mz-sr-row b.mz-warn { color: #f0b072; }
+.mz-doom .mz-sr-row b.mz-good { color: #b9cc8a; }
+.mz-doom .mz-sr-row b.mz-fest, .mz-doom .mz-sr-row b.mz-red { color: #f09a7e; }
+.mz-doom .mz-sr-row b.mz-dim { color: var(--side-text); opacity: .6; }
+/* dup：顶栏已有的五项，桌面隐藏、仅手机端补显 */
+.mz-doom .mz-sr-dup { display: none; }
+/* 灭佛大势：一行「名／年号」＋当年国策小字＋通栏进度条 */
+.mz-doom .mz-doom-row { margin-top: 3px; padding-top: 5px; border-top: 1px solid rgba(var(--gold-rgb), .12); }
+.mz-doom-evt { font-size: 11.5px; letter-spacing: 1px; color: #c99a63; margin: 1px 0 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mz-doom .mz-bar { height: 5px; background: rgba(255,240,214,.10); }
+.mz-doom .mz-bar i { display: block; height: 100%; background: linear-gradient(90deg, #7a4a20, #a4623a); }
 
-/* ==== 玩法入口条（小匾：浅楠木芯细朱框九宫切片） ==== */
-.mz-zone { position: relative; padding: 3px 6px 4px; margin: 0; cursor: pointer;
-  border-style: solid; border-color: transparent; border-width: 14px;
-  border-image: url('${A2}plaque-entry.webp') 160 / 14px stretch;
-  background: url('${A2}silk-board-core.webp') center / cover; background-clip: border-box;
-  filter: drop-shadow(0 3px 5px rgba(0,0,0,.4));
-  transition: transform var(--t-fast) var(--ease-out), filter var(--t-fast) var(--ease-out); }
-.mz-zone:hover { transform: translateY(-2px); filter: drop-shadow(0 5px 8px rgba(0,0,0,.45)); }
-.mz-zone h5 { display: flex; align-items: center; gap: 9px; font-size: var(--fs-label); letter-spacing: var(--ls-label); font-weight: 400; white-space: nowrap;
-  letter-spacing: 3px; color: var(--side-text); margin-bottom: 4px; transition: color var(--t-fast) var(--ease-out); }
-.mz-zone h5:last-child { margin-bottom: 0; }
-.mz-zone h5::after { content: ''; flex: 1; height: 1px;
-  background: linear-gradient(90deg, rgba(var(--gold-rgb), .3), transparent); transition: background var(--t-fast) var(--ease-out); }
-.mz-z-ico { width: 30px; height: 30px; flex: none; display: flex; align-items: center; justify-content: center; }
-.mz-z-ico img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
-.mz-z-ico.mz-stub { border: 1px dashed rgba(var(--gold-rgb), .4); color: var(--gold-dim); }
-.mz-z-ico.mz-stub svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.mz-zone:not(.mz-locked):hover h5::after { background: linear-gradient(90deg, rgba(var(--gold-rgb), .6), transparent); }
-/* 状态行纪律：每条入口必须挂中频读数，只挂名字的入口条不许存在 */
-.mz-r-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px;
-  color: var(--side-text); line-height: 1.78; white-space: nowrap; }
-.mz-r-row b { color: var(--side-text-hi); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.mz-r-row .mz-r-warn { color: #f0b072; }
-.mz-r-row .mz-r-good { color: #b9cc8a; }
-.mz-r-row .mz-r-red { color: #f09a7e; }
-/* 档次色递进 绿 蓝 紫 金；三档系统取 q1/q2/q4，q3 留扩档 */
-.mz-r-row .mz-q1 { color: #a8c47f; }
-.mz-r-row .mz-q2 { color: #8fb5d4; }
-.mz-r-row .mz-q3 { color: #b79bd4; }
-.mz-r-row .mz-q4 { color: #e6c36a; }
-.mz-r-row .mz-r-dim { color: var(--side-text); opacity: .6; }
-/* 匾面为浅木，面上一律墨色字；档次色与告警色换深调 */
-.mz-zone h5, .mz-zone .mz-r-row { color: var(--ink-dim); }
-.mz-zone .mz-r-row b { color: var(--ink); }
-.mz-zone .mz-r-row .mz-r-warn { color: #9a5416; }
-.mz-zone .mz-r-row .mz-r-good { color: #587426; }
-.mz-zone .mz-r-row .mz-r-red { color: var(--cinnabar); }
-.mz-zone .mz-r-row .mz-q1 { color: #587426; }
-.mz-zone .mz-r-row .mz-q2 { color: #2e6484; }
-.mz-zone .mz-r-row .mz-q3 { color: #684688; }
-.mz-zone .mz-r-row .mz-q4 { color: #8a6610; }
-.mz-zone .mz-r-row .mz-r-dim { color: var(--ink-faint); opacity: 1; }
-.mz-zone h5::after { background: linear-gradient(90deg, rgba(139,103,42,.55), transparent); }
-.mz-zone:hover h5 { color: var(--cinnabar); }
-.mz-zone .mz-z-ico img { filter: drop-shadow(0 1px 2px rgba(0,0,0,.3)); }
+/* ==== 玩法入口目录（一列六条，条间一道自左向右淡出的金线） ==== */
+.mz-nav { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 1px; padding-top: 2px; overflow-y: auto; }
+.mz-nav-item { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 9px 10px 8px; cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
+.mz-nav-item + .mz-nav-item::before { content: ''; position: absolute; left: 8px; right: 6px; top: 0; height: 1px;
+  background: linear-gradient(90deg, rgba(var(--gold-rgb), .22), transparent 88%); }
+.mz-nav-ico { width: 26px; height: 26px; flex: none; display: flex; align-items: center; justify-content: center; }
+.mz-nav-ico img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,.5)); }
+.mz-nav-main { flex: 1; min-width: 0; }
+.mz-nav-lab { display: block; font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--side-text);
+  white-space: nowrap; transition: color var(--t-fast) var(--ease-out); }
+.mz-nav-sub { display: block; margin-top: 2px; font-size: 11.5px; letter-spacing: 1px; color: #a98c6c;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mz-nav-item:not(.mz-locked):hover { background: rgba(255,236,210,.05); border-left-color: var(--gold-dim); }
+.mz-nav-item:not(.mz-locked):hover .mz-nav-lab { color: var(--side-text-hi); }
+.mz-nav-item.mz-on { background: linear-gradient(90deg, rgba(var(--gold-rgb), .14), transparent 85%);
+  border-left-color: var(--gold); }
+.mz-nav-item.mz-on .mz-nav-lab { color: var(--side-title); }
 
-/* 锁匾 */
-.mz-zone.mz-locked { filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) saturate(.55); }
-.mz-zone.mz-locked:hover { transform: none; }
-.mz-zone.mz-locked h5, .mz-zone.mz-locked:hover h5 { color: var(--ink-faint); }
-.mz-zone.mz-locked .mz-z-ico img { filter: grayscale(1) opacity(.55); }
-.mz-r-row.mz-r-blank { visibility: hidden; }
-.mz-r-row.mz-r-lock { justify-content: flex-start; gap: 6px; align-items: center; color: var(--ink-faint); letter-spacing: 1.5px; }
-.mz-r-row.mz-r-lock svg { width: 13px; height: 13px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-@keyframes mz-unveil { 0% { filter: drop-shadow(0 0 0 rgba(216,164,68,0)); transform: translateY(0); }
-  25% { filter: drop-shadow(0 0 14px rgba(216,164,68,.95)) drop-shadow(0 3px 5px rgba(0,0,0,.4)); transform: translateY(-4px); }
-  100% { filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); transform: translateY(0); } }
-.mz-zone.mz-unveil { animation: mz-unveil 2.4s var(--ease-out); }
+/* 锁条：整行减淡，位置不空出、不重排 */
+.mz-nav-item.mz-locked { cursor: not-allowed; }
+.mz-nav-item.mz-locked .mz-nav-ico img { filter: grayscale(1) opacity(.4); }
+.mz-nav-item.mz-locked .mz-nav-lab { color: rgba(220,180,144,.45); }
+.mz-nav-item.mz-locked .mz-nav-sub { color: rgba(169,140,108,.6); }
+.mz-nav-lock:empty { display: none; }
+.mz-nav-lock { width: 13px; height: 13px; flex: none; color: rgba(220,180,144,.45); }
+.mz-nav-lock svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6;
+  stroke-linecap: round; stroke-linejoin: round; }
+@keyframes mz-unveil { 0% { background: rgba(var(--gold-rgb), 0); }
+  25% { background: rgba(var(--gold-rgb), .3); }
+  100% { background: rgba(var(--gold-rgb), 0); } }
+.mz-nav-item.mz-unveil { animation: mz-unveil 2.4s var(--ease-out); }
 
-/* ==== 角落细务钮（右栏底部） ==== */
-#mz-corner { flex: none; margin-top: auto; display: flex; justify-content: flex-end; gap: 4px; padding-top: 10px; }
+/* ==== 工具栏（顶栏右端 flex 项，读数框自动让位；浅色顶栏上图标取深墨色） ==== */
+#mz-corner { flex: none; display: flex; align-items: center; gap: 4px; }
 #mz-corner button { width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 6px;
-  color: #e8cfa8; opacity: .5; transition: opacity var(--t-fast) var(--ease-out); }
-#mz-corner button:hover { opacity: .95; }
-#mz-corner button.mz-on { opacity: .95; color: var(--gold); }
+  color: var(--p-label); opacity: .7; transition: opacity var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out); }
+#mz-corner button:hover { opacity: 1; color: var(--p-ink); }
+#mz-corner button.mz-on { opacity: 1; color: var(--p-red); }
 #mz-corner button svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
 `;
 
   // src/css/story.js
-  var A3 = ASSET_BASE;
+  var A2 = ASSET_BASE;
   var story_default = `
 /* ==== 卷首机件：更早哨兵 ==== */
 .mz-earlier { display: block; margin: -8px auto 20px; border: none; background: none; cursor: pointer;
@@ -663,7 +639,7 @@
 .mz-ff-voice:hover, .mz-ff-voice.mz-open { color: var(--cinnabar); }
 /* 心声卡：素花笺纸底＋花押叠印右下角 */
 .mz-vc { display: none; gap: 14px; padding: 17px 22px 16px; margin: 0 0 22px;
-  position: relative; background: url('${A3}paper-whisper.webp');
+  position: relative; background: url('${A2}paper-whisper.webp');
   background-size: 100% 100%;
   filter: drop-shadow(0 5px 14px rgba(60,40,15,.28)); }
 .mz-vc.mz-show { display: flex; animation: mz-reveal var(--t-slow) var(--ease-paper) both; }
@@ -671,10 +647,10 @@
 .mz-vc::after { content: ''; position: absolute; right: 24px; bottom: 16px; width: 44px; height: 44px;
   background: var(--stamp) center / contain no-repeat;
   opacity: .5; mix-blend-mode: multiply; pointer-events: none; }
-.mz-vc.mz-su   { --stamp: url('${A3}stamp-angelica.webp'); }
-.mz-vc.mz-xiao { --stamp: url('${A3}stamp-pomegranate.webp'); }
-.mz-vc.mz-pei  { --stamp: url('${A3}stamp-orchid.webp'); }
-.mz-vc.mz-ye   { --stamp: url('${A3}stamp-peach.webp'); }
+.mz-vc.mz-su   { --stamp: url('${A2}stamp-angelica.webp'); }
+.mz-vc.mz-xiao { --stamp: url('${A2}stamp-pomegranate.webp'); }
+.mz-vc.mz-pei  { --stamp: url('${A2}stamp-orchid.webp'); }
+.mz-vc.mz-ye   { --stamp: url('${A2}stamp-peach.webp'); }
 .mz-vc-img { flex: none; width: 118px; aspect-ratio: 832 / 1216; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   background: linear-gradient(165deg, #4a3626, #2b1d13 60%, #1d130c);
@@ -697,49 +673,50 @@
 .mz-vc-empty { font-size: 13.5px; line-height: 2; color: var(--ink-faint);
   border-left: 2px solid rgba(160,52,38,.3); padding-left: 12px; }
 
-/* ==== 中栏挂轴瀑布流（天杆压卷首，输入区并进纸尾） ==== */
-.mz-main { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; position: relative; }
-#mz-scroll {
-  width: var(--scroll-w); flex: 1; min-height: 0; margin-top: 2px;
-  display: flex; flex-direction: column;
-  filter: drop-shadow(0 12px 26px rgba(70,50,20,.35));
-}
-/* 卷首天杆三切片：铜箍固定，杆身拉伸 */
-.mz-axle { position: relative; flex: none; margin: 0 -14px -6px; z-index: 2; }
-.mz-axle .mz-rod {
-  display: block; height: 22px;
-  border-style: solid; border-color: transparent; border-width: 0 10px;
-  border-image: url('${A3}axle-plain.webp') 0 50 fill / 0 10px stretch;
-  filter: drop-shadow(0 3px 6px rgba(0,0,0,.45));
-}
-.mz-axle .mz-band {
-  display: block; height: 22px; margin: -5px 14px 0;
-  background: #5c2b22 url('${A3}brocade-band.webp') 0 0 / 128px 128px repeat;
-  box-shadow: inset 0 -4px 6px rgba(0,0,0,.22), inset 0 4px 6px rgba(0,0,0,.25);
-}
-.mz-axle .mz-knot {
-  position: absolute; left: 50%; top: 9px; width: 26px; height: 38px; transform: translateX(-50%);
-  background: url('${A3}ribbon-knot.webp') center top / contain no-repeat;
-  filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
-}
-/* 正文与书写区共用同一张纸 */
-#mz-sheet {
-  flex: 1; min-height: 0; display: flex; flex-direction: column;
-  background-color: #dfd4b8;
-  background-image:
-    linear-gradient(180deg, rgba(80,55,20,.12), rgba(80,55,20,0) 28px),
-    url('${A3}paper-scroll.webp');
-  background-size: 100% 28px, 512px 512px;
-  background-repeat: no-repeat, repeat;
-  background-position: top, 0 0;
-}
-#mz-paper { flex: 1; overflow-y: auto; scrollbar-gutter: stable both-edges; padding: 32px 44px 22px; }
+/* ==== 主区绢纸（顶栏一条横边，其下正文列居中；正文与书写区共用同一张纸） ==== */
+/* 主区整套配色对齐开场面板：墨色三档就地改写，正文机件不必逐条改色 */
+.mz-main { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative;
+  --paper: var(--p-paper); --ink: var(--p-ink); --ink-dim: var(--p-body); --ink-faint: var(--p-label);
+  --cinnabar: var(--p-red);
+  /* 正文列两侧总留白：宽屏把列锁在 --read-col，窄屏退到左右各 48 */
+  --col-side: max(48px, calc((100% - var(--read-col)) / 2));
+  color: var(--p-ink);
+  background: var(--p-paper) url('${A2}paper-scroll.webp') center / 512px; }
+
+/* ==== 顶栏（常驻读数，纸上只此一条横带） ==== */
+.mz-topbar { flex: none; height: var(--top-h); display: flex; align-items: center; gap: 22px; padding: 0 30px;
+  border-bottom: 1px solid var(--p-rule); }
+/* 诸务钮：桌面端不存在，窄屏才是落下面板（侧栏）的开关；描线图标，与右侧工具栏同族 */
+.mz-tb-plaque { display: none; flex: none; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 6px; }
+.mz-tb-plaque svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* overflow:hidden 把溢出读数裁在读数框内；工具栏是同排 flex 项，读数够不到图标（margin 只留一道间隙） */
+.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; gap: 22px; margin-right: 16px; overflow: hidden; }
+.mz-tb-time { flex: none; font-size: 15px; letter-spacing: 3px; color: var(--p-title); font-weight: 600; }
+.mz-tb-time b { font-weight: 700; }
+.mz-tb-time.mz-dim { color: var(--p-faint); font-weight: 500; }
+.mz-tb-i { position: relative; flex: none; display: flex; align-items: baseline; gap: 7px; font-size: 12.5px;
+  letter-spacing: 2px; color: var(--p-label); white-space: nowrap; }
+/* 分隔竖线挂在项自己身上，项一隐线也跟着走 */
+.mz-tb-i::before { content: ''; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
+  width: 1px; height: 15px; background: rgba(139,103,42,.32); }
+.mz-tb-i b { font-size: 13.5px; letter-spacing: .5px; color: var(--p-ink); font-weight: 600; }
+.mz-tb-i b.mz-warn { color: var(--warn); }
+.mz-tb-i b.mz-good { color: var(--good); }
+.mz-tb-i b.mz-fest { color: var(--p-red); }
+.mz-tb-i b.mz-dim { color: var(--p-faint); font-weight: 500; }
+/* 顶栏瘦身档：读数挤到工具栏前，舍常例与节令（更新最少），保住时辰／宵禁／铜钱／信众／风波 */
+@container mz (max-width: 1300px) { .mz-tb-thin { display: none; } }
+
+/* 槽宽 9px（见 tokens.js）两边各占一道，从总留白里扣掉，正文列才与书写区左右对齐 */
+#mz-paper { flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable both-edges;
+  padding: 48px calc(var(--col-side) - 9px) 32px; }
 .mz-turn { margin-bottom: 22px; }
-.mz-turn.mz-gm { line-height: 2.08; font-size: var(--fs-body); letter-spacing: .3px; line-break: strict; text-wrap: pretty; text-align: justify; }
+.mz-turn.mz-gm { line-height: 2.0; font-size: var(--fs-body); letter-spacing: .3px; color: var(--p-body); line-break: strict; text-wrap: pretty; text-align: justify; }
 .mz-turn.mz-gm p + p { margin-top: .9em; }
 .mz-quote { color: var(--cinnabar); }
 /* 谕印随文跟在末行之后（款后钤印），各行右齐纸边不为印让列 */
-.mz-turn.mz-zhu { text-align: right; color: var(--cinnabar); font-size: var(--fs-body); line-height: 2.08; letter-spacing: .3px; padding-right: 2px; }
+.mz-turn.mz-zhu { text-align: right; color: var(--cinnabar); font-size: var(--fs-body); line-height: 2.0; letter-spacing: .3px; padding-right: 2px; }
 .mz-turn.mz-zhu.mz-editing::after { content: none; }
 .mz-turn.mz-zhu::after { content: '谕'; display: inline-block; margin-left: 10px; font-size: 16px; color: var(--paper-hi);
   width: 24px; height: 24px; line-height: 24px; text-align: center;
@@ -747,9 +724,9 @@
 
 /* ==== 卷末机件：状态行／删除模式条／回到最新钮 ==== */
 #mz-status { flex: none; text-align: center; font-size: 12px; letter-spacing: 3px; text-indent: 3px;
-  color: var(--ink-faint); padding: 3px 0 0; }
+  color: var(--p-label); padding: 3px var(--col-side) 0; }
 #mz-status:empty { display: none; }
-#mz-delbar { display: none; align-items: center; justify-content: center; gap: 16px; padding: 9px 0 13px;
+#mz-delbar { display: none; align-items: center; justify-content: center; gap: 16px; padding: 9px var(--col-side) 13px;
   font-size: 12.5px; letter-spacing: 2px; color: var(--ink-dim); }
 #mz-delbar.mz-show { display: flex; }
 #mz-delbar button { border: 1px solid rgba(139,103,42,.55); background: none; cursor: pointer; font-family: inherit;
@@ -758,9 +735,10 @@
 #mz-delbar button.mz-danger { color: var(--cinnabar); border-color: rgba(160,52,38,.55); }
 #mz-delbar button:not([disabled]):hover { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
 #mz-delbar button[disabled] { opacity: .45; }
-#mz-jump { position: absolute; z-index: 5; bottom: 84px; left: calc(50% + var(--scroll-w) / 2 - 62px);
+/* 木鱼中心对齐敕印中心：敕印宽 46 右缘贴 col-side，木鱼宽 34，故左移 23+17 */
+#mz-jump { position: absolute; z-index: 5; bottom: 84px; left: calc(100% - var(--col-side) - 40px);
   width: 34px; height: 62px; border: none; padding: 0; cursor: pointer; display: none;
-  background: url('${A3}hanging-fish.webp') center / contain no-repeat;
+  background: url('${A2}hanging-fish.webp') center / contain no-repeat;
   filter: drop-shadow(0 4px 8px rgba(60,40,15,.4));
   transform-origin: top center; transition: filter var(--t-fast) var(--ease-out), rotate var(--t-mid) var(--ease-out); }
 #mz-jump.mz-show { display: block; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
@@ -768,12 +746,12 @@
 
 /* ==== 卷末书写区（并进瀑布流，界栏隔开） ==== */
 #mz-writing { flex: none; position: relative; display: flex; align-items: flex-end; gap: 10px;
-  padding: 9px 26px 11px; }
-#mz-writing::before { content: ''; position: absolute; top: 0; left: 30px; right: 30px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(139,103,42,.85) 10%, rgba(139,103,42,.85) 90%, transparent); }
+  padding: 12px var(--col-side) 24px; }
+#mz-writing::before { content: ''; position: absolute; top: 0; left: var(--col-side); right: var(--col-side); height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139,103,42,.6), transparent); }
 .mz-w-tools { display: flex; gap: 2px; padding-bottom: 4px; }
 .mz-w-tools button { width: 28px; height: 28px; border: none; background: none; cursor: pointer; padding: 6px;
-  color: var(--ink-dim); opacity: .45; transition: opacity var(--t-fast) var(--ease-out), translate var(--t-fast) var(--ease-out); }
+  color: var(--p-label); opacity: .55; transition: opacity var(--t-fast) var(--ease-out), translate var(--t-fast) var(--ease-out); }
 .mz-w-tools button:not([disabled]):hover { opacity: 1; translate: 0 -1px; }
 .mz-w-tools button[disabled] { opacity: .22; }
 .mz-w-tools button svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -782,14 +760,14 @@
   padding: 6px 2px 4px; color: var(--ink); caret-color: var(--cinnabar);
   background: transparent;
   /* 界行线起点须对齐 padding-top，线才落在每行字底 */
-  background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(118,94,56,.28) 25px 26px);
+  background-image: repeating-linear-gradient(180deg, transparent 0 25px, rgba(118,94,56,.24) 25px 26px);
   background-position: 0 6px;
   background-attachment: local; }
 #mz-writing textarea[disabled] { opacity: .55; }
-#mz-writing textarea::placeholder { color: var(--ink-faint); opacity: .75; }
+#mz-writing textarea::placeholder { color: var(--p-hint); opacity: 1; }
 #mz-send {
   width: 46px; height: 48px; flex: none; border: none;
-  background: url('${A3}seal-chi.webp') center/contain no-repeat;
+  background: url('${A2}seal-chi.webp') center/contain no-repeat;
   color: #fff4dc; cursor: pointer;
   font-family: inherit; font-size: 20px; font-weight: 600;
   display: flex; align-items: center; justify-content: center;
@@ -811,10 +789,10 @@
 .mz-crisis-line .mz-ticket-text b { font-size: 12.5px; letter-spacing: 1.5px; color: var(--cinnabar); font-weight: 600; }
 .mz-crisis-line .mz-ticket-text .mz-sub { font-size: 9px; color: var(--ink-dim); margin-top: 3px; letter-spacing: .3px; line-height: 1.5; }
 
-/* ==== 朱票事件层（本月危机非空时骑钉在卷轴右肩） ==== */
-#mz-crisis { display: none; position: absolute; z-index: 9; top: 30px;
-  /* 卷外空隙不够时向纸内让位，不压侧栏 */
-  left: min(calc(50% + var(--scroll-w) / 2 - 100px), calc(100% - 204px));
+/* ==== 朱票事件层（本月危机非空时钉在正文列右缘外，顶端与首楼齐） ==== */
+#mz-crisis { display: none; position: absolute; z-index: 9; top: calc(var(--top-h) + 48px);
+  /* 列外留白不够时向纸内让位，不出主区 */
+  left: min(calc(100% - var(--col-side) + 8px), calc(100% - 204px));
   width: 212px; rotate: 4deg; cursor: grab; touch-action: none;
   filter: drop-shadow(0 2px 2px rgba(0,0,0,.7)) drop-shadow(0 12px 22px rgba(0,0,0,.5)); }
 #mz-shell-root[data-crisis] #mz-crisis { display: block; animation: stamp var(--t-slow) var(--ease-paper); }
@@ -831,16 +809,17 @@
 `;
 
   // src/css/lift.js
-  var A4 = ASSET_BASE;
+  var A3 = ASSET_BASE;
   var lift_default = `
 /* ==== 浮窗（无框素纸＋竖排朱漆悬签＋内圈暗金细线） ==== */
 /* 壳内浮层一律 absolute 以壳根为包含块（fixed 会以酒馆带 transform 的 html 为包含块，手机端高 0） */
 #mz-lift { position: absolute; inset: 0; z-index: 40; background: var(--scrim); backdrop-filter: blur(3px);
   display: none; align-items: center; justify-content: center; }
 #mz-lift.mz-show { display: flex; }
-#mz-lift .mz-held { width: min(940px, 94vw); height: min(620px, 84vh);
+/* 尺寸走百分比而非 vw／vh：浮窗是壳根 inset:0 的子元素，壳被框小时（预览页 ?vw=）vw 仍按真视口算 */
+#mz-lift .mz-held { width: min(1000px, 94%); height: min(720px, 84%);
   position: relative; display: flex; flex-direction: column;
-  background-color: #dfd4b8; background-image: url('${A4}paper-scroll.webp'); background-size: 512px 512px;
+  background-color: #dfd4b8; background-image: url('${A3}paper-scroll.webp'); background-size: 512px 512px;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)) drop-shadow(0 24px 48px rgba(0,0,0,.55)); }
 #mz-lift .mz-held::before { content: ''; position: absolute; inset: 9px; pointer-events: none; z-index: 1;
   border: 1px solid rgba(139,103,42,.5); }
@@ -849,7 +828,7 @@
   writing-mode: vertical-rl; letter-spacing: 6px; padding: 16px 13px 18px;
   font-size: 15px; font-weight: 600; color: var(--side-title);
   border-style: solid; border-color: transparent; border-width: 15px 0 13px;
-  border-image: url('${A4}slip-title.webp') 140 0 120 fill / 15px 0 13px stretch;
+  border-image: url('${A3}slip-title.webp') 140 0 120 fill / 15px 0 13px stretch;
   filter: drop-shadow(0 3px 6px rgba(0,0,0,.4)); }
 #mz-lift .mz-held .mz-held-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; padding: 30px 34px 26px; }
 /* 收窗叉桌面端不显（点遮罩即关），手机端与开坛窗的显隐见 phone.js */
@@ -873,7 +852,7 @@
 #mz-lift.mz-hide .mz-held h3, #mz-lift.mz-hide .mz-held .mz-held-body { animation: none; }
 
 /* ==== 开坛窗（第 0 楼开局）：题头写在纸面顶端，遮罩点击不关、无关闭钮 ==== */
-#mz-lift.mz-gate .mz-held { width: min(1100px, 94vw); height: auto; min-height: min(600px, 72vh); max-height: 84vh; }
+#mz-lift.mz-gate .mz-held { width: min(1100px, 94%); height: auto; min-height: min(600px, 72%); max-height: 84%; }
 #mz-lift.mz-gate .mz-held h3 { position: static; translate: none; writing-mode: horizontal-tb; filter: none;
   border: none; border-image: none; padding: 34px 44px 0; margin: 0; z-index: 2; text-align: center;
   font-size: var(--fs-title); letter-spacing: var(--ls-title); text-indent: var(--ls-title); font-weight: 600; color: var(--ink); }
@@ -888,7 +867,7 @@
 .mz-gate-opening { display: flex; flex-direction: column; min-height: 0; }
 .mz-gate-card { position: relative; padding: 14px 16px 12px; flex: 1; min-height: 0;
   border-style: solid; border-color: transparent; border-width: 11px;
-  border-image: url('${A4}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
+  border-image: url('${A3}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
   display: flex; flex-direction: column; gap: 8px; }
 .mz-gate-img { flex: 1; min-height: 160px; aspect-ratio: 16 / 7; background: #cbbc98 center / cover no-repeat; box-shadow: inset 0 0 0 1px rgba(139,103,42,.45); }
 .mz-gate-card b { font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; }
@@ -902,7 +881,7 @@
 .mz-gate-sect:last-child { margin-bottom: 0; }
 .mz-gate-sect { position: relative; display: flex; align-items: baseline; gap: 14px; text-align: left; cursor: pointer; font-family: inherit;
   padding: 9px 16px; margin-bottom: 8px; border-style: solid; border-color: transparent; border-width: 16px;
-  border-image: url('${A4}plaque-entry.webp') 160 / 16px stretch; background: url('${A4}silk-board-core.webp') center / cover; background-clip: border-box;
+  border-image: url('${A3}plaque-entry.webp') 160 / 16px stretch; background: url('${A3}silk-board-core.webp') center / cover; background-clip: border-box;
   color: var(--ink-dim); transition: filter var(--t-mid) var(--ease-out), translate var(--t-fast) var(--ease-out); }
 .mz-gate-sect:hover { filter: brightness(1.04); translate: 0 -1px; }
 .mz-gate-sect:active { translate: 0 1px; transition-duration: .06s; }
@@ -936,7 +915,7 @@
 @keyframes rite-ring { 0% { opacity: 0; scale: 1; } 15% { opacity: 1; } 100% { opacity: 0; scale: 3.4; } }
 .mz-rite-seal { position: relative; width: 164px; height: 164px; rotate: -3deg; padding: 14px; box-sizing: border-box;
   display: flex; align-items: center; justify-content: center;
-  background: var(--cinnabar) url('${A4}paper-scroll.webp') center / 256px; background-blend-mode: multiply;
+  background: var(--cinnabar) url('${A3}paper-scroll.webp') center / 256px; background-blend-mode: multiply;
   box-shadow: inset 0 0 0 3px rgba(255,240,214,.92), inset 0 0 0 7px var(--cinnabar), 0 0 0 1px rgba(160,52,38,.35), 0 10px 24px rgba(60,10,0,.35);
   animation: rite-stamp .62s var(--ease-paper) both; }
 .mz-rite-seal span { writing-mode: vertical-rl; font-size: 52px; line-height: 62px; font-weight: 600; letter-spacing: 6px;
@@ -954,7 +933,7 @@
 `;
 
   // src/css/windows.js
-  var A5 = ASSET_BASE;
+  var A4 = ASSET_BASE;
   var windows_default = `
 /* ==== 浮窗窗内通用件（页签／经折页／拜帖卡／虚位／朱印钮） ==== */
 /* 窗内排版须让出左上题签区：列表窗左留边沟，舆图窗图面压在签下无妨 */
@@ -974,7 +953,7 @@
 .mz-pane.mz-on { display: flex; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 @keyframes mz-reveal { from { opacity: 0; translate: 0 4px; } }
 .mz-folio { flex: 1; min-height: 0; overflow-y: auto; padding: 14px 16px;
-  background: #f4efe0 url('${A5}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32);
+  background: #f4efe0 url('${A4}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32);
   box-shadow: inset 0 0 0 4px rgba(255,252,244,.35); }
 .mz-grid { display: grid; gap: 12px; align-content: start; grid-auto-rows: max-content; }
 .mz-grid.mz-c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -982,7 +961,7 @@
 .mz-grid.mz-c4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .mz-card { position: relative; padding: 11px 13px 10px;
   border-style: solid; border-color: transparent; border-width: 11px;
-  border-image: url('${A5}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
+  border-image: url('${A4}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
   font-size: 14.5px; line-height: 1.8; color: var(--ink-dim); min-height: 68px; }
 .mz-card b { display: block; font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; margin-bottom: 2px; }
 .mz-card .mz-k { color: var(--ink-faint); letter-spacing: 1px; margin-right: 6px; }
@@ -991,7 +970,7 @@
 .mz-card .mz-tag.mz-gold { color: #9a7420; }
 .mz-card.mz-empty { display: flex; align-items: center; justify-content: center; background: none; box-shadow: none;
   border-image: none; border: 1px dashed rgba(139,103,42,.4); padding: 21px 23px 20px; color: var(--ink-faint); letter-spacing: 4px; text-indent: 4px; font-size: 14px; }
-.mz-card.mz-empty.mz-lotus { background: url('${A5}icon-lotus.webp') center / 34px no-repeat; background-color: transparent; }
+.mz-card.mz-empty.mz-lotus { background: url('${A4}icon-lotus.webp') center / 34px no-repeat; background-color: transparent; }
 .mz-card.mz-empty.mz-lotus::before { content: ''; position: absolute; inset: 0; background: rgba(255,250,238,.55); }
 .mz-card.mz-empty.mz-lotus span { position: relative; }
 .mz-card.mz-empty.mz-lotus span { opacity: .9; background: rgba(255,252,244,.8); padding: 0 4px; }
@@ -1035,9 +1014,9 @@
 .mz-sheet input, .mz-sheet textarea { width: 100%; box-sizing: border-box; }
 .mz-sheet .mz-none { padding: 0; font-size: 13px; }
 .mz-build { flex: 1; min-width: 0; }
-/* 撑满型经折页：内容纵向铺满余高 */
+/* 撑满型经折页：内容纵向铺满余高；行只长不缩，超出由经折页自己滚 */
 .mz-folio.mz-fill { display: flex; flex-direction: column; gap: 12px; }
-.mz-folio.mz-fill > .mz-wrow { flex: 1; min-height: 0; align-items: stretch; }
+.mz-folio.mz-fill > .mz-wrow { flex: 1 0 auto; min-height: 0; align-items: stretch; }
 .mz-folio.mz-fill > .mz-grid { flex: 1; }
 .mz-form .mz-grow { flex: 1; min-width: 0; }
 /* 债契：放贷契纸横排一行铺顶 */
@@ -1051,7 +1030,9 @@
 .mz-pick .mz-shopline { color: #9a7420; }
 .mz-pick.mz-off .mz-shopline { color: #96500f; }
 .mz-craft { flex: 1; min-width: 0; }
-.mz-craft .mz-grow textarea { height: 100%; }
+/* 效用框定高：不吃剩余高度，篮子长起来也挤不到它（原 height:100% 是整页唯一的弹性高，篮子一长就压它） */
+.mz-craft .mz-grow { flex: none; }
+.mz-craft .mz-grow textarea { height: 220px; }
 .mz-form textarea { border: none; border-bottom: 1px solid rgba(118,94,56,.5); background: transparent; outline: none; resize: none;
   font-family: inherit; font-size: 15.5px; line-height: 1.7; color: var(--ink); padding: 3px 2px; caret-color: var(--cinnabar); }
 .mz-sheet .mz-wh { margin-top: 2px; }
@@ -1078,6 +1059,19 @@
 .mz-wonder.mz-live small::before { content: ''; }
 .mz-wonder small { font-size: 11.5px; letter-spacing: .5px; color: var(--ink-faint); margin-top: 2px; }
 .mz-build-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: auto; }
+
+/* ==== 待呈之事（表单底下的篮） ==== */
+.mz-basket { flex: none; padding-top: 10px; border-top: 1px dashed rgba(139,103,42,.45); }
+.mz-basket .mz-build-foot { margin-top: 10px; }
+.mz-bk-row { display: flex; align-items: baseline; gap: 8px; padding: 4px 2px; font-size: 13px;
+  border-bottom: 1px solid rgba(139,103,42,.16); }
+.mz-bk-row b { font-weight: 600; letter-spacing: 1px; color: var(--ink); }
+.mz-bk-row .mz-tag { font-size: 12px; letter-spacing: 1px; color: var(--ink-faint); }
+.mz-bk-row .mz-price { margin-left: auto; font-size: 12.5px; color: #9a7420; }
+.mz-bk-x { flex: none; border: none; background: none; cursor: pointer; font-family: inherit;
+  font-size: 12px; letter-spacing: 1px; padding: 0 2px; color: var(--ink-faint);
+  transition: color var(--t-fast) var(--ease-out); }
+.mz-bk-x:hover { color: var(--cinnabar); }
 .mz-build-foot > .mz-why:first-child { flex: 1; margin-left: 0; }
 .mz-wh { display: flex; align-items: center; gap: 10px; flex: none; font-size: 13.5px; letter-spacing: 3px; color: var(--ink-faint); }
 .mz-wh::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(139,103,42,.5), transparent); }
@@ -1091,7 +1085,7 @@
 .mz-none { color: var(--ink-faint); letter-spacing: 3px; font-size: 14px; padding: 6px 2px; }
 
 /* 同心缕：女主切换走顶部页签，位阶作页签小字 */
-.mz-portrait { flex: none; width: 252px; display: flex; flex-direction: column; gap: 8px; }
+.mz-portrait { flex: none; width: 290px; display: flex; flex-direction: column; gap: 8px; }
 .mz-portrait .mz-pic { aspect-ratio: 832 / 1216; width: 100%; background: linear-gradient(165deg, #4a3626, #2b1d13 60%, #1d130c) center / cover no-repeat;
   outline: 1px solid rgba(120,96,54,.5); outline-offset: -3px; display: flex; align-items: center; justify-content: center; }
 .mz-portrait .mz-pic span { writing-mode: vertical-rl; font-size: 11px; letter-spacing: 4px; color: rgba(216,204,178,.45); }
@@ -1107,11 +1101,11 @@
 .mz-thumbs i.mz-lock:hover { opacity: 1; }
 /* 位阶莲瓣：四瓣对应一灌至四灌，待度零瓣，未亮去色压淡 */
 .mz-lotus-row { display: flex; align-items: center; gap: 10px; font-size: 14.5px; letter-spacing: 1px; color: var(--ink-dim); flex: none; }
-.mz-lotus-row i { width: 26px; height: 28px; background: url('${A5}lotus-rank.webp') center / contain no-repeat;
+.mz-lotus-row i { width: 26px; height: 28px; background: url('${A4}lotus-rank.webp') center / contain no-repeat;
   filter: grayscale(1) opacity(.32); }
 .mz-lotus-row i.mz-lit { filter: none; }
 .mz-lotus-row b { color: var(--cinnabar); font-weight: 600; margin-left: auto; }
-.mz-voice-sheet { flex: none; position: relative; min-height: 180px; box-sizing: content-box; padding: 14px 18px 16px; background: url('${A5}paper-whisper.webp') center / 100% 100% no-repeat;
+.mz-voice-sheet { flex: none; position: relative; min-height: 180px; box-sizing: content-box; padding: 14px 18px 16px; background: url('${A4}paper-whisper.webp') center / 100% 100% no-repeat;
   font-size: 15px; line-height: 2; color: var(--ink-dim); filter: drop-shadow(0 3px 8px rgba(60,40,15,.22)); }
 .mz-voice-sheet::after { content: ''; position: absolute; right: 16px; bottom: 10px; width: 36px; height: 36px;
   background: var(--stamp) center / contain no-repeat; opacity: .5; mix-blend-mode: multiply; }
@@ -1121,10 +1115,10 @@
   background: var(--cinnabar); box-shadow: 0 0 0 2px rgba(255,252,244,.9); }
 .mz-timeline .mz-memo b { color: var(--cinnabar); font-weight: 600; letter-spacing: 1px; margin-right: 8px; }
 .mz-timeline .mz-memo small { color: var(--ink-faint); letter-spacing: .5px; }
-.mz-su   { --stamp: url('${A5}stamp-angelica.webp'); }
-.mz-xiao { --stamp: url('${A5}stamp-pomegranate.webp'); }
-.mz-pei  { --stamp: url('${A5}stamp-orchid.webp'); }
-.mz-ye   { --stamp: url('${A5}stamp-peach.webp'); }
+.mz-su   { --stamp: url('${A4}stamp-angelica.webp'); }
+.mz-xiao { --stamp: url('${A4}stamp-pomegranate.webp'); }
+.mz-pei  { --stamp: url('${A4}stamp-orchid.webp'); }
+.mz-ye   { --stamp: url('${A4}stamp-peach.webp'); }
 
 .mz-names button.mz-off { opacity: .45; }
 .mz-names button.mz-off:hover { color: inherit; }
@@ -1183,7 +1177,7 @@
 .mz-atlas .mz-lbl.mz-cur { color: var(--cinnabar); font-weight: 600; font-size: 13px; }
 /* 风波印章三档色靠 hue-rotate 偏移朱砂本色 */
 .mz-atlas .mz-storm { position: absolute; top: 8px; right: 8px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
-  background: url('${A5}seal-storm.webp') center / contain no-repeat;
+  background: url('${A4}seal-storm.webp') center / contain no-repeat;
   font-size: 16px; letter-spacing: 0; font-weight: 700; color: var(--cinnabar); }
 .mz-atlas .mz-storm.mz-low { filter: hue-rotate(120deg) saturate(.7); } .mz-atlas .mz-storm.mz-mid { filter: hue-rotate(-25deg); } .mz-atlas .mz-storm.mz-high { filter: none; }
 .mz-atlas .mz-zones { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
@@ -1192,6 +1186,7 @@
 .mz-atlas .mz-zlist li.mz-cur { color: var(--cinnabar); font-weight: 600; background: rgba(160,52,38,.07); box-shadow: inset 2px 0 0 var(--cinnabar); }
 .mz-atlas .mz-zlist li small { color: var(--ink-faint); font-weight: 400; letter-spacing: .5px; }
 .mz-atlas .mz-zlist li.mz-abroad { margin-top: 6px; border-top: 1px dashed rgba(50,24,10,.3); }
+.mz-atlas .mz-zlist li.mz-abroad:not(.mz-cur) { color: var(--ink-faint); }
 .mz-atlas .mz-abroad-mark { position: absolute; left: 10px; bottom: 10px; padding: 4px 10px; font-size: 13px; letter-spacing: 1px; font-weight: 600; color: var(--cinnabar);
   background: rgba(234,223,194,.9); outline: 1px solid rgba(160,52,38,.45); }
 .mz-atlas .mz-abroad-mark b { font-weight: 400; font-size: 11px; color: var(--ink-dim); margin-right: 6px; }
@@ -1201,10 +1196,22 @@
 .mz-doomline .mz-yrs span.mz-cur { color: #9a7420; border-color: #9a7420; background: rgba(216,164,68,.12); font-weight: 600; }
 .mz-doomline .mz-yrs span.mz-past { background: rgba(139,103,42,.12); }
 
+/* ==== 设置窗 ==== */
+.mz-set-group { display: flex; flex-direction: column; gap: 10px; }
+.mz-set-lab { font-size: 13px; letter-spacing: 2px; color: var(--ink-faint); }
+.mz-set-opt { position: relative; display: flex; align-items: center; padding: 11px 16px; cursor: pointer;
+  font-size: 14.5px; letter-spacing: 1px; color: var(--ink-dim);
+  border: 1px solid rgba(139,103,42,.35); background: rgba(255,252,244,.55);
+  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
+.mz-set-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
+.mz-set-opt:hover { border-color: rgba(160,52,38,.5); }
+.mz-set-opt:has(input:checked) { border-color: var(--cinnabar); background: rgba(160,52,38,.07);
+  box-shadow: inset 0 0 0 1px var(--cinnabar); color: var(--ink); }
+
 `;
 
   // src/css/extras.js
-  var A6 = ASSET_BASE;
+  var A5 = ASSET_BASE;
   var extras_default = `
 /* ==== 正文容器／编辑态／删除态／推演中／入口／变量树／数据库钮 ==== */
 #mz-shell-root[data-visible="false"] { display: none; }
@@ -1231,8 +1238,6 @@
 .mz-cursor::after { content: '▍'; color: var(--cinnabar); opacity: .6; animation: mz-blink 1s steps(2, jump-none) infinite; }
 @keyframes mz-blink { 0% { opacity: .6; } 100% { opacity: 0; } }
 #mz-delbar button.mz-armed { color: var(--paper-hi); background: var(--cinnabar); border-color: var(--cinnabar); }
-#mz-corner button[data-corner="acu"] { display: none; }
-#mz-shell-root[data-acu] #mz-corner button[data-corner="acu"] { display: block; }
 #mz-entry { all: initial; position: fixed; z-index: 8999; display: none; box-sizing: border-box;
   direction: ltr; unicode-bidi: isolate; -webkit-locale: 'zh'; -webkit-tap-highlight-color: transparent;
   --fs-label: 12.5px; --ls-label: 3px; }
@@ -1240,7 +1245,7 @@
 /* 入卷题签配色对齐酒馆内入口面板（绢纸 #f3ead2／入卷红 #9b2f22） */
 .mz-entry-tab { position: relative; display: flex; align-items: center; gap: 9px; cursor: pointer; padding: 6px 13px 6px 6px;
   font-family: 'Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif; font-size: var(--fs-label); letter-spacing: var(--ls-label); text-indent: var(--ls-label);
-  color: #3a2c1a; background: #f3ead2 url('${A6}paper-scroll.webp') center / 512px; border: 1px solid rgba(139,103,42,.5);
+  color: #3a2c1a; background: #f3ead2 url('${A5}paper-scroll.webp') center / 512px; border: 1px solid rgba(139,103,42,.5);
   box-shadow: 0 2px 4px rgba(0,0,0,.35), 0 10px 20px rgba(0,0,0,.28);
   transition: translate var(--t-fast) var(--ease-out), box-shadow var(--t-fast) var(--ease-out); }
 .mz-entry-tab::before { content: ''; position: absolute; inset: 3px; border: 1px solid rgba(139,103,42,.26); pointer-events: none; }
@@ -1250,7 +1255,7 @@
 .mz-entry-tab:active { translate: 0 1px; transition-duration: .06s; }
 .mz-entry-tab svg { width: 13px; height: 13px; fill: none; stroke: #9b2f22; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .mz-vartree { flex: 1; min-height: 0; overflow: auto; font-size: 13.5px; line-height: 1.9; color: var(--ink-dim); padding: 8px 12px;
-  background: #f4efe0 url('${A6}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32); }
+  background: #f4efe0 url('${A5}paper-folded.webp') 0 0 / 512px 512px repeat; border: 1px solid rgba(139,103,42,.32); }
 .mz-vartree details { padding-left: 14px; }
 .mz-vartree summary { cursor: pointer; color: var(--ink); letter-spacing: 1px; list-style: none; }
 .mz-vartree summary::before { content: '▸'; display: inline-block; width: 14px; color: var(--ink-faint); transition: rotate var(--t-fast) var(--ease-out); }
@@ -1262,11 +1267,11 @@
 .mz-portrait .mz-pic img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; }
 /* ==== 罪业密簿黑账变体（七窗唯此一扇走暗面） ==== */
 #mz-lift.mz-sin { --ink: #e3d4ac; --ink-dim: #c3b28a; --ink-faint: #94845f; }
-#mz-lift.mz-sin .mz-held { background-color: #151515; background-image: url('${A6}paper-ledger.webp'); }
-#mz-lift.mz-sin .mz-held h3 { border-image-source: url('${A6}slip-ledger.webp'); }
+#mz-lift.mz-sin .mz-held { background-color: #151515; background-image: url('${A5}paper-ledger.webp'); }
+#mz-lift.mz-sin .mz-held h3 { border-image-source: url('${A5}slip-ledger.webp'); }
 #mz-lift.mz-sin .mz-held::before { border-color: rgba(176,74,56,.5); }
-#mz-lift.mz-sin .mz-folio { background: #151515 url('${A6}paper-ledger.webp') 0 0 / 512px 512px repeat; border-color: rgba(176,74,56,.4); box-shadow: inset 0 0 0 4px rgba(0,0,0,.22); }
-#mz-lift.mz-sin .mz-card { border-image: url('${A6}card-ledger.webp') 52 fill / 11px stretch; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
+#mz-lift.mz-sin .mz-folio { background: #151515 url('${A5}paper-ledger.webp') 0 0 / 512px 512px repeat; border-color: rgba(176,74,56,.4); box-shadow: inset 0 0 0 4px rgba(0,0,0,.22); }
+#mz-lift.mz-sin .mz-card { border-image: url('${A5}card-ledger.webp') 52 fill / 11px stretch; box-shadow: 0 1px 3px rgba(0,0,0,.35); }
 #mz-lift.mz-sin .mz-card.mz-empty { border-image: none; border: 1px dashed rgba(176,74,56,.35); background: none; box-shadow: none; }
 #mz-lift.mz-sin .mz-form input { border-bottom-color: rgba(227,212,172,.4); }
 #mz-lift.mz-sin .mz-form input::placeholder { color: rgba(227,212,172,.35); }
@@ -1283,10 +1288,10 @@
 #mz-crisis.mz-moved { left: var(--cx); top: var(--cy); }
 @keyframes mz-flash { 0% { color: var(--cinnabar); text-shadow: 0 0 10px rgba(160,52,38,.55); translate: 0 -2px; }
   30% { color: var(--cinnabar); text-shadow: 0 0 0 rgba(160,52,38,0); translate: 0 0; } }
-.mz-flash b, .mz-flash .mz-w-sub, .mz-flash.mz-solo { animation: mz-flash 1.4s var(--ease-out); }
+.mz-flash b, .mz-flash.mz-tb-time { animation: mz-flash 1.4s var(--ease-out); }
 @keyframes mz-flash-dark { 0% { color: #f6c083; text-shadow: 0 0 10px rgba(240,176,114,.7); translate: 0 -2px; }
   30% { color: #f6c083; text-shadow: 0 0 0 rgba(240,176,114,0); translate: 0 0; } }
-#mz-minimap .mz-flash b, #mz-minimap .mz-flash .mz-w-sub { animation-name: mz-flash-dark; }
+#mz-minimap .mz-flash b { animation-name: mz-flash-dark; }
 #mz-paper.mz-paper-in { animation: mz-paper-in .8s var(--ease-out) both; }
 @keyframes mz-paper-in { from { opacity: 0; translate: 0 10px; } }
 #mz-shell-root.mz-shell-in { animation: mz-shell-in .28s var(--ease-out) both; pointer-events: none; }
@@ -1297,27 +1302,77 @@
 `;
 
   // src/css/phone.js
-  var A7 = ASSET_BASE;
+  var A6 = ASSET_BASE;
   var phone_default = `
-/* ==== 底栏与遮罩（桌面端不存在） ==== */
-#mz-mbar, #mz-mscrim, #mz-mmenu { display: none; }
+/* ==== 遮罩（桌面端不存在） ==== */
+#mz-mscrim { display: none; }
 
-@container mz (max-width: 920px) {
-  /* ==== 中栏：挂轴铺满，天杆收进纸内，底部让出底栏 ==== */
-  .mz-main { --scroll-w: 100%; padding-top: env(safe-area-inset-top, 0px); padding-bottom: var(--bar-tot); }
-  #mz-scroll { width: 100%; margin-top: 0; filter: none; }
-  .mz-axle { margin: 0 0 -6px; }
-  .mz-axle .mz-band { margin: -5px 10px 0; height: 18px; }
-  .mz-axle .mz-knot { top: 6px; width: 22px; height: 32px; }
-  #mz-paper { padding: 22px 18px 16px; }
-  .mz-turn.mz-gm, .mz-turn.mz-zhu { font-size: 16px; line-height: 1.95; }
-  #mz-writing { padding: 8px 10px 10px; }
-  #mz-writing::before { left: 14px; right: 14px; }
+@container mz (max-width: 900px) {
+  #mz-shell-root { --top-h: 52px; --fs-body: calc(16px * var(--fs-scale)); }
+  /* ==== 主区：正文列铺满，底部只剩书写区 ==== */
+  .mz-main { --col-side: 14px; padding-top: env(safe-area-inset-top, 0px); }
+  #mz-paper { padding: 22px 5px 16px; }
+  .mz-turn.mz-gm, .mz-turn.mz-zhu { line-height: 1.95; }
+  #mz-writing { padding: 8px var(--col-side) calc(12px + env(safe-area-inset-bottom, 0px)); }
   #mz-send { width: 42px; height: 44px; font-size: 18px; }
-  /* 回底木鱼水平对齐敕印中心（敕印宽 42 贴右 10，木鱼宽 34） */
-  #mz-jump { bottom: calc(var(--bar-tot) + 62px); left: auto; right: 14px; }
+  /* 木鱼中心对齐敕印中心：窄屏敕印宽 42，木鱼宽 34，故左移 21+17 */
+  #mz-jump { bottom: 76px; left: calc(100% - var(--col-side) - 38px); right: auto; }
   /* iOS Safari 聚焦字号 <16px 的输入框会放大页面 */
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
+
+  /* ==== 顶栏：诸务钮＋时辰＋铜钱（左），工具栏（右，走基样）；其余五项读数下沉抽屉 ==== */
+  /* 朱漆底：复用侧栏同料，拉开抽屉时顶栏与抽屉连成一体；读数与图标改鎏金档 */
+  .mz-topbar { padding: 0 12px; gap: 12px;
+    background-image:
+      linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
+      linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
+      url('${A6}bg-lacquer-red.webp');
+    background-repeat: no-repeat, no-repeat, repeat;
+    background-size: 100% 100%, 100% 100%, 512px 512px;
+    border-bottom: 1px solid rgba(var(--gold-rgb), .25); }
+  /* 落单在 logo 角，纯图标像装饰：加一圈金线＋淡填底，收成一枚可点小牌 */
+  .mz-tb-plaque { display: flex; color: var(--side-text);
+    border: 1px solid rgba(var(--gold-rgb), .38); border-radius: 7px;
+    background: rgba(var(--gold-rgb), .07);
+    transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
+  .mz-tb-plaque:active, .mz-tb-plaque:hover { color: var(--side-text-hi);
+    border-color: rgba(var(--gold-rgb), .65); background: rgba(var(--gold-rgb), .14); }
+  .mz-tb-plaque.mz-on { color: var(--lacquer); border-color: var(--gold);
+    background: var(--gold); }
+  .mz-tb-i.mz-tb-hide { display: none; }
+  .mz-tb-face { gap: 14px; }
+  .mz-tb-time { font-size: 13.5px; letter-spacing: 2px; flex: 0 1 auto; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--side-text-hi); }
+  .mz-tb-time.mz-dim { color: var(--side-text); opacity: .6; }
+  .mz-tb-i { color: var(--side-text); }
+  .mz-tb-i::before { background: rgba(var(--gold-rgb), .3); }
+  .mz-tb-i b { color: var(--side-text-hi); }
+  .mz-tb-i b.mz-warn { color: #f0b072; }
+  .mz-tb-i b.mz-good { color: #b9cc8a; }
+  .mz-tb-i b.mz-fest { color: #f09a7e; }
+  .mz-tb-i b.mz-dim { color: var(--side-text); opacity: .6; }
+  #mz-corner button { color: var(--side-text); }
+  #mz-corner button:hover { color: var(--side-text-hi); }
+  #mz-corner button.mz-on { color: var(--gold); }
+
+  /* ==== 侧栏即落下面板：自顶栏下方落下覆盖正文，正文位置不动 ==== */
+  .mz-side { position: absolute; left: 0; right: 0; top: var(--top-h); bottom: 0; width: auto; z-index: 30;
+    border-right: none; overflow-y: auto; gap: 10px;
+    padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+    translate: 0 -110%; transition: translate var(--t-slow) var(--ease-paper);
+    box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+  .mz-side.mz-open { translate: 0 0; }
+  /* 匾额缩成顶栏那枚钮，题头与开关是同一块牌子 */
+  .mz-plaque { display: none; }
+  /* 顶栏舍下的五项在手机端补显进状态表 */
+  .mz-doom .mz-sr-dup { display: flex; }
+  /* 整面板一条滚动，目录跟着面板走 */
+  .mz-nav { flex: none; overflow: visible; }
+  #mz-mscrim { display: block; position: absolute; left: 0; right: 0; top: var(--top-h); bottom: 0; z-index: 29;
+    background: var(--scrim); opacity: 0; pointer-events: none;
+    transition: opacity var(--t-mid) var(--ease-out); }
+  #mz-mscrim.mz-open { opacity: 1; pointer-events: auto; }
+
   /* ==== 楼尾：变量在上自行折行，心声整块在下贴右（同行放不下四名签，不叫牌面与名签互挤） ==== */
   .mz-ff-vars { flex: 1 1 100%; }
   .mz-ff-vars:empty { display: none; }
@@ -1325,48 +1380,6 @@
   /* 手机端撤悬浮朱票，换卷末危机段 */
   #mz-shell-root[data-crisis] #mz-crisis { display: none; }
   .mz-crisis-line { display: block; }
-
-  /* ==== 底栏：寺况／行事／天机三钮，只挂名字，读数进屉里看 ==== */
-  #mz-mbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 31; height: var(--bar-tot);
-    padding-bottom: env(safe-area-inset-bottom, 0px); display: flex; align-items: stretch;
-    background-image:
-      linear-gradient(180deg, rgba(50,22,8,.10), rgba(28,12,4,.30)),
-      linear-gradient(rgba(106,56,30,.32), rgba(106,56,30,.32)),
-      url('${A7}bg-lacquer-red.webp');
-    background-repeat: no-repeat, no-repeat, repeat; background-size: 100% 100%, 100% 100%, 512px 512px;
-    border-top: 1px solid rgba(240,200,140,.3); box-shadow: 0 -4px 14px rgba(0,0,0,.35); }
-  #mz-mbar button { flex: 1; min-width: 0; border: none; background: none; cursor: pointer; font-family: inherit;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--side-title);
-    transition: color var(--t-fast) var(--ease-out); }
-  #mz-mbar button b { font-size: 14px; letter-spacing: 5px; text-indent: 5px; font-weight: 600; }
-  #mz-mbar button.mz-on { color: var(--gold); }
-  #mz-mbar button[data-drawer="more"] { flex: 0 0 88px; }
-  #mz-mbar .mz-sep { width: 1px; margin: 14px 0; background: rgba(240,200,140,.22); }
-  /* 天机菜单：低频钮（变量／数据库／退出）都在这，退出两步远不误触 */
-  #mz-mmenu { display: flex; flex-direction: column; position: absolute; right: 8px; bottom: calc(var(--bar-tot) + 10px); z-index: 30; min-width: 150px;
-    padding: 4px 6px; border-style: solid; border-color: transparent; border-width: 14px;
-    border-image: url('${A7}plaque-entry.webp') 160 / 14px stretch; background: url('${A7}silk-board-core.webp') center / cover; background-clip: border-box;
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,.45)); opacity: 0; pointer-events: none; translate: 0 8px;
-    transition: opacity var(--t-mid) var(--ease-out), translate var(--t-mid) var(--ease-out); }
-  #mz-mmenu.mz-open { opacity: 1; pointer-events: auto; translate: 0 0; }
-  #mz-mmenu button { border: none; background: none; cursor: pointer; font-family: inherit; text-align: left;
-    display: flex; align-items: center; gap: 10px; font-size: 13.5px; letter-spacing: 3px; color: var(--ink-dim); padding: 8px 8px; }
-  #mz-mmenu button svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
-  #mz-mmenu button + button { border-top: 1px solid rgba(139,103,42,.3); }
-  #mz-mmenu button.mz-danger { color: var(--cinnabar); }
-  #mz-mmenu button[data-menu="acu"] { display: none; }
-  #mz-shell-root[data-acu] #mz-mmenu button[data-menu="acu"] { display: block; }
-  #mz-mscrim { display: block; position: absolute; inset: 0; bottom: var(--bar-tot); z-index: 29; background: var(--scrim);
-    opacity: 0; pointer-events: none; transition: opacity var(--t-mid) var(--ease-out); }
-  #mz-mscrim.mz-open { opacity: 1; pointer-events: auto; }
-
-  /* ==== 两侧栏原封变抽屉：内容超高在屉内滚动（一屏收齐手机端豁免） ==== */
-  .mz-side, .mz-rside { position: absolute; left: 0; right: 0; bottom: var(--bar-tot); top: auto; width: auto; max-height: 76%; z-index: 30;
-    border: none; border-top: 1px solid rgba(240,200,140,.35); padding: 10px 14px 14px; gap: 12px;
-    translate: 0 110%; transition: translate var(--t-slow) var(--ease-paper); box-shadow: 0 -12px 30px rgba(0,0,0,.45); }
-  .mz-side.mz-open, .mz-rside.mz-open { translate: 0 0; }
-  /* 低频钮已入天机菜单，抽屉里的角落钮整排撤 */
-  #mz-corner { display: none; }
 
   /* ==== 浮窗：贴底整幅纸，上留一指宽遮罩可点关，题签仍悬出纸上缘 ==== */
   #mz-lift { align-items: flex-end; }
@@ -1400,6 +1413,7 @@
   .mz-bplist { width: 100%; }
   .mz-bps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mz-loan-row { flex-wrap: wrap; }
+  .mz-craft .mz-grow textarea { height: 140px; }
   .mz-loan-row label:not(.mz-grow) input { width: 100%; }
   .mz-loan-row label { flex: 1 1 40%; }
   .mz-loan-row .mz-grow { flex: 1 1 100%; }
@@ -1484,7 +1498,7 @@
     if (!root) return;
     Object.keys(d).forEach((key) => {
       if (key.startsWith("解锁.")) {
-        animateOnce(root.querySelector('.mz-zone[data-zone="' + key.slice(3) + '"]'), "mz-unveil", 2600);
+        animateOnce(root.querySelector('.mz-nav-item[data-zone="' + key.slice(3) + '"]'), "mz-unveil", 2600);
         return;
       }
       root.querySelectorAll('[data-stat="' + key + '"]').forEach((box) => animateOnce(box, "mz-flash", 1500));
@@ -1680,7 +1694,7 @@
     animateOnce(doc.getElementById(SEL.paper), "mz-paper-in", 900);
     const root = doc.getElementById("mz-shell-root");
     if (!root) return;
-    const els = [...root.querySelectorAll(".mz-side #mz-board, .mz-side .mz-zone, #mz-minimap, .mz-rside .mz-zone")];
+    const els = [...root.querySelectorAll(".mz-topbar, #mz-minimap, .mz-side .mz-nav-item")];
     els.forEach((el, i) => {
       el.style.setProperty("--i", i);
       animateOnce(el, "mz-kindle", 1400);
@@ -1716,43 +1730,6 @@
   }
 
   // src/adapters/db-plugin.js
-  function acuApi() {
-    try {
-      return window.parent.AutoCardUpdaterAPI || null;
-    } catch (e) {
-      return null;
-    }
-  }
-  function acuPresent() {
-    return !!(acuApi() || doc.getElementById("acu-v2-menu-item"));
-  }
-  function updateAcuNav() {
-    const root = doc.getElementById(SHELL_ID);
-    if (!root) return;
-    if (acuPresent()) root.setAttribute("data-acu", "");
-    else root.removeAttribute("data-acu");
-  }
-  var acuPollLeft = 30;
-  var acuPollTimer = null;
-  function pollAcu() {
-    updateAcuNav();
-    if (!acuPresent() && --acuPollLeft > 0) acuPollTimer = setTimeout(pollAcu, 2e3);
-  }
-  function stopAcuTimers() {
-    if (acuPollTimer) {
-      clearTimeout(acuPollTimer);
-      acuPollTimer = null;
-    }
-    if (acuHiTimer) {
-      clearInterval(acuHiTimer);
-      acuHiTimer = null;
-    }
-  }
-  var acuHiTimer = null;
-  function setAcuNavActive(on) {
-    const acuBtn = doc.getElementById(SEL.acuBtn);
-    if (acuBtn) acuBtn.classList.toggle("mz-on", !!on);
-  }
   function raiseAcuUi() {
     const v2 = doc.getElementById("acu-app-v2");
     if (v2 && v2.style.zIndex !== "9200") {
@@ -1762,39 +1739,6 @@
     doc.querySelectorAll(".auto-card-updater-popup").forEach((el) => {
       if (el.style.zIndex !== "9200") el.style.setProperty("z-index", "9200", "important");
     });
-  }
-  function watchAcuClose() {
-    if (acuHiTimer) clearInterval(acuHiTimer);
-    let seen = false, tries = 0;
-    acuHiTimer = setInterval(() => {
-      if (acuUiOpen()) {
-        seen = true;
-        raiseAcuUi();
-        return;
-      }
-      if (seen || ++tries > 25) {
-        clearInterval(acuHiTimer);
-        acuHiTimer = null;
-        setAcuNavActive(false);
-      }
-    }, 400);
-  }
-  function openAcuUI() {
-    try {
-      const v2 = doc.getElementById("acu-v2-menu-item");
-      if (v2) {
-        v2.click();
-      } else {
-        const api = acuApi();
-        if (api && typeof api.openSettings === "function") api.openSettings();
-        else return;
-      }
-      raiseAcuUi();
-      setAcuNavActive(true);
-      watchAcuClose();
-    } catch (e) {
-      console.warn("[密宗前端] 打开数据库插件界面失败", e);
-    }
   }
   function acuUiOpen() {
     const v2 = doc.getElementById("acu-app-v2");
@@ -2084,9 +2028,9 @@
     }
     delMode = on;
     delSel.clear();
-    const row2 = doc.getElementById(SEL.writing);
+    const row = doc.getElementById(SEL.writing);
     const bar = doc.getElementById(SEL.delbar);
-    if (row2) row2.style.display = on ? "none" : "";
+    if (row) row.style.display = on ? "none" : "";
     if (bar) bar.classList.toggle("mz-show", on);
     updateDelBar();
     setStoryStatus("");
@@ -2468,6 +2412,15 @@
   }
   function onOptionClick(text) {
     if (sending) return;
+    if (getPref("optSend", "now") === "fill") {
+      const ta = doc.getElementById(SEL.textarea);
+      if (ta) {
+        ta.value = text;
+        autogrowTA();
+        ta.focus();
+      }
+      return;
+    }
     sendText(text);
   }
   function onSendButton() {
@@ -2623,6 +2576,11 @@
     const wrap = el.closest(".mz-ff-wrap");
     if (!wrap) return;
     wrap.innerHTML = floorFootInner(+wrap.dataset.footMid);
+  }
+  function refreshAllFeet() {
+    doc.querySelectorAll("#" + SHELL_ID + " .mz-ff-wrap").forEach((w) => {
+      w.innerHTML = floorFootInner(+w.dataset.footMid);
+    });
   }
   function toggleFold(head) {
     const fold = head.closest(".mz-thought");
@@ -2939,7 +2897,7 @@
     const open = String(footOpen.get(mid) || "").split(":");
     const openKey = open[0] === "stat" ? open.join(":") : "";
     const openName2 = open[0] === "voice" ? open[1] : "";
-    const row2 = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length ? '<div class="mz-ff-side"><span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') + "</div>" : "") + "</div>";
+    const row = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length ? '<div class="mz-ff-side"><span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') + "</div>" : "") + "</div>";
     let panel = "";
     if (openKey) {
       const it = items.find((x) => x.key === openKey);
@@ -2947,7 +2905,7 @@
     } else if (openName2 && CAST.includes(openName2)) {
       panel = voiceCardHtml(mid, openName2, open[2] === "memoir" ? "memoir" : "voice");
     }
-    return row2 + panel;
+    return row + panel;
   }
   function floorFootHtml(mid) {
     const inner = floorFootInner(mid);
@@ -3108,18 +3066,9 @@
   var kindCount = (库藏, kind) => Object.values(库藏).filter((x) => x && x.类别 === kind).length;
   var facilities = (D) => Object.entries(D.道场.地宫设施).map(([名, v]) => ({ 名, 用途: String((v || {}).用途 || ""), 档次: String((v || {}).档次 || "粗成"), 奇效: String((v || {}).奇效 || "") }));
   var shopReady = (D, c) => facilities(D).some((f) => c.words.some((w) => f.名.includes(w) || f.用途.includes(w)));
-  var craftable = (D) => CRAFT.filter((c) => shopReady(D, c));
   var debts = (D) => Object.entries(D.资粮.罪业密簿).filter(([, v]) => v && v.类别 === "债契");
   var handles = (D) => Object.entries(D.资粮.罪业密簿).filter(([, v]) => v && v.类别 !== "债契");
-  var monthInterest = (D) => debts(D).reduce((s, [, v]) => {
-    const 本 = (Number(v.欠额) || 0) * 1e3, 已 = Number(v.已收息) || 0;
-    return s + (本 > 0 && 已 < 本 ? Math.min(Math.round(本 * 0.05), 本 - 已) : 0);
-  }, 0);
   var pendingOrders = (D) => Object.entries(D.教务.法事委托).filter(([, v]) => v && v.状态 !== "已完成");
-  var latestRumor = (D) => {
-    const v = Object.values(D.教务.神迹传闻);
-    return v.length ? String(v[v.length - 1]) : "";
-  };
   var riteCooling = (D) => {
     const t = parseTime(D.时空.时间);
     return !!t.月标 && D.教务.上次法会.trim() === t.月标;
@@ -3138,10 +3087,10 @@
     if (key === "同心缕") return CAST.some((n) => girlUnlocked(D, n));
     return false;
   }
-  function boardHtml(D) {
-    if (D._empty) return '<div class="mz-grp"><div class="mz-solo mz-dim">此则无账目</div></div>';
+  var money贯 = (文) => cn(Math.floor(Math.max(0, 文) / 1e3)) + "贯";
+  var moneyTop = (文) => 文 > 1e4 ? money贯(文) : money(文);
+  function readings(D) {
     const t = parseTime(D.时空.时间);
-    const dateTxt = t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " "));
     const fest = festivalState(t);
     const gate = gateState(t, fest);
     let festTxt, festCls;
@@ -3170,36 +3119,55 @@
       levy = left ? "还剩" + cn(left) + "日" : "今日当缴";
       levyCls = left <= 6 ? "mz-warn" : "";
     }
-    return '<div class="mz-grp"><div class="mz-solo" data-stat="时间" title="' + esc2(D.时空.时间.replace(/\//g, " ")) + '">' + dateTxt + " <b>" + esc2(t.时辰) + '</b></div><div class="mz-row"><span>宵禁</span><b class="' + gate.cls + '">' + gate.文 + '</b></div><div class="mz-row"><span>常例</span><b class="' + levyCls + '">' + levy + '</b></div><div class="mz-row"><span>节令</span><b class="' + festCls + '">' + esc2(festTxt) + '</b></div></div><div class="mz-grp"><div class="mz-row" data-stat="铜钱"><span>铜钱</span><b>' + money(总文(D)) + '</b></div><div class="mz-row" data-stat="信众"><span>信众</span><b>' + cn(D.教务.信众) + "人</b></div></div>";
+    const 文 = 总文(D);
+    return {
+      日期: t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " ")),
+      时辰: esc2(t.时辰),
+      题: esc2(D.时空.时间.replace(/\//g, " ")),
+      宵禁: { k: "宵禁", v: gate.文, cls: gate.cls },
+      常例: { k: "常例", v: levy, cls: levyCls },
+      节令: { k: "节令", v: esc2(festTxt), cls: festCls },
+      铜钱: { k: "铜钱", v: moneyTop(文), cls: "", stat: "铜钱" },
+      信众: { k: "信众", v: cn(D.教务.信众) + "人", cls: "", stat: "信众" },
+      风波: { k: "风波", v: esc2(D.暗流.风波), cls: STORM_CLS[D.暗流.风波] || "", stat: "风波" }
+    };
   }
-  var row = (k, v, cls) => '<div class="mz-r-row"><span>' + k + "</span><b" + (cls ? ' class="' + cls + '"' : "") + ">" + v + "</b></div>";
-  function zoneRowsHtml(key, D) {
-    if (!unlocked(D, key)) return '<div class="mz-r-row mz-r-lock">' + ICO.lock + "<span>" + UNLOCK_COND[key] + "</span></div>" + '<div class="mz-r-row mz-r-blank">&nbsp;</div>'.repeat(ZONE_ROWS[key] - 1);
+  var tbItem = (r, hide, extra) => '<span class="mz-tb-i' + (hide ? " mz-tb-hide" : "") + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></span>";
+  function topbarHtml(D) {
+    if (D._empty) return '<span class="mz-tb-time mz-dim">此则无账目</span>';
+    const r = readings(D);
+    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '">' + r.日期 + " <b>" + r.时辰 + "</b></span>" + tbItem(r.宵禁, true) + tbItem(r.常例, true, "mz-tb-thin") + tbItem(r.节令, true, "mz-tb-thin") + tbItem(r.铜钱) + tbItem(r.信众, true) + tbItem(r.风波, true);
+  }
+  var srRow = (r, title, extra) => '<div class="mz-sr-row' + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + (title ? ' title="' + title + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></div>";
+  function statusBoxHtml(D) {
+    if (D._empty) return '<div class="mz-sr-row"><b class="mz-dim">此则无账目</b></div>';
+    const r = readings(D);
+    const loc = D.时空.当前地界;
+    const zone = zoneName(loc), sub = zoneSub(loc);
+    const abroad = !!zone && !ZONES.includes(zone);
+    const locVal = (abroad ? "城外 " : "") + esc2(zone) + (sub ? "｜" + esc2(sub) : "");
+    const y = Math.max(0, parseTime(D.时空.时间).年序号);
+    return srRow({ k: "地界", v: locVal, stat: "地界" }, esc2(loc.replace(/\//g, " "))) + srRow(r.节令, "", "mz-sr-dup") + srRow(r.宵禁, "", "mz-sr-dup") + srRow(r.常例, "", "mz-sr-dup") + srRow(r.信众, "", "mz-sr-dup") + srRow(r.风波, "", "mz-sr-dup") + '<div class="mz-doom-row"><div class="mz-sr-row"><span>灭佛大势</span><b>' + YEAR_SHORT[y] + '</b></div><div class="mz-doom-evt">' + esc2(DOOM[y]) + '</div><div class="mz-bar"><i style="width:' + (y * 20 + 10) + '%"></i></div></div>';
+  }
+  var rankShort = (r) => String(r || "").split("·")[0];
+  function navSubHtml(key, D) {
+    if (!unlocked(D, key)) return UNLOCK_COND[key];
     switch (key) {
-      case "同心缕":
-        return CAST.map((n) => girlUnlocked(D, n) ? row(n, esc2(D.核心女主[n].灌顶位阶)) : row(CAST_HINT[n], "未识", "mz-r-dim")).join("");
-      case "库藏": {
-        const 库 = D.资粮.库藏;
-        const stock = ["药品", "道具", "法器"].map((k) => KIND_SHORT[k] + cn(kindCount(库, k))).join("／");
-        const cr = craftable(D);
-        return row("存货", stock) + row("工坊", cr.length ? "可制" + cr.map((c) => c.kind).join("／") : "无坊", cr.length ? "" : "mz-r-dim");
+      case "同心缕": {
+        const known = CAST.filter((n) => girlUnlocked(D, n));
+        const top = known.reduce((m, n) => Math.max(m, rankIdx(D.核心女主[n].灌顶位阶)), 0);
+        return cn(known.length) + "人在册 最高" + esc2(rankShort(RANKS[top]));
       }
-      case "教务": {
-        const n1 = Object.keys(D.执事名册).length, n2 = Object.keys(D.明妃录).length;
-        return row("执事", cn(n1) + "人／十二席", n1 ? "" : "mz-r-dim") + row("明妃", cn(n2) + "位／六席", n2 ? "" : "mz-r-dim") + (riteCooling(D) ? row("法会", "暂休", "mz-r-dim") : row("法会", "待办", "mz-r-good"));
-      }
+      case "库藏":
+        return "存" + cn(Object.keys(D.资粮.库藏).length) + "件 共" + cn(storeCap(D)) + "屉";
+      case "教务":
+        return "执事" + cn(Object.keys(D.执事名册).length) + "人 明妃" + cn(Object.keys(D.明妃录).length) + "位";
       case "营造":
-        return row("表殿", esc2(D.道场.表殿等级), HALL_Q[D.道场.表殿等级] || "") + row("地宫", cn(facilities(D).length) + "处");
-      case "法事": {
-        const po = pendingOrders(D);
-        const first = po[0];
-        const rumor = latestRumor(D);
-        return row("委托", cn(po.length) + "单／三席", po.length ? "" : "mz-r-dim") + row("时限", first ? esc2(first[0]) + " " + esc2(String(first[1].时限 || "")) : "无", first ? "" : "mz-r-dim") + row("传闻", rumor ? esc2(rumor) : "未闻", "mz-r-dim");
-      }
-      case "罪业": {
-        const h = handles(D).length, d = debts(D).length, mi = monthInterest(D);
-        return row("把柄", cn(h) + "条", h ? "" : "mz-r-dim") + row("债契", cn(d) + "契", d ? "" : "mz-r-dim") + row("月息", mi ? money(mi) : "无", mi ? "" : "mz-r-dim");
-      }
+        return "表殿" + esc2(D.道场.表殿等级) + " 地宫" + cn(facilities(D).length) + "处";
+      case "法事":
+        return "委托 " + cn(pendingOrders(D).length) + "单／三席";
+      case "罪业":
+        return "把柄" + cn(handles(D).length) + "条 债契" + cn(debts(D).length) + "契";
     }
     return "";
   }
@@ -3208,7 +3176,6 @@
     if (!mm) return;
     const z = zoneName(D.时空.当前地界);
     const abroad = !!z && !ZONES.includes(z);
-    mm.classList.toggle("mz-abroad", abroad);
     const pin = MINIMAP_PIN[z] || (abroad ? MINIMAP_PIN.城外 : z ? MINIMAP_PIN.长安 : null);
     const pinEl = mm.querySelector(".mz-map-pin");
     if (pinEl) {
@@ -3218,27 +3185,6 @@
         pinEl.style.top = pin[2] + "%";
         pinEl.dataset.label = pin[0];
       }
-    }
-    const t = parseTime(D.时空.时间);
-    const y = Math.max(0, t.年序号);
-    const lbl = mm.querySelector(".mz-doom .mz-lbl b");
-    if (lbl) lbl.textContent = YEAR_SHORT[y] + " " + DOOM[y];
-    const bar = mm.querySelector(".mz-doom .mz-bar i");
-    if (bar) bar.style.width = y * 20 + 10 + "%";
-    const wz = mm.querySelector(".mz-w-zone"), ws = mm.querySelector(".mz-w-sub");
-    const sub = zoneSub(D.时空.当前地界);
-    if (wz) wz.textContent = z;
-    if (ws) {
-      ws.textContent = sub;
-      ws.style.display = sub ? "" : "none";
-    }
-    const where = mm.querySelector(".mz-where");
-    if (where) where.title = D.时空.当前地界.replace(/\//g, " ");
-    const storm = D.暗流.风波;
-    const sb = mm.querySelector(".mz-storm b");
-    if (sb) {
-      sb.textContent = storm;
-      sb.className = STORM_CLS[storm] || "";
     }
   }
   function renderCrisis(D) {
@@ -3258,13 +3204,17 @@
   }
   function renderAll(force, Darg) {
     const D = Darg || readMVU();
-    const board = doc.querySelector("#" + SEL.board + " .mz-face");
-    if (board) board.innerHTML = boardHtml(D);
+    const top = doc.getElementById(SEL.topbar);
+    if (top) top.innerHTML = topbarHtml(D);
+    const doom = doc.getElementById(SEL.doom);
+    if (doom) doom.innerHTML = statusBoxHtml(D);
     ZONE_DEFS.forEach((z) => {
-      const zone = doc.querySelector("#" + SHELL_ID + ' .mz-zone[data-zone="' + z.key + '"]');
-      if (!zone) return;
-      zone.classList.toggle("mz-locked", !unlocked(D, z.key));
-      zone.querySelector(".mz-zone-rows").innerHTML = zoneRowsHtml(z.key, D);
+      const item = doc.querySelector("#" + SHELL_ID + ' .mz-nav-item[data-zone="' + z.key + '"]');
+      if (!item) return;
+      const open = unlocked(D, z.key);
+      item.classList.toggle("mz-locked", !open);
+      item.querySelector(".mz-nav-sub").innerHTML = navSubHtml(z.key, D);
+      item.querySelector(".mz-nav-lock").innerHTML = open ? "" : ICO.lock;
     });
     renderMinimap(D);
     renderCrisis(D);
@@ -3324,7 +3274,7 @@
     const before = _.cloneDeep(_.omit(v.stat_data, ["$internal"]));
     const stat = _.cloneDeep(before);
     if (check) {
-      const why = check(readMVU(stat));
+      const why = check(readMVU(stat), stat);
       if (why) {
         setStoryStatus(why);
         return false;
@@ -3382,7 +3332,7 @@
     }
     return '<div class="mz-kv"><span class="mz-k">' + escapeHtml(key) + "</span><b>" + escapeHtml(String(val)) + "</b></div>";
   }
-  function varTreeHtml() {
+  function varTreeInner() {
     let sd = null;
     const lid = safeLastMessageId();
     try {
@@ -3391,11 +3341,8 @@
     } catch (e) {
       dbg("vartree", e);
     }
-    if (!sd) return '<section class="mz-win mz-on"><div class="mz-stub">眼下读不到账目</div></section>';
-    return '<section class="mz-win mz-on"><div class="mz-vartree">' + Object.entries(sd).filter(([k]) => k !== "$internal").map(([k, v]) => node(k, v, 0)).join("") + "</div></section>";
-  }
-  function openVarTree() {
-    openLift("变量");
+    if (!sd) return '<div class="mz-stub">眼下读不到账目</div>';
+    return '<div class="mz-vartree">' + Object.entries(sd).filter(([k]) => k !== "$internal").map(([k, v]) => node(k, v, 0)).join("") + "</div>";
   }
 
   // src/10-windows.js
@@ -3459,6 +3406,87 @@
     if (l) w.push(l);
     return w;
   };
+  var buildBasket = [];
+  var craftBasket = [];
+  function basketWhys(sd0, list, extra) {
+    const sd = _.cloneDeep(sd0 || currentStat() || {});
+    const w = [];
+    (extra ? list.concat([extra]) : list).forEach((it) => {
+      w.push(...it.whys(readMVU(sd)));
+      it.mutate(sd);
+    });
+    return [...new Set(w)];
+  }
+  var basketSum = (list) => list.reduce((n, it) => n + it.价, 0);
+  function buildItem(名称, 用途, 档, 奇效) {
+    return {
+      名: 名称,
+      副: 档,
+      价: GRADE_PRICE[档],
+      项: 名称 + "（" + 档 + (奇效 ? "，奇效：" + 奇效 : "") + "）",
+      单句: (贯2) => FORM_MSG.兴造(名称, 档, 奇效, 贯2),
+      whys: (D) => buildWhys(D, 档).concat(D.道场.地宫设施[名称] ? ["「" + 名称 + "」已在地宫，换个名目"] : []),
+      mutate: (sd) => {
+        sd.资粮.铜钱 -= GRADE_PRICE[档];
+        sd.道场.地宫设施 = sd.道场.地宫设施 || {};
+        sd.道场.地宫设施[名称] = Object.assign({ 用途: 用途 || "", 档次: 档 }, 奇效 ? { 奇效 } : {});
+      }
+    };
+  }
+  function craftItem(物名, 效用, c) {
+    return {
+      名: 物名,
+      副: c.kind,
+      价: c.price,
+      项: c.kind + "「" + 物名 + "」",
+      单句: (贯2) => FORM_MSG.工巧(物名, c.kind, 贯2),
+      whys: (D) => craftWhys(D, c).concat(D.资粮.库藏[物名] ? ["「" + 物名 + "」已在库藏，换个物名"] : []),
+      mutate: (sd) => {
+        sd.资粮.铜钱 -= c.price;
+        sd.资粮.库藏 = sd.资粮.库藏 || {};
+        sd.资粮.库藏[物名] = { 类别: c.kind, 效用: 效用 || "" };
+      }
+    };
+  }
+  function basketHtml(kind, list) {
+    if (!list.length) return "";
+    const rows = list.map((it, i) => '<div class="mz-bk-row"><b>' + esc3(it.名) + '</b><span class="mz-tag">' + esc3(it.副) + '</span><span class="mz-price">' + cn(it.价) + '贯</span><button type="button" class="mz-bk-x" data-drop="' + kind + ":" + i + '">撤下</button></div>').join("");
+    const whys = basketWhys(null, list);
+    const label = "一并呈报（" + cn(list.length) + "事，共" + cn(basketSum(list)) + "贯）";
+    return '<div class="mz-basket">' + wh("待呈之事") + rows + '<div class="mz-build-foot">' + sealBtn(label, kind + "-send", !whys.length, whys.join(" "), " mz-lg") + "</div></div>";
+  }
+  function submitBasket(btn, kind) {
+    const list = kind === "build" ? buildBasket : craftBasket;
+    if (!list.length) return;
+    const 条 = list.slice();
+    commitForm({
+      tag: kind === "build" ? "兴造" : "工巧",
+      check: (D, sd) => basketWhys(sd, 条).join(" "),
+      mutate: (sd) => 条.forEach((it) => it.mutate(sd)),
+      message: (贯2) => 条.length === 1 ? 条[0].单句(贯2) : FORM_MSG[kind === "build" ? "兴造多" : "工巧多"](条.map((it) => it.项), 贯2)
+    }).then((ok) => {
+      if (!ok) return;
+      if (kind === "build") {
+        buildBasket = [];
+        bpSel = null;
+      } else craftBasket = [];
+      rerender();
+    }).catch((e) => hint(btn, "出错: " + (e && e.message || e)));
+  }
+  function addToBasket(btn, kind, it) {
+    const list = kind === "build" ? buildBasket : craftBasket;
+    if (list.some((x) => x.名 === it.名)) {
+      hint(btn, "篮中已有同名，换个" + (kind === "build" ? "名目" : "物名"));
+      return;
+    }
+    const whys = basketWhys(null, list, it);
+    if (whys.length) {
+      hint(btn, (list.length ? "连同篮中已记，" : "") + whys.join(" "));
+      return;
+    }
+    list.push(it);
+    rerender();
+  }
   function atlasHtml(D) {
     const cur = zoneName(D.时空.当前地界);
     const abroad = !!cur && !ZONES.includes(cur);
@@ -3467,18 +3495,18 @@
     return '<section class="mz-win mz-atlas-win mz-on"><div class="mz-atlas"><div class="mz-mapbox"><img src="' + asset("map-changan.webp") + '" alt="长安城坊地图"><svg viewBox="0 0 1024 1024" preserveAspectRatio="none">' + ZONES.map((z) => '<path data-zone="' + z + '"' + (z === cur ? ' class="mz-cur"' : "") + ' d="' + ZONE_PATHS[z] + '"><title>' + z + "</title></path>").join("") + "</svg>" + ZONES.map((z) => {
       const l = ZONE_LABELS[z];
       return '<span class="mz-lbl' + (z === cur ? " mz-cur" : "") + '" style="left:' + l[1] + "%;top:" + l[2] + '%">' + l[0] + "</span>";
-    }).join("") + (abroad ? '<div class="mz-abroad-mark"><b>城外</b>' + esc3(cur) + "</div>" : "") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + (abroad ? '<li class="mz-cur mz-abroad"><span>' + esc3(cur) + "</span><small>此刻在外</small></li>" : "") + '</ul><div class="mz-doomline"><span>灭佛大势 ' + YEARS[y] + " " + DOOM[y] + '</span><div class="mz-yrs">' + YEAR_SHORT.map((s, i) => '<span class="' + (i === y ? "mz-cur" : i < y ? "mz-past" : "") + '">' + s + "</span>").join("") + "</div></div></div></div></section>";
+    }).join("") + (abroad ? '<div class="mz-abroad-mark"><b>城外</b>' + esc3(cur) + "</div>" : "") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + '<li class="mz-abroad' + (abroad ? " mz-cur" : "") + '"><span>城外</span><small>' + (abroad ? esc3(cur) : "") + '</small></li></ul><div class="mz-doomline"><span>灭佛大势 ' + YEARS[y] + " " + DOOM[y] + '</span><div class="mz-yrs">' + YEAR_SHORT.map((s, i) => '<span class="' + (i === y ? "mz-cur" : i < y ? "mz-past" : "") + '">' + s + "</span>").join("") + "</div></div></div></div></section>";
   }
   var bondSel = CAST[0];
-  var bondTheme = null;
   function selectBond(name) {
-    if (CAST.includes(name)) {
-      bondSel = name;
-      bondTheme = null;
-    }
+    if (CAST.includes(name)) bondSel = name;
+  }
+  function pickedTheme(name, rank) {
+    const picked = getPref("bond:" + name, "");
+    return picked && unlockedThemes(name, rank).find((t) => t[0] === picked) || mainTheme(name, rank);
   }
   function portraitOf(name, D) {
-    const t = mainTheme(name, D.核心女主[name].灌顶位阶);
+    const t = pickedTheme(name, D.核心女主[name].灌顶位阶);
     return t ? t[1] : "";
   }
   function memoHtml(回想) {
@@ -3496,8 +3524,7 @@
     const g = D.核心女主[bondSel];
     const rank = g.灌顶位阶;
     const themes = unlockedThemes(bondSel, rank);
-    const main = mainTheme(bondSel, rank);
-    const curTheme = bondTheme && themes.find((t) => t[0] === bondTheme) || main;
+    const curTheme = pickedTheme(bondSel, rank);
     const lit = rankIdx(rank);
     return '<section class="mz-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc3(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme ? '<img src="' + esc3(curTheme[1]) + '" alt="' + esc3(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div><div class="mz-thumbs">' + themes.map((t) => "<i" + (curTheme && t[0] === curTheme[0] ? ' class="mz-on"' : "") + ' title="' + esc3(t[0]) + '" data-theme="' + esc3(t[0]) + `" style="background-image:url('` + esc3(t[1]) + `')"></i>`).join("") + lockedGrades(bondSel, rank).map((r) => '<i class="mz-lock" title="' + esc3(r) + '解锁"><span>' + esc3(r.slice(0, 2)) + "</span></i>").join("") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc3(rank) + "</b></div>" + wh("心声") + (g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc3(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>') + wh("回想") + memoHtml(g.回想) + "</div></div></section>";
   }
@@ -3552,8 +3579,8 @@
     const bpRows = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span></div>" : '<button type="button" class="mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + '</b><span class="mz-tag">未建</span></button>').join("");
     const bpList = '<div class="mz-wcol mz-bplist">' + wh("蓝图", "地面") + '<div class="mz-bps">' + bpRows("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-bps">' + bpRows("地下") + "</div></div>";
     const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名]);
-    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("破土", "build", !offAll, "钱不足", " mz-lg") + "</div></form>";
-    return '<div class="mz-folio"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div></div>";
+    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><label>用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" tabindex="-1" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "build", !offAll, "钱不足", " mz-lg") + "</div></form>";
+    return '<div class="mz-folio mz-fill"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div>" + basketHtml("build", buildBasket) + "</div>";
   }
   function sinHtml(D) {
     const hs = handles(D), ds = debts(D);
@@ -3618,13 +3645,20 @@
     const shops = CRAFT.map((c, i) => '<label class="mz-pick mz-shop' + (pickWhys[i].length ? " mz-off" : "") + '"><input type="radio" name="类别" form="mz-craft-form" value="' + c.kind + '"' + (pickWhys[i].length ? " disabled" : "") + (i === firstOk ? " checked" : "") + "><b>" + c.kind + '</b><span class="mz-price">' + cn(c.price) + "贯</span><small>" + c.note + '</small><small class="mz-shopline">' + (pickWhys[i].length ? pickWhys[i].join(" ") : c.shop + " 已备") + "</small></label>").join("");
     const gate = craftGateWhys(D);
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
-    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form id="mz-craft-form" class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("开炉", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>";
+    const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form id="mz-craft-form" class="mz-form mz-sheet mz-craft" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>" + basketHtml("craft", craftBasket);
     return '<section class="mz-win mz-on">' + tabs("库藏", [
       { id: "drug", label: "药品", n: cn(kindCount(D.资粮.库藏, "药品")) },
       { id: "tool", label: "道具", n: cn(kindCount(D.资粮.库藏, "道具")) },
       { id: "ritual", label: "法器", n: cn(kindCount(D.资粮.库藏, "法器")) },
       { id: "craft", label: "工坊", n: crList.length ? "可制" + crList.join("／") : "无坊" }
     ], "共" + cn(total) + "／" + cn(cap) + "屉") + pane("库藏", "drug", paneOf("药品"), "drug") + pane("库藏", "tool", paneOf("道具"), "drug") + pane("库藏", "ritual", paneOf("法器"), "drug") + pane("库藏", "craft", '<div class="mz-folio mz-fill">' + craftForm + "</div>", "drug") + "</section>";
+  }
+  function settingsHtml() {
+    const mode = getPref("optSend", "now");
+    const opt = (v, lab) => '<label class="mz-set-opt"><input type="radio" name="mz-opt-send" value="' + v + '"' + (mode === v ? " checked" : "") + "><span>" + lab + "</span></label>";
+    const fs = FS_SCALES.some((x) => x[0] === getPref("fsScale", "1")) ? getPref("fsScale", "1") : "1";
+    const fsOpt = ([v, lab]) => '<label class="mz-set-opt"><input type="radio" name="mz-opt-fs" value="' + v + '"' + (fs === v ? " checked" : "") + "><span>" + lab + "</span></label>";
+    return '<section class="mz-win mz-set-win mz-on"><div class="mz-set-group"><div class="mz-set-lab">点选一条行事后</div>' + opt("now", "直接发送") + opt("fill", "只填入输入框，自己改完再发") + '</div><div class="mz-set-group"><div class="mz-set-lab">正文字号</div>' + FS_SCALES.map(fsOpt).join("") + '</div><div class="mz-set-group mz-set-vars"><div class="mz-set-lab">变量</div>' + varTreeInner() + "</div></section>";
   }
   function winHtml(name, D) {
     switch (name) {
@@ -3642,8 +3676,8 @@
         return affairsHtml(D);
       case "库藏":
         return cofferHtml(D);
-      case "变量":
-        return varTreeHtml();
+      case "设置":
+        return settingsHtml();
     }
     return '<section class="mz-win mz-on"><div class="mz-stub">未辟</div></section>';
   }
@@ -3660,6 +3694,17 @@
     return out;
   }
   function onWindowClick(e, win) {
+    const optSend = e.target.closest('input[name="mz-opt-send"]');
+    if (optSend) {
+      setPref("optSend", optSend.value);
+      return;
+    }
+    const optFs = e.target.closest('input[name="mz-opt-fs"]');
+    if (optFs) {
+      setPref("fsScale", optFs.value);
+      applyFontScale();
+      return;
+    }
     const pic = e.target.closest(".mz-pic img");
     if (pic) {
       openViewer(pic.getAttribute("src"), pic.getAttribute("alt") || "");
@@ -3673,7 +3718,15 @@
     }
     const thumb = e.target.closest(".mz-thumbs i[data-theme]");
     if (thumb) {
-      bondTheme = thumb.dataset.theme;
+      setPref("bond:" + bondSel, thumb.dataset.theme);
+      rerender();
+      refreshAllFeet();
+      return;
+    }
+    const drop = e.target.closest(".mz-bk-x[data-drop]");
+    if (drop) {
+      const [kind, i] = drop.dataset.drop.split(":");
+      (kind === "build" ? buildBasket : craftBasket).splice(+i, 1);
       rerender();
       return;
     }
@@ -3742,19 +3795,16 @@
         hint(btn, "先选档次");
         return;
       }
-      const 奇效 = 档 === "天工" ? v.奇效 || "" : "";
-      commitForm({ tag: "兴造", check: (D) => buildWhys(D, 档).join(" "), mutate: (sd) => {
-        sd.资粮.铜钱 -= GRADE_PRICE[档];
-        sd.道场.地宫设施 = sd.道场.地宫设施 || {};
-        sd.道场.地宫设施[v.名称] = Object.assign({ 用途: v.用途 || "", 档次: 档 }, 奇效 ? { 奇效 } : {});
-      }, message: (贯2) => FORM_MSG.兴造(v.名称, 档, 奇效, 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
-      bpSel = null;
+      addToBasket(btn, "build", buildItem(v.名称, v.用途, 档, 档 === "天工" ? v.奇效 || "" : ""));
+      return;
+    }
+    if (act === "build-send") {
+      submitBasket(btn, "build");
       return;
     }
     if (act === "craft") {
       const v = formVals(btn);
-      const 类 = v.类别;
-      const c = CRAFT.find((x) => x.kind === 类);
+      const c = CRAFT.find((x) => x.kind === v.类别);
       if (!c) {
         hint(btn, "先选类别");
         return;
@@ -3763,11 +3813,11 @@
         hint(btn, "先填物名");
         return;
       }
-      commitForm({ tag: "工巧", check: (D) => craftWhys(D, c).join(" "), mutate: (sd) => {
-        sd.资粮.铜钱 -= c.price;
-        sd.资粮.库藏 = sd.资粮.库藏 || {};
-        sd.资粮.库藏[v.物名] = { 类别: 类, 效用: v.效用 || "" };
-      }, message: (贯2) => FORM_MSG.工巧(v.物名, 类, 贯2) }).catch((e2) => hint(btn, "出错: " + (e2 && e2.message || e2)));
+      addToBasket(btn, "craft", craftItem(v.物名, v.效用, c));
+      return;
+    }
+    if (act === "craft-send") {
+      submitBasket(btn, "craft");
       return;
     }
     if (act === "loan") {
@@ -3813,11 +3863,14 @@
   // src/10-lift.js
   var openName = null;
   var hideTimer = 0;
+  var reopenDrawer = false;
   var tabState = {};
   var liftOpenName = () => openName;
   var tabOf = (win, def) => tabState[win] || def;
   function openLift(name) {
     if (gateNeeded()) name = GATE_WIN;
+    const side = doc.querySelector(".mz-side");
+    reopenDrawer = !!(side && side.classList.contains("mz-open"));
     setDrawer(null);
     if (openName !== name) dirty.clear();
     openName = name;
@@ -3837,6 +3890,10 @@
     openName = null;
     dirty.clear();
     resetWinState();
+    if (reopenDrawer) {
+      reopenDrawer = false;
+      setDrawer("l");
+    }
     const lift = doc.getElementById(SEL.lift);
     if (!lift) return;
     lift.classList.add("mz-hide");
@@ -3886,18 +3943,42 @@
       else el.value = v;
     });
   }
+  var scrollKey = (el) => [...el.classList].find((c) => c.startsWith("mz-")) || el.tagName.toLowerCase();
+  function eachScrollable(root, fn) {
+    const seen = /* @__PURE__ */ new Map();
+    root.querySelectorAll("*").forEach((el) => {
+      const k = scrollKey(el);
+      const n = seen.get(k) || 0;
+      seen.set(k, n + 1);
+      fn(el, k + "#" + n);
+    });
+  }
+  function grabScrolls(root) {
+    const out = /* @__PURE__ */ new Map();
+    eachScrollable(root, (el, k) => {
+      if (el.scrollTop) out.set(k, el.scrollTop);
+    });
+    return out;
+  }
+  function restoreScrolls(root, vals) {
+    if (!vals.size) return;
+    eachScrollable(root, (el, k) => {
+      const v = vals.get(k);
+      if (v !== void 0) el.scrollTop = v;
+    });
+  }
   function refreshLift(Darg) {
     if (!openName) return;
     const body = doc.getElementById(SEL.liftBody);
     if (!body) return;
     const D = Darg || readMVU();
-    const keep = body.querySelector(".mz-folio, .mz-timeline, .mz-vartree");
-    const st = keep ? keep.scrollTop : 0;
+    const bodySt = body.scrollTop;
+    const tops = grabScrolls(body);
     const vals = grabFields(body);
     body.innerHTML = openName === GATE_WIN ? gateHtml() : winHtml(openName, D);
     restoreFields(body, vals);
-    const again = body.querySelector(".mz-folio, .mz-timeline, .mz-vartree");
-    if (again) again.scrollTop = st;
+    restoreScrolls(body, tops);
+    body.scrollTop = bodySt;
   }
   function onLiftClick(e) {
     if (e.target.closest(".mz-lift-x")) {
@@ -3934,72 +4015,53 @@
 
   // src/07-shell.js
   var ZONE_DEFS = [
-    { side: "l", key: "同心缕", lift: "同心缕", ico: "icon-redknot.webp" },
-    { side: "l", key: "库藏", lift: "库藏", ico: "icon-coffer.webp" },
-    { side: "l", key: "教务", lift: "教务", ico: "icon-letterbox.webp" },
-    { side: "r", key: "营造", lift: "营造", ico: "shrine-model.webp" },
-    { side: "r", key: "法事", lift: "法事", ico: "icon-folddoc.webp" },
-    { side: "r", key: "罪业", lift: "罪业", ico: "icon-ledger.webp" }
+    { key: "同心缕", lift: "同心缕", ico: "icon-redknot.webp" },
+    { key: "库藏", lift: "库藏", ico: "icon-coffer.webp" },
+    { key: "教务", lift: "教务", ico: "icon-letterbox.webp" },
+    { key: "营造", lift: "营造", ico: "shrine-model.webp" },
+    { key: "法事", lift: "法事", ico: "icon-folddoc.webp" },
+    { key: "罪业", lift: "罪业", ico: "icon-ledger.webp" }
   ];
-  function zoneShell(z) {
-    return `<div class="mz-zone" data-lift="${z.lift}" data-zone="${z.key}"><h5><span class="mz-z-ico"><img src="${asset(z.ico)}" alt="${z.key}"></span>${z.key}</h5><div class="mz-zone-rows"></div></div>`;
+  function navItem(z) {
+    return `<div class="mz-nav-item" data-lift="${z.lift}" data-zone="${z.key}"><span class="mz-nav-ico"><img src="${asset(z.ico)}" alt="${z.key}"></span><span class="mz-nav-main"><span class="mz-nav-lab">${z.key}</span><span class="mz-nav-sub"></span></span><span class="mz-nav-lock"></span></div>`;
   }
   function skeletonHtml() {
     return `
   <div class="mz-side">
-    <div class="mz-plaque">寺况</div>
-    <div id="${SEL.board}"><div class="mz-face"></div></div>
-    ${ZONE_DEFS.filter((z) => z.side === "l").map(zoneShell).join("")}
+    <div class="mz-plaque">密宗模拟器</div>
+    <div id="${SEL.minimap}" data-lift="舆图">
+      <div class="mz-map-wrap"><img src="${asset("map-panorama.webp")}" alt="长安舆图"><div class="mz-map-pin"></div></div>
+      <div class="mz-doom" id="${SEL.doom}"></div>
+    </div>
+    <nav class="mz-nav">${ZONE_DEFS.map(navItem).join("")}</nav>
   </div>
   <div class="mz-main">
-    <div id="mz-scroll">
-      <div class="mz-axle"><i class="mz-rod"></i><i class="mz-band"></i><i class="mz-knot"></i></div>
-      <div id="mz-sheet">
-        <div id="${SEL.paper}"></div>
-        <div id="${SEL.status}"></div>
-        <div id="${SEL.writing}">
-          <div class="mz-w-tools">
-            <button id="${SEL.del}" title="删去记录">${ICO.trash}</button>
-            <button id="${SEL.regen}" title="删除并重写上一条">${ICO.regen}</button>
-          </div>
-          <textarea id="${SEL.textarea}" rows="1" placeholder="教主示下……"></textarea>
-          <button id="${SEL.send}" title="发送">敕</button>
-        </div>
-        <div id="${SEL.delbar}"><span id="${SEL.delCount}">点选要删去的记录</span><button id="${SEL.delCancel}">取消</button><button class="mz-danger" id="${SEL.delConfirm}" disabled>删除</button></div>
+    <div class="mz-topbar">
+      <button class="mz-tb-plaque" id="${SEL.mplaque}" title="诸务">${ICO.menu}</button>
+      <div class="mz-tb-face" id="${SEL.topbar}"></div>
+      <div id="${SEL.corner}">
+        <button data-corner="set" title="设置">${ICO.settings}</button>
+        <button data-corner="exit" title="退出到原生">${ICO.close}</button>
       </div>
     </div>
+    <div id="${SEL.paper}"></div>
+    <div id="${SEL.status}"></div>
+    <div id="${SEL.writing}">
+      <div class="mz-w-tools">
+        <button id="${SEL.del}" title="删去记录">${ICO.trash}</button>
+        <button id="${SEL.regen}" title="删除并重写上一条">${ICO.regen}</button>
+      </div>
+      <textarea id="${SEL.textarea}" rows="1" placeholder="教主示下……"></textarea>
+      <button id="${SEL.send}" title="发送">敕</button>
+    </div>
+    <div id="${SEL.delbar}"><span id="${SEL.delCount}">点选要删去的记录</span><button id="${SEL.delCancel}">取消</button><button class="mz-danger" id="${SEL.delConfirm}" disabled>删除</button></div>
     <button id="${SEL.jump}" title="回至卷尾"></button>
     <div id="${SEL.crisis}">
       <img src="${asset("ticket-notice.webp")}" alt="官府朱票">
       <div class="mz-ticket-text"><b></b><div class="mz-sub"></div></div>
     </div>
   </div>
-  <div class="mz-rside">
-    <div class="mz-plaque">行事</div>
-    <div id="${SEL.minimap}" data-lift="舆图">
-      <div class="mz-map-wrap"><img src="${asset("map-panorama.webp")}" alt="长安舆图"><div class="mz-map-pin"></div></div>
-      <div class="mz-doom"><div class="mz-lbl"><span>灭佛大势</span><b></b></div><div class="mz-bar"><i></i></div>
-        <div class="mz-where" data-stat="地界"><span class="mz-w-zone"></span><span class="mz-w-sub"></span></div>
-        <div class="mz-storm" data-stat="风波"><span>风波</span><b></b></div></div>
-    </div>
-    ${ZONE_DEFS.filter((z) => z.side === "r").map(zoneShell).join("")}
-    <div id="${SEL.corner}">
-      <button data-corner="acu" id="${SEL.acuBtn}" title="数据库">${ICO.db}</button>
-      <button data-corner="vars" title="变量">${ICO.vars}</button>
-      <button data-corner="exit" title="退出到原生">${ICO.close}</button>
-    </div>
-  </div>
   <div id="${SEL.mscrim}"></div>
-  <div id="${SEL.mbar}">
-    <button data-drawer="l"><b>寺况</b></button><i class="mz-sep"></i>
-    <button data-drawer="r"><b>行事</b></button><i class="mz-sep"></i>
-    <button data-drawer="more"><b>天机</b></button>
-  </div>
-  <div id="${SEL.mmenu}">
-    <button data-menu="vars">${ICO.vars}变量</button>
-    <button data-menu="acu">${ICO.db}数据库</button>
-    <button data-menu="exit" class="mz-danger">${ICO.close}退出</button>
-  </div>
   <div id="${SEL.lift}"><div class="mz-held"><h3 id="${SEL.liftTitle}"></h3><button class="mz-lift-x" title="收窗">${ICO.close}</button><div class="mz-held-body" id="${SEL.liftBody}"></div></div></div>
   `;
   }
@@ -4008,12 +4070,10 @@
     drawerOpen = k;
     const root = doc.getElementById(SHELL_ID);
     if (!root) return;
-    const side = root.querySelector(".mz-side"), rside = root.querySelector(".mz-rside");
+    const side = root.querySelector(".mz-side");
     if (side) side.classList.toggle("mz-open", k === "l");
-    if (rside) rside.classList.toggle("mz-open", k === "r");
-    const menu = doc.getElementById(SEL.mmenu);
-    if (menu) menu.classList.toggle("mz-open", k === "more");
-    root.querySelectorAll("#" + SEL.mbar + " [data-drawer]").forEach((b) => b.classList.toggle("mz-on", b.dataset.drawer === k));
+    const plaque = doc.getElementById(SEL.mplaque);
+    if (plaque) plaque.classList.toggle("mz-on", k === "l");
     const scrim = doc.getElementById(SEL.mscrim);
     if (scrim) scrim.classList.toggle("mz-open", !!k);
   }
@@ -4028,6 +4088,12 @@
       link.href = href;
       doc.head.appendChild(link);
     });
+  }
+  function applyFontScale() {
+    const root = doc.getElementById(SHELL_ID);
+    if (!root) return;
+    const v = getPref("fsScale", "1");
+    root.style.setProperty("--fs-scale", FS_SCALES.some((x) => x[0] === v) ? v : "1");
   }
   function ensureShell() {
     if (doc.getElementById(SHELL_ID)) return;
@@ -4045,41 +4111,26 @@
     root.dataset.owner = SHELL_TOKEN;
     root.innerHTML = skeletonHtml();
     doc.body.appendChild(root);
+    applyFontScale();
     const exit = () => {
-      setDrawer(null);
+      if (drawerOpen) {
+        setDrawer(null);
+        return;
+      }
       toggleShell();
     };
     root.querySelectorAll("#" + SEL.corner + " button").forEach((b) => {
       const k = b.dataset.corner;
-      if (k === "acu") b.addEventListener("click", () => {
-        setDrawer(null);
-        openAcuUI();
-      });
-      else if (k === "vars") b.addEventListener("click", () => {
-        setDrawer(null);
-        openVarTree();
-      });
+      if (k === "set") b.addEventListener("click", () => openLift("设置"));
       else if (k === "exit") b.addEventListener("click", exit);
     });
-    root.querySelectorAll(".mz-side [data-lift], .mz-rside [data-lift]").forEach((el) => {
+    root.querySelectorAll(".mz-side [data-lift]").forEach((el) => {
       el.addEventListener("click", () => {
         if (!el.classList.contains("mz-locked")) openLift(el.dataset.lift);
       });
     });
-    root.querySelectorAll("#" + SEL.mbar + " [data-drawer]").forEach((b) => {
-      b.addEventListener("click", () => toggleDrawer(b.dataset.drawer));
-    });
-    root.querySelectorAll("#" + SEL.mmenu + " [data-menu]").forEach((b) => {
-      const k = b.dataset.menu;
-      b.addEventListener("click", () => {
-        setDrawer(null);
-        if (k === "acu") openAcuUI();
-        else if (k === "vars") openVarTree();
-        else if (k === "exit") toggleShell();
-      });
-    });
+    doc.getElementById(SEL.mplaque).addEventListener("click", () => toggleDrawer("l"));
     doc.getElementById(SEL.mscrim).addEventListener("click", () => setDrawer(null));
-    updateAcuNav();
   }
 
   // src/02-visibility.js
@@ -4183,7 +4234,6 @@
       setEditState(null);
       if (delMode) setDelMode(false);
       applyVisibility(true, true);
-      updateAcuNav();
       renderAll(true);
       renderStoryLog();
       needGate = gateNeeded();
@@ -4400,7 +4450,6 @@
     bindLift();
     bindCrisisDrag();
     applyVisibility(prevVisible);
-    pollAcu();
     try {
       doc.addEventListener("keydown", onDocKey);
     } catch (e) {
@@ -4466,7 +4515,6 @@
       window.parent.removeEventListener("resize", onCrisisResize);
       window.parent.removeEventListener("mz-shell-enter", onShellEnter);
       doc.removeEventListener("keydown", onDocKey);
-      stopAcuTimers();
       boundEvents.forEach(([name, fn]) => {
         try {
           eventRemoveListener(name, fn);
