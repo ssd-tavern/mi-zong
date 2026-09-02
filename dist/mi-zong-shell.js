@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "2.0.5";
+  var CDN_TAG = "2.0.6";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "plaque-entry.webp", "silk-board-core.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp"];
+  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp", "sect-1-bliss.webp", "sect-2-illusion.webp", "sect-3-mercy.webp", "sect-4-asura.webp", "sect-5-strings.webp"];
   var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
@@ -404,8 +404,9 @@
 #mz-shell-root {
   /* 一次切断宿主 body 的继承（投影、字体平滑、字号、color-scheme 都从那来），壳要什么下面重新声明 */
   all: initial;
-  /* 字阶八档，见 前端信息架构.md「字体与字阶」 */
+  /* 字阶九档，见 前端信息架构.md「字体与字阶」 */
   --fs-title: 28px; --ls-title: 14px;
+  --fs-head: 20px; --ls-head: 5px;
   --fs-plaque: 14px; --ls-plaque: 6px;
   --fs-name: 15.5px; --ls-name: 3px;
   --fs-label: 12.5px; --ls-label: 3px;
@@ -705,24 +706,31 @@
   color: var(--p-ink);
   background: var(--p-paper) url('${A2}paper-scroll.webp') center / 512px; }
 
-/* ==== 顶栏（常驻读数，纸上只此一条横带） ==== */
-.mz-topbar { flex: none; height: var(--top-h); display: flex; align-items: center; gap: 22px; padding: 0 30px;
+/* ==== 顶栏（账头：整条对齐正文列——时辰左缘落在列左缘，六项读数跟在后面；纸上只此一条横带） ==== */
+/* 顶栏本身不留左内边距：读数框的百分比按顶栏内容盒算，--col-side 里的 100% 才等于整张纸宽 */
+.mz-topbar { flex: none; height: var(--top-h); display: flex; align-items: center; gap: 22px; padding: 0;
   border-bottom: 1px solid var(--p-rule); }
+/* 工具栏是顶栏末子项，右留 30 顶替顶栏右内边距 */
+.mz-topbar > :last-child { margin-right: 30px; }
 /* 诸务钮：桌面端不存在，窄屏才是落下面板（侧栏）的开关；描线图标，与右侧工具栏同族 */
 .mz-tb-plaque { display: none; flex: none; align-items: center; justify-content: center;
   width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 6px; }
 .mz-tb-plaque svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 /* overflow:hidden 把溢出读数裁在读数框内；工具栏是同排 flex 项，读数够不到图标（margin 只留一道间隙） */
-.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; gap: 22px; margin-right: 16px; overflow: hidden; }
-.mz-tb-time { flex: none; font-size: 15px; letter-spacing: 3px; color: var(--p-title); font-weight: 600; }
-.mz-tb-time b { font-weight: 700; }
+.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; gap: 22px;
+  padding-left: var(--col-side); margin-right: 16px; overflow: hidden; height: 100%; }
+.mz-tb-set { display: flex; align-items: center; gap: 22px; min-width: 0; }
+/* 时辰与六项同式同字阶（上「时辰」标签，下「日期 时辰」） */
+.mz-tb-time { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; line-height: 1.2; letter-spacing: 2px; text-indent: 2px; color: var(--p-label); white-space: nowrap; }
+.mz-tb-time b { font-size: 14px; letter-spacing: .5px; text-indent: 0; color: var(--p-ink); font-weight: 600; }
 .mz-tb-time.mz-dim { color: var(--p-faint); font-weight: 500; }
-.mz-tb-i { position: relative; flex: none; display: flex; align-items: baseline; gap: 7px; font-size: 12.5px;
-  letter-spacing: 2px; color: var(--p-label); white-space: nowrap; }
+.mz-tb-i { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  font-size: 11px; line-height: 1.2; letter-spacing: 2px; text-indent: 2px; color: var(--p-label); white-space: nowrap; }
 /* 分隔竖线挂在项自己身上，项一隐线也跟着走 */
 .mz-tb-i::before { content: ''; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
-  width: 1px; height: 15px; background: rgba(139,103,42,.32); }
-.mz-tb-i b { font-size: 13.5px; letter-spacing: .5px; color: var(--p-ink); font-weight: 600; }
+  width: 1px; height: 26px; background: rgba(139,103,42,.32); }
+.mz-tb-i b { font-size: 14px; letter-spacing: .5px; text-indent: 0; color: var(--p-ink); font-weight: 600; }
 .mz-tb-i b.mz-warn { color: var(--warn); }
 .mz-tb-i b.mz-good { color: var(--good); }
 .mz-tb-i b.mz-fest { color: var(--p-red); }
@@ -850,7 +858,8 @@
 #mz-lift.mz-hide .mz-held h3, #mz-lift.mz-hide .mz-held .mz-held-body { animation: none; }
 
 /* ==== 开坛窗（第 0 楼开局）：题头写在纸面顶端，遮罩点击不关、无关闭钮 ==== */
-#mz-lift.mz-gate .mz-held { width: min(1100px, 94%); height: auto; min-height: min(600px, 72%); max-height: 84%; }
+/* 两步同一尺寸不跳：高定死；宽 1000 与其余浮窗齐 */
+#mz-lift.mz-gate .mz-held { width: min(1000px, 94%); height: min(640px, 84%); }
 #mz-lift.mz-gate .mz-held h3 { position: static; translate: none; writing-mode: horizontal-tb; filter: none;
   border: none; border-image: none; padding: 34px 44px 0; margin: 0; z-index: 2; text-align: center;
   font-size: var(--fs-title); letter-spacing: var(--ls-title); text-indent: var(--ls-title); font-weight: 600; color: var(--ink); }
@@ -861,41 +870,33 @@
 .mz-gate-win::before { content: ''; display: block; height: 1px; margin: 0 8% 4px; background: linear-gradient(90deg, transparent, rgba(139,103,42,.6) 20%, rgba(139,103,42,.6) 80%, transparent); }
 .mz-gate-win h4 { margin: 0 0 12px; font-size: var(--fs-label); font-weight: 400; letter-spacing: var(--ls-label); color: var(--ink-faint); display: flex; align-items: center; gap: 12px; }
 .mz-gate-win h4::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(139,103,42,.55), transparent); }
-.mz-gate-cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 36px; flex: 1; min-height: 0; }
-.mz-gate-opening { display: flex; flex-direction: column; min-height: 0; }
-.mz-gate-card { position: relative; padding: 14px 16px 12px; flex: 1; min-height: 0;
-  border-style: solid; border-color: transparent; border-width: 11px;
-  border-image: url('${A3}card-calling.webp') 52 fill / 11px stretch; box-shadow: 0 1px 2px rgba(60,40,15,.12);
-  display: flex; flex-direction: column; gap: 8px; }
-.mz-gate-img { flex: 1; min-height: 160px; aspect-ratio: 16 / 7; background: #cbbc98 center / cover no-repeat; box-shadow: inset 0 0 0 1px rgba(139,103,42,.45); }
-.mz-gate-card b { font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; }
-.mz-gate-card p { margin: 0; font-size: var(--fs-read); line-height: 1.8; color: var(--ink-dim); }
-.mz-gate-nav { display: flex; align-items: center; justify-content: center; gap: 14px; font-size: 12.5px; letter-spacing: 2px; color: var(--ink-faint); margin-top: 2px; }
+/* 两步同一副骨架：左整幅 3:2 图、右文或右格，两列 minmax(0,…) 图的固有宽不许撑列 */
+.mz-gate-body { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
+.mz-gate-two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; align-items: stretch; flex: none; }
+.mz-gate-img { min-width: 0; aspect-ratio: 3 / 2; background: #cbbc98 center / cover no-repeat; box-shadow: inset 0 0 0 1px rgba(139,103,42,.45); }
+/* 右列走卷题＋正文两档：题名 20px，简介同正文字号 */
+.mz-gate-text { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding-top: 2px; }
+.mz-gate-text b { font-size: var(--fs-head); letter-spacing: var(--ls-head); color: var(--ink); font-weight: 600; }
+.mz-gate-text p { margin: 0; font-size: var(--fs-body); line-height: 2; color: var(--ink-dim); text-align: justify; }
+.mz-gate-text .mz-gate-nav { margin-top: auto; }
+.mz-gate-nav { display: flex; align-items: center; justify-content: flex-start; gap: 14px; font-size: 12.5px; letter-spacing: 2px; color: var(--ink-faint); margin-top: 2px; }
 .mz-gate-nav button { border: none; background: none; cursor: pointer; color: var(--ink-dim); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
 .mz-gate-nav button svg { width: 16px; height: 16px; }
 .mz-gate-nav button:first-child svg { rotate: 180deg; }
 .mz-gate-nav button[disabled] { opacity: .3; }
-.mz-gate-sects { display: flex; flex-direction: column; }
-.mz-gate-sect:last-child { margin-bottom: 0; }
-.mz-gate-sect { position: relative; display: flex; align-items: baseline; gap: 14px; text-align: left; cursor: pointer; font-family: inherit;
-  padding: 9px 16px; margin-bottom: 8px; border-style: solid; border-color: transparent; border-width: 16px;
-  border-image: url('${A3}plaque-entry.webp') 160 / 16px stretch; background: url('${A3}silk-board-core.webp') center / cover; background-clip: border-box;
-  color: var(--ink-dim); transition: filter var(--t-mid) var(--ease-out), translate var(--t-fast) var(--ease-out); }
-.mz-gate-sect:hover { filter: brightness(1.04); translate: 0 -1px; }
-.mz-gate-sect:active { translate: 0 1px; transition-duration: .06s; }
-.mz-gate-sect b { font-size: var(--fs-name); letter-spacing: var(--ls-name); color: var(--ink); font-weight: 600; white-space: nowrap; transition: color var(--t-mid) var(--ease-out); }
-.mz-gate-sect span { font-size: var(--fs-read); letter-spacing: var(--ls-read); color: var(--ink-faint); }
-.mz-gate-sect:not(.mz-on) { filter: saturate(.85) opacity(.9); }
-.mz-gate-sect.mz-on::before, .mz-gate-sect.mz-on::after { content: ''; position: absolute; width: 14px; height: 14px; border: 2px solid #b8902e;
-  animation: bracket-in var(--t-mid) var(--ease-paper) both; }
-@keyframes bracket-in { from { opacity: 0; translate: var(--bx) var(--by); } }
-.mz-gate-sect.mz-on::before { --bx: -6px; --by: -6px; }
-.mz-gate-sect.mz-on::after { --bx: 6px; --by: 6px; }
-.mz-gate-sect.mz-on::before { left: -8px; top: -8px; border-right: none; border-bottom: none; }
-.mz-gate-sect.mz-on::after { right: -8px; bottom: -8px; border-left: none; border-top: none; }
-.mz-gate-sect.mz-on b { color: var(--cinnabar); }
+/* 双类压过 windows.js 的 4:1 横幅基样 */
+.mz-rite-pic.mz-gate-pic { aspect-ratio: 3 / 2; min-width: 0; }
+/* 双类压过 windows.js 的三列基样；五格竖排与图等高 */
+.mz-picks.mz-gate-picks { grid-template-columns: minmax(0, 1fr); grid-auto-rows: 1fr; gap: 8px; }
+.mz-gate-sect { justify-content: center; padding: 8px 14px; }
+.mz-gate-sect b { font-size: var(--fs-name); letter-spacing: var(--ls-name); white-space: nowrap; transition: color var(--t-mid) var(--ease-out); }
+.mz-gate-sect small { font-size: var(--fs-read); letter-spacing: var(--ls-read); line-height: 1.5; }
+.mz-gate-sect:has(input:checked) b { color: var(--cinnabar); }
 .mz-gate-foot { flex: none; display: flex; align-items: center; justify-content: center; padding-top: 6px; position: relative; }
 .mz-gate-foot .mz-why { position: absolute; left: calc(50% + 70px); top: 50%; translate: 0 -50%; white-space: nowrap; margin: 0; padding-top: 6px; }
+.mz-gate-back { position: absolute; right: calc(50% + 70px); top: 50%; translate: 0 -50%; border: none; background: none; cursor: pointer; font-family: inherit;
+  font-size: var(--fs-tag); letter-spacing: var(--ls-tag); color: var(--ink-faint); padding: 6px 0 0; transition: color var(--t-fast) var(--ease-out); }
+.mz-gate-back:hover { color: var(--cinnabar); }
 .mz-gate-foot .mz-seal-btn.mz-lg { padding: 8px 22px; }
 
 /* ==== 开坛礼（仅开坛那一次） ==== */
@@ -1375,13 +1376,19 @@
   .mz-tb-plaque.mz-on { color: var(--lacquer); border-color: var(--gold);
     background: var(--gold); }
   .mz-tb-i.mz-tb-hide { display: none; }
-  .mz-tb-face { gap: 14px; }
-  .mz-tb-time { font-size: 13.5px; letter-spacing: 2px; flex: 0 1 auto; min-width: 0;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--side-text-hi); }
+  /* 窄屏顶栏一行式：时辰只留「日期 时辰」，标签不显 */
+  .mz-tb-time > span { display: none; }
+  .mz-tb-time { flex-direction: row; align-items: baseline; gap: 6px; text-indent: 0;
+    font-size: 13.5px; letter-spacing: 2px; color: var(--side-text-hi); flex: 0 1 auto; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mz-tb-time b { font-size: 13.5px; color: var(--side-text-hi); }
   .mz-tb-time.mz-dim { color: var(--side-text); opacity: .6; }
-  .mz-tb-i { color: var(--side-text); }
-  .mz-tb-i::before { background: rgba(var(--gold-rgb), .3); }
-  .mz-tb-i b { color: var(--side-text-hi); }
+  .mz-tb-face { padding-left: 0; gap: 14px; }
+  .mz-topbar > :last-child { margin-right: 0; }
+  .mz-tb-set { gap: 14px; }
+  .mz-tb-i { flex-direction: row; align-items: baseline; gap: 6px; font-size: 12px; text-indent: 0; color: var(--side-text); }
+  .mz-tb-i::before { height: 15px; background: rgba(var(--gold-rgb), .3); }
+  .mz-tb-i b { font-size: 13px; color: var(--side-text-hi); }
   .mz-tb-i b.mz-warn { color: #f0b072; }
   .mz-tb-i b.mz-good { color: #b9cc8a; }
   .mz-tb-i b.mz-fest { color: #f09a7e; }
@@ -1466,11 +1473,12 @@
   .mz-picks.mz-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .mz-form input.mz-w { width: 100%; }
   #mz-lift.mz-gate .mz-held { width: 100%; height: calc(100% - 56px); max-height: none; }
-  .mz-gate-cols { display: flex; flex-direction: column; gap: 18px; overflow-y: auto; }
-  .mz-gate-opening, .mz-gate-card, .mz-gate-sects { flex: none; }
-  .mz-gate-img { flex: none; min-height: 0; }
-  .mz-gate-foot { flex-wrap: wrap; gap: 6px; }
+  .mz-gate-two { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .mz-picks.mz-gate-picks { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: 6px; }
+  .mz-gate-sect { padding: 6px 12px 5px; }
+  .mz-gate-foot { flex-wrap: wrap; gap: 6px 18px; }
   .mz-gate-foot .mz-why { position: static; translate: none; width: 100%; text-align: center; padding-top: 0; }
+  .mz-gate-back { position: static; translate: none; padding: 0; }
   #mz-lift.mz-gate .mz-held h3 { padding: 22px 20px 0; font-size: 22px; letter-spacing: 8px; text-indent: 8px; }
   #mz-lift.mz-gate .mz-held .mz-held-body { padding: 10px 18px 20px; }
 }
@@ -1560,11 +1568,13 @@
     { key: "尸陀修罗", line: "筑修罗黑坛，以严刑骨器降伏恶徒。" },
     { key: "罪业提线", line: "握满城公卿把柄，借利害掌提线之索。" }
   ];
+  var SECT_PIC = { 理趣大乐: "sect-1-bliss.webp", 造境摄魂: "sect-2-illusion.webp", 慈悲蛊心: "sect-3-mercy.webp", 尸陀修罗: "sect-4-asura.webp", 罪业提线: "sect-5-strings.webp" };
   var OPENINGS_META = [
     { title: "破庙开山", blurb: "会昌元年三月，你重回城南荒庙，在断臂佛像下掘开空置的地窖，借满城欲念开坛立教。", img: CB2("lsgkeh") }
   ];
   var chosenSect = null;
   var page = 0;
+  var step = 0;
   var gateBusy = false;
   function isPanelText(text) {
     return /^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(String(text || ""));
@@ -1609,34 +1619,44 @@
   function gateHtml() {
     const late = gateLate();
     const info = readOpenings();
-    const swipes = late ? info && !isPanelText(info.swipes[info.cur]) ? [info.cur] : [] : openingSwipes();
+    const swipes = openingSwipes();
     if (swipes.length && page >= swipes.length) page = swipes.length - 1;
-    const curSwipe = late ? swipes[0] : swipes[page];
-    const meta = OPENINGS_META[curSwipe != null ? curSwipe - 1 : 0] || OPENINGS_META[0];
-    const multi = !late && swipes.length > 1;
-    const nav = multi ? `<div class="mz-gate-nav"><button data-gate="prev" ${page === 0 ? "disabled" : ""}>${ICO.chev}</button><span>${page + 1} / ${swipes.length}</span><button data-gate="next" ${page === swipes.length - 1 ? "disabled" : ""}>${ICO.chev}</button></div>` : "";
-    const opening = `<div class="mz-gate-opening">
+    const onSect = late || step === 1;
+    let body, foot;
+    if (!onSect) {
+      const meta = OPENINGS_META[swipes[page] != null ? swipes[page] - 1 : 0] || OPENINGS_META[0];
+      const multi = swipes.length > 1;
+      const nav = multi ? `<div class="mz-gate-nav"><button data-gate="prev" ${page === 0 ? "disabled" : ""}>${ICO.chev}</button><span>${page + 1} / ${swipes.length}</span><button data-gate="next" ${page === swipes.length - 1 ? "disabled" : ""}>${ICO.chev}</button></div>` : "";
+      body = `<div class="mz-gate-body mz-gate-opening">
         <h4>开场白</h4>
-        <div class="mz-gate-card">
+        <div class="mz-gate-two mz-gate-card">
           <div class="mz-gate-img"${meta.img ? ` style="background-image:url('${meta.img}')"` : ""}></div>
-          <b>${meta.title}</b>
-          <p>${meta.blurb}</p>
-          ${nav}
+          <div class="mz-gate-text">
+            <b>${meta.title}</b>
+            <p>${meta.blurb}</p>
+            ${nav}
+          </div>
         </div>
       </div>`;
-    const sects = SECTS.map((s) => `<button class="mz-gate-sect${chosenSect === s.key ? " mz-on" : ""}" data-gate="sect" data-sect="${s.key}"><b>${s.key}</b><span>${s.line}</span></button>`).join("");
-    const ready = !!chosenSect && (late || swipes.length > 0 || !info);
-    return `<section class="mz-win mz-on mz-gate-win">
-    <div class="mz-gate-cols">
-      ${opening}
-      <div class="mz-gate-sects">
+      foot = `<button class="mz-seal-btn mz-lg" data-gate="step" data-step="1">下一步</button>`;
+    } else {
+      const shown = SECTS.find((x) => x.key === chosenSect) || SECTS[0];
+      const picks = SECTS.map((x) => `<label class="mz-pick mz-gate-sect" data-gate="sect" data-sect="${x.key}"><input type="radio" name="宗风" value="${x.key}"${chosenSect === x.key ? " checked" : ""}><b>${x.key}</b><small>${x.line}</small></label>`).join("");
+      const ready = !!chosenSect && (late || swipes.length > 0 || !info);
+      body = `<div class="mz-gate-body mz-gate-sects">
         <h4>宗风</h4>
-        ${sects}
-      </div>
-    </div>
+        <div class="mz-gate-two">
+          <div class="mz-rite-pic mz-gate-pic"><img src="${asset(SECT_PIC[shown.key])}" alt=""></div>
+          <div class="mz-picks mz-col mz-gate-picks">${picks}</div>
+        </div>
+      </div>`;
+      foot = (late ? "" : `<button class="mz-gate-back" data-gate="step" data-step="0">上一步</button>`) + `<button class="mz-seal-btn mz-lg" data-gate="confirm" ${ready ? "" : "disabled"}>开坛</button>
+      <span class="mz-why">${ready ? "" : "请先择定宗风"}</span>`;
+    }
+    return `<section class="mz-win mz-on mz-gate-win">
+    ${body}
     <div class="mz-gate-foot">
-      <button class="mz-seal-btn mz-lg" data-gate="confirm" ${ready ? "" : "disabled"}>开坛</button>
-      <span class="mz-why">${ready ? "" : "请先择定宗风"}</span>
+      ${foot}
     </div>
   </section>`;
   }
@@ -1749,7 +1769,14 @@
     if (!el || el.disabled) return;
     const act = el.dataset.gate;
     if (act === "sect") {
-      chosenSect = el.dataset.sect;
+      if (e.target.tagName !== "INPUT") {
+        chosenSect = el.dataset.sect;
+        refreshLift();
+      }
+      return;
+    }
+    if (act === "step") {
+      step = +el.dataset.step;
       refreshLift();
       return;
     }
@@ -1767,6 +1794,7 @@
   }
   function ensureGate() {
     if (gateNeeded()) {
+      step = 0;
       openLift(GATE_WIN);
       return true;
     }
@@ -3199,7 +3227,7 @@
   function topbarHtml(D) {
     if (D._empty) return '<span class="mz-tb-time mz-dim">此则无账目</span>';
     const r = readings(D);
-    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '">' + r.日期 + " <b>" + r.时辰 + "</b></span>" + tbItem(r.宵禁, true) + tbItem(r.常例, true, "mz-tb-thin") + tbItem(r.节令, true, "mz-tb-thin") + tbItem(r.铜钱) + tbItem(r.信众, true) + tbItem(r.风波, true);
+    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '"><span>时辰</span><b>' + r.日期 + " " + r.时辰 + '</b></span><span class="mz-tb-set">' + tbItem(r.宵禁, true) + tbItem(r.常例, true, "mz-tb-thin") + tbItem(r.节令, true, "mz-tb-thin") + tbItem(r.铜钱) + tbItem(r.信众, true) + tbItem(r.风波, true) + "</span>";
   }
   var srRow = (r, title, extra) => '<div class="mz-sr-row' + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + (title ? ' title="' + title + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></div>";
   function statusBoxHtml(D) {
