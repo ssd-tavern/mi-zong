@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "2.0.3";
+  var CDN_TAG = "2.0.4";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "plaque-entry.webp", "silk-board-core.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp"];
+  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "plaque-entry.webp", "silk-board-core.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp"];
   var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
@@ -218,8 +218,13 @@
     { 名: "无尽藏柜坊", 区: "地下", 用途: "以教团之名向外放贷，立契收息，借钱债将人拴住。账房模样的柜坊，柜内置契匣与算筹，金银另藏暗格，一本账簿记满城欠户。" }
   ];
   var FAC_PIC = { 丹房: "fac-danfang.webp", 宿曜星堂: "fac-xingtang.webp", 居士客房: "fac-kefang.webp", 护摩火坛: "fac-huotan.webp", 曼荼罗密坛: "fac-mitan.webp", 温汤池: "fac-wentang.webp", 机关声光室: "fac-jiguan.webp", 熔金工坊: "fac-rongjin.webp", 夹壁密档: "fac-midang.webp", 暗室地牢: "fac-dilao.webp", 库房: "fac-kufang.webp", 无尽藏柜坊: "fac-guifang.webp" };
+  var OWN_PIC = { 粗成: "own-1-rough.webp", 精工: "own-2-fine.webp", 天工: "own-3-grand.webp" };
+  var LOAN_PIC = "loan-guifang.webp";
+  var PAGE_PIC = { 把柄: "banner-handle.webp", 执事: "banner-steward.webp", 明妃: "banner-consort.webp", 委托: "banner-order.webp" };
   var RITE_PIC = "rite-grand.webp";
-  var LIMITS = { 库藏: 12, 罪业密簿: 5, 法事委托: 3, 神迹传闻: 3, 执事名册: 12, 明妃录: 6 };
+  var STORE_KINDS = ["药品", "道具", "法器"];
+  var STORE_PIC = { 药品: "store-drug.webp", 道具: "store-tool.webp", 法器: "store-ritual.webp" };
+  var LIMITS = { 库藏: 12, 罪业密簿: 5, 法事委托: 3, 执事名册: 12, 明妃录: 6 };
   var FORM_MSG = {
     兴造: (名, 档, 奇效, 贯2) => "【兴造】" + 名 + "（" + 档 + "）已破土动工，账房已扣" + cn(贯2) + "贯，此笔不再入账。" + (奇效 ? "奇效议定：" + 奇效 : ""),
     升殿: (殿, 贯2) => "【兴造】表殿改建" + 殿 + "，匠人已开工动土，账房已扣" + cn(贯2) + "贯，此笔不再入账。",
@@ -370,7 +375,7 @@
       时空: { 时间: str(g("时空.时间")), 当前地界: str(g("时空.当前地界")), 已结算至: str(g("时空.已结算至")) },
       资粮: { 铜钱: 贯(g("资粮.铜钱")), 库藏: obj(g("资粮.库藏")), 罪业密簿: obj(g("资粮.罪业密簿")) },
       道场: { 宗风: str(g("道场.宗风")), 表殿等级: str(g("道场.表殿等级")) || "破败草庵", 敕额: g("道场.敕额") === true || g("道场.敕额") === "true", 地宫设施: obj(g("道场.地宫设施")) },
-      教务: { 法事委托: obj(g("教务.法事委托")), 神迹传闻: obj(g("教务.神迹传闻")), 信众: num(g("教务.信众")), 上次法会: str(g("教务.上次法会")) },
+      教务: { 法事委托: obj(g("教务.法事委托")), 信众: num(g("教务.信众")), 上次法会: str(g("教务.上次法会")) },
       核心女主: girls,
       执事名册: obj(g("执事名册")),
       明妃录: obj(g("明妃录")),
@@ -998,11 +1003,19 @@
 .mz-build-head.mz-has-pic { grid-template-columns: 320px minmax(0, 1fr); }
 .mz-build-pic { aspect-ratio: 3 / 2; overflow: hidden; border: 1px solid rgba(139,103,42,.3); align-self: start; }
 .mz-build-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mz-build-pic img[data-g] { display: none; }
+.mz-build:not(:has(input[name="档次"]:checked)) .mz-build-pic img[data-g="粗成"],
+.mz-build:has(input[name="档次"][value="粗成"]:checked) .mz-build-pic img[data-g="粗成"],
+.mz-build:has(input[name="档次"][value="精工"]:checked) .mz-build-pic img[data-g="精工"],
+.mz-build:has(input[name="档次"][value="天工"]:checked) .mz-build-pic img[data-g="天工"] { display: block; }
 .mz-build-head.mz-has-pic .mz-build-use { min-width: 0; }
 .mz-build-head.mz-has-pic .mz-build-use textarea { flex: 1; height: auto; }
 /* 法会页顶横幅：图按横向长条构图出、入库即 3:1，页顶整条铺开 */
 .mz-rite-pic { flex: none; aspect-ratio: 4 / 1; overflow: hidden; border: 1px solid rgba(139,103,42,.35); box-shadow: inset 0 0 0 3px rgba(255,252,244,.5); }
 .mz-rite-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.mz-loan-pic, .mz-page-pic { margin-bottom: 14px; }
+.mz-sin .mz-loan-pic, .mz-sin .mz-page-pic { border-color: rgba(160,52,38,.45); box-shadow: inset 0 0 0 3px rgba(0,0,0,.35); }
+.mz-folio.mz-fill > .mz-page-pic + .mz-wh { margin-top: 0; }
 /* 兴造：左蓝图清单／右表单，点清单一行右侧即填 */
 .mz-bplist { flex: none; width: 212px; gap: 6px; }
 .mz-bps { display: flex; flex-direction: column; gap: 3px; }
@@ -1103,6 +1116,16 @@
 .mz-wh::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(139,103,42,.5), transparent); }
 .mz-wh b { color: var(--cinnabar); font-weight: 600; letter-spacing: 1px; }
 .mz-folio > .mz-wh:not(:first-child) { margin-top: 16px; }
+.mz-store-row { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; align-items: start; padding: 12px 0; }
+.mz-store-row + .mz-store-row { border-top: 1px solid rgba(139,103,42,.22); }
+.mz-store-row:first-child { padding-top: 0; }
+.mz-store-head { display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 2px; font-size: 15px; letter-spacing: 3px; text-indent: 3px; color: var(--ink-dim); }
+.mz-store-head b { color: var(--cinnabar); font-weight: 600; font-size: 13px; letter-spacing: 1px; text-indent: 1px; }
+.mz-store-pic { width: 72px; height: 72px; object-fit: cover; display: block; border: 1px solid rgba(139,103,42,.35); margin-bottom: 4px; }
+.mz-store-row .mz-card.mz-wide { grid-column: span 2; }
+.mz-store-spare { align-items: center; }
+.mz-store-spare .mz-store-head { flex-direction: row; justify-content: center; gap: 8px; padding-top: 0; }
+.mz-store .mz-card.mz-empty { min-height: 0; padding: 9px 23px 8px; }
 /* 浮窗定高 620，行撑满余高，回想在列内滚动 */
 .mz-wrow { display: flex; gap: 16px; flex: 1; min-height: 0; align-items: flex-start; }
 .mz-wrow > .mz-wcol { align-self: stretch; }
@@ -1182,12 +1205,7 @@
 .mz-loan-note span:last-child { flex: none; color: var(--ink-dim); }
 
 /* 法事：街谈条幅（横排逐条，最新在上）／教务：法会门槛清单 */
-.mz-banners { display: flex; flex-direction: column; gap: 10px; }
-.mz-banner { font-size: 15.5px; letter-spacing: 2px; line-height: 1.9; color: var(--ink-dim); padding: 10px 18px;
   background: rgba(255,252,244,.72); outline: 1px solid rgba(139,103,42,.45); outline-offset: -4px; }
-.mz-banner::before { content: '市井传言'; font-size: 11.5px; letter-spacing: 2px; color: var(--ink-faint); margin-right: 14px; }
-.mz-banner.mz-empty { color: var(--ink-faint); background: none; outline-style: dashed; text-align: center; letter-spacing: 4px; }
-.mz-banner.mz-empty::before { content: none; }
 .mz-ticks { display: flex; flex-direction: column; gap: 9px; font-size: 15px; color: var(--ink-dim); letter-spacing: 1px; }
 .mz-ticks li { list-style: none; display: flex; align-items: center; gap: 10px; }
 .mz-ticks li::before { content: ''; width: 14px; height: 14px; border: 1px solid rgba(139,103,42,.55); flex: none; }
@@ -1439,6 +1457,10 @@
   .mz-hall { grid-template-rows: auto; grid-row: auto; }
   .mz-hall-act:empty { display: none; }
   .mz-grid.mz-c3.mz-cave-grid { grid-template-columns: minmax(0, 1fr); }
+  .mz-store-row { grid-template-columns: minmax(0, 1fr); }
+  .mz-store-head { flex-direction: row; justify-content: flex-start; gap: 10px; }
+  .mz-store-pic { width: 44px; height: 44px; margin-bottom: 0; }
+  .mz-store-row .mz-card.mz-wide { grid-column: 1 / -1; }
   .mz-card.mz-fac { grid-template-rows: auto; grid-row: auto; }
   .mz-fac-pic { aspect-ratio: 2 / 1; }
   .mz-pick.mz-shop { display: flex; }
@@ -3370,6 +3392,7 @@
     return '<div class="mz-tabs">' + items.map((t) => "<button" + (cur === t.id ? ' class="mz-on"' : "") + ' data-pane="' + t.id + '">' + t.label + (t.n != null ? '<span class="mz-n">' + t.n + "</span>" : "") + (t.red ? '<span class="mz-red"></span>' : "") + "</button>").join("") + (tail ? '<span class="mz-why" style="margin-left:auto;align-self:center">' + tail + "</span>" : "") + "</div>";
   };
   var pane = (win, id, inner, first) => '<div class="mz-pane' + (tabOf(win, first) === id ? " mz-on" : "") + '" data-pane="' + id + '">' + inner + "</div>";
+  var pagePic = (name) => '<div class="mz-rite-pic mz-page-pic"><img src="' + asset(PAGE_PIC[name]) + '" alt=""></div>';
   var wh = (t, b) => '<div class="mz-wh">' + t + (b ? " <b>" + b + "</b>" : "") + "</div>";
   var sealBtn = (label, act, ok, why, extra) => '<button class="mz-seal-btn' + (extra || "") + '"' + (act ? ' data-act="' + act + '"' : "") + (ok ? "" : " disabled") + ">" + label + "</button>" + (!ok && why ? '<span class="mz-why">' + why + "</span>" : "");
   var lack = (D, 贯2) => {
@@ -3582,7 +3605,7 @@
     const upNext = upSel ? GRADES[GRADES.indexOf(upSel.档次) + 1] : null;
     const upBar = upSel && upNext ? '<form class="mz-form mz-sheet mz-upform" onsubmit="return false">' + wh("改造", esc3(upSel.名) + " " + esc3(upSel.档次) + " 升 " + upNext + " " + cn(UPGRADE_PRICE[upNext]) + "贯") + '<label class="mz-wonder mz-live">奇效<textarea name="奇效" rows="2" placeholder="' + WONDER_PH + '"></textarea><small>升作天工须议定奇效，写入即成定局</small></label><div class="mz-build-foot">' + sealBtn("罢", "upgrade-cancel", true) + sealBtn("议定改造", "upgrade-go", true, "", " mz-lg") + "</div></form>" : "";
     const cards = fs.length ? fs.map((f) => {
-      const pic = '<div class="mz-fac-pic">' + (FAC_PIC[f.名] ? '<img src="' + asset(FAC_PIC[f.名]) + '" alt="">' : "") + "</div>";
+      const pic = '<div class="mz-fac-pic"><img src="' + asset(FAC_PIC[f.名] || OWN_PIC[f.档次] || OWN_PIC.粗成) + '" alt=""></div>';
       const body = '<div class="mz-fac-top"><b>' + esc3(f.名) + '</b><span class="mz-tag ' + (GRADE_Q[f.档次] || "mz-q1") + '">' + esc3(f.档次) + '</span></div><div class="mz-fac-use">' + kv("用途", f.用途) + '</div><div class="mz-fac-wonder">' + (f.奇效 ? kv("奇效", f.奇效) : "") + "</div>";
       const next = GRADES[GRADES.indexOf(f.档次) + 1];
       if (!next) return '<div class="mz-card mz-fac">' + pic + body + '<div class="mz-up-foot"></div></div>';
@@ -3603,7 +3626,7 @@
     const bpRows = (区) => BLUEPRINTS.filter((b) => b.区 === 区).map((b) => built[b.名] ? '<div class="mz-bp mz-off"><b>' + esc3(b.名) + '</b><span class="mz-tag ' + (GRADE_Q[built[b.名]] || "mz-q1") + '">已建 ' + esc3(built[b.名]) + "</span></div>" : inBasket(b.名) ? '<div class="mz-bp mz-off mz-in"><b>' + esc3(b.名) + '</b><span class="mz-tag">已入篮</span></div>' : '<button type="button" class="mz-bp' + (bpSel === b.名 ? " mz-on" : "") + '" data-bp="' + esc3(b.名) + '"><b>' + esc3(b.名) + '</b><span class="mz-tag">未建</span></button>').join("");
     const bpList = '<div class="mz-wcol mz-bplist">' + wh("蓝图", "地面") + '<div class="mz-bps">' + bpRows("地面") + "</div>" + wh("蓝图", "地下") + '<div class="mz-bps">' + bpRows("地下") + "</div></div>";
     const bp = BLUEPRINTS.find((b) => b.名 === bpSel && !built[b.名] && !inBasket(b.名));
-    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<div class="mz-build-head' + (bp && FAC_PIC[bp.名] ? " mz-has-pic" : "") + '"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label>' + (bp && FAC_PIC[bp.名] ? '<div class="mz-build-pic"><img src="' + asset(FAC_PIC[bp.名]) + '" alt=""></div>' : "") + '<label class="mz-build-use">用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label></div><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "build", !offAll, "钱不足", " mz-lg") + "</div></form>";
+    const buildForm = '<form class="' + BUILD_FORM + '" onsubmit="return false">' + wh("兴造", bp ? esc3(bp.名) : "自拟") + '<div class="mz-build-head mz-has-pic"><label>名称<input name="名称" placeholder="自拟名目" value="' + (bp ? esc3(bp.名) : "") + '"></label><div class="mz-build-pic">' + (bp && FAC_PIC[bp.名] ? '<img src="' + asset(FAC_PIC[bp.名]) + '" alt="">' : GRADES.map((g) => '<img data-g="' + g + '" src="' + asset(OWN_PIC[g]) + '" alt="">').join("")) + '</div><label class="mz-build-use">用途<textarea name="用途" rows="2" placeholder="自拟用途与陈设">' + (bp ? esc3(bp.用途) : "") + '</textarea></label></div><div class="mz-wh">档次</div><div class="mz-picks">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "build", !offAll, "钱不足", " mz-lg") + "</div></form>";
     return '<div class="mz-folio mz-fill"><div class="mz-wrow mz-buildrow">' + bpList + buildForm + "</div>" + basketHtml("build", buildBasket) + "</div>";
   }
   function sinHtml(D) {
@@ -3617,16 +3640,14 @@
     }).join("") : '<div class="mz-none">簿中无名</div>';
     const whys = loanWhys(D, 0);
     const loanForm = '<form class="mz-form mz-sheet mz-loan" onsubmit="return false">' + wh("无尽藏放贷") + '<div class="mz-loan-row"><label>欠户<input name="欠户" placeholder="姓名"></label><label>本金<input name="本金" placeholder="整数贯" inputmode="numeric"></label><label class="mz-grow">抵押<input name="抵押" placeholder="田契、宅契或人身"></label><div class="mz-build-foot">' + sealBtn("放贷", "loan", !whys.length, whys.join(" "), " mz-lg") + '</div></div><div class="mz-loan-note"><span>月息五分，利不过本，按月自动入账</span><span>库中 ' + money(总文(D)) + "　簿共 " + cn(total) + "／五条</span></div></form>";
-    return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-grid mz-c2">' + hCards + "</div>", "handle") + pane("罪业", "debt", '<div class="mz-folio mz-fill">' + loanForm + wh("债契", cn(ds.length) + "契") + '<div class="mz-grid mz-c3">' + dCards + "</div></div>", "handle") + "</section>";
+    return '<section class="mz-win mz-on">' + tabs("罪业", [{ id: "handle", label: "把柄", n: cn(hs.length) }, { id: "debt", label: "债契", n: cn(ds.length) }], "共" + cn(total) + "／五条") + pane("罪业", "handle", '<div class="mz-folio mz-fill">' + pagePic("把柄") + '<div class="mz-grid mz-c2">' + hCards + "</div></div>", "handle") + pane("罪业", "debt", '<div class="mz-folio mz-fill"><div class="mz-rite-pic mz-loan-pic"><img src="' + asset(LOAN_PIC) + '" alt=""></div>' + loanForm + wh("债契", cn(ds.length) + "契") + '<div class="mz-grid mz-c3">' + dCards + "</div></div>", "handle") + "</section>";
   }
   function riteHtml(D) {
     const orders = Object.entries(D.教务.法事委托);
     const cards = orders.map(([客, v]) => card('<span class="mz-tag' + (v.状态 === "已完成" ? " mz-gold" : "") + '">' + esc3(v.状态 || "待办") + "</span><b>" + esc3(客) + "</b>" + kv("诉求", v.诉求 || "") + "<br>" + kv("时限", v.时限 || "") + "<br>" + kv("报酬", v.报酬 || "")));
     while (cards.length < LIMITS.法事委托) cards.push(empty());
-    const rumors = Object.values(D.教务.神迹传闻).reverse().map((r) => '<div class="mz-banner">' + esc3(String(r)) + "</div>");
-    while (rumors.length < LIMITS.神迹传闻) rumors.push('<div class="mz-banner mz-empty">未闻</div>');
     const pend = pendingOrders(D).length;
-    return '<section class="mz-win mz-on">' + tabs("法事", [{ id: "order", label: "委托", n: cn(pend) + "／三席" }, { id: "rumor", label: "传闻", n: cn(Object.keys(D.教务.神迹传闻).length) }]) + pane("法事", "order", '<div class="mz-folio mz-grid mz-c3">' + cards.join("") + "</div>", "order") + pane("法事", "rumor", '<div class="mz-folio"><div class="mz-banners">' + rumors.join("") + "</div></div>", "order") + "</section>";
+    return '<section class="mz-win mz-on">' + tabs("法事", [{ id: "order", label: "委托", n: cn(pend) + "／三席" }]) + pane("法事", "order", '<div class="mz-folio mz-fill">' + pagePic("委托") + '<div class="mz-grid mz-c3">' + cards.join("") + "</div></div>", "order") + "</section>";
   }
   function affairsHtml(D) {
     const st = Object.entries(D.执事名册);
@@ -3648,21 +3669,18 @@
       ["精工以上坛场设施", facilities(D).some((f) => ALTAR_WORDS.some((w) => f.名.includes(w) || f.用途.includes(w)) && f.档次 !== "粗成")],
       ["信众五十人以上", D.教务.信众 >= 50]
     ];
-    return '<section class="mz-win mz-on">' + tabs("教务", [{ id: "steward", label: "执事", n: cn(st.length) + "／十二席", red: st.length >= LIMITS.执事名册 }, { id: "consort", label: "明妃", n: cn(cs.length) + "／六席", red: cs.length >= LIMITS.明妃录 }, { id: "rite", label: "法会", n: cooling ? "暂休" : "待办" }]) + pane("教务", "steward", '<div class="mz-folio mz-grid mz-c4">' + sCards.join("") + "</div>", "steward") + pane("教务", "consort", wh("明妃法座", cn(cs.length) + "位／六席") + '<div class="mz-folio mz-grid mz-c3">' + cCards.join("") + "</div>", "steward") + pane("教务", "rite", '<div class="mz-rite-pic"><img src="' + asset(RITE_PIC) + '" alt=""></div>' + wh("上次法会", D.教务.上次法会 ? esc3(D.教务.上次法会.replace("/", " ")) : "未曾办过") + '<div class="mz-none">' + (cooling ? "本月已办" : "本月可办") + "</div>" + wh("筹办门槛") + '<ul class="mz-ticks">' + ticks.map(([t, ok]) => "<li" + (ok ? ' class="mz-ok"' : "") + ">" + t + "</li>").join("") + '</ul><div class="mz-none">大法会关涉满城风云，须教主亲自开坛，此处仅照验规制</div>', "steward") + "</section>";
+    return '<section class="mz-win mz-on">' + tabs("教务", [{ id: "steward", label: "执事", n: cn(st.length) + "／十二席", red: st.length >= LIMITS.执事名册 }, { id: "consort", label: "明妃", n: cn(cs.length) + "／六席", red: cs.length >= LIMITS.明妃录 }, { id: "rite", label: "法会", n: cooling ? "暂休" : "待办" }]) + pane("教务", "steward", '<div class="mz-folio mz-fill">' + pagePic("执事") + '<div class="mz-grid mz-c4">' + sCards.join("") + "</div></div>", "steward") + pane("教务", "consort", '<div class="mz-folio mz-fill">' + pagePic("明妃") + wh("明妃法座", cn(cs.length) + "位／六席") + '<div class="mz-grid mz-c3">' + cCards.join("") + "</div></div>", "steward") + pane("教务", "rite", '<div class="mz-rite-pic"><img src="' + asset(RITE_PIC) + '" alt=""></div>' + wh("上次法会", D.教务.上次法会 ? esc3(D.教务.上次法会.replace("/", " ")) : "未曾办过") + '<div class="mz-none">' + (cooling ? "本月已办" : "本月可办") + "</div>" + wh("筹办门槛") + '<ul class="mz-ticks">' + ticks.map(([t, ok]) => "<li" + (ok ? ' class="mz-ok"' : "") + ">" + t + "</li>").join("") + '</ul><div class="mz-none">大法会关涉满城风云，须教主亲自开坛，此处仅照验规制</div>', "steward") + "</section>";
   }
   function cofferHtml(D) {
     const items = Object.entries(D.资粮.库藏);
     const total = items.length;
     const cap = storeCap(D);
-    const paneOf = (kind) => {
+    const free = Math.max(0, cap - total);
+    const rows = STORE_KINDS.map((kind) => {
       const mine = items.filter(([, v]) => v && v.类别 === kind);
-      const cards = mine.map(([名, v]) => card('<span class="mz-tag">' + esc3(kind) + "</span><b>" + esc3(名) + "</b>" + kv("效用", v.效用 || "")));
-      const free = cap - total;
-      let empties = free > 0 ? Math.max(1, (4 - mine.length % 4) % 4) : 0;
-      empties = Math.min(empties, free);
-      for (let i = 0; i < empties; i++) cards.push(empty());
-      return '<div class="mz-folio mz-grid mz-c4">' + (cards.length ? cards.join("") : '<div class="mz-none">屉中无物</div>') + "</div>";
-    };
+      return '<div class="mz-store-row"><div class="mz-store-head"><img class="mz-store-pic" src="' + asset(STORE_PIC[kind]) + '" alt=""><span>' + kind + "</span><b>" + (mine.length ? cn(mine.length) + "件" : "无") + '</b></div><div class="mz-grid mz-c4">' + mine.map(([名, v]) => '<div class="mz-card' + (String(v.效用 || "").length > 28 ? " mz-wide" : "") + '"><b>' + esc3(名) + "</b>" + kv("效用", v.效用 || "") + "</div>").join("") + "</div></div>";
+    }).join("");
+    const storePane = '<div class="mz-folio mz-store">' + rows + (free ? '<div class="mz-store-row mz-store-spare"><div class="mz-store-head"><span>余屉</span><b>' + cn(free) + '屉</b></div><div class="mz-grid mz-c4">' + empty().repeat(free) + "</div></div>" : "") + "</div>";
     const ready = CRAFT.map((c) => shopReady(D, c));
     const pickWhys = CRAFT.map((c) => craftPickWhys(D, c));
     const firstOk = pickWhys.findIndex((w) => !w.length);
@@ -3671,11 +3689,9 @@
     const crList = CRAFT.filter((c, i) => ready[i]).map((c) => c.kind);
     const craftForm = '<div class="mz-wrow mz-craftrow"><div class="mz-wcol mz-shoplist">' + wh("作坊") + '<div class="mz-picks mz-col">' + shops + '</div></div><form id="mz-craft-form" class="' + CRAFT_FORM + '" onsubmit="return false">' + wh("制作") + '<label>物名<input name="物名" placeholder="醉仙散"></label><label class="mz-grow">效用<textarea name="效用" rows="3" placeholder="饮之如坠云雾，半个时辰方醒"></textarea></label><div class="mz-none">拨资开炉，片刻功成，归入库藏</div><div class="mz-build-foot"><span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "craft", !gate.length && firstOk >= 0, gate.length ? gate.join(" ") : "无可用作坊", " mz-lg") + "</div></form></div>" + basketHtml("craft", craftBasket);
     return '<section class="mz-win mz-on">' + tabs("库藏", [
-      { id: "drug", label: "药品", n: cn(kindCount(D.资粮.库藏, "药品")) },
-      { id: "tool", label: "道具", n: cn(kindCount(D.资粮.库藏, "道具")) },
-      { id: "ritual", label: "法器", n: cn(kindCount(D.资粮.库藏, "法器")) },
+      { id: "store", label: "库藏", n: cn(total) + "／" + cn(cap) + "屉" },
       { id: "craft", label: "工坊", n: crList.length ? "可制" + crList.join("／") : "无坊" }
-    ], "共" + cn(total) + "／" + cn(cap) + "屉") + pane("库藏", "drug", paneOf("药品"), "drug") + pane("库藏", "tool", paneOf("道具"), "drug") + pane("库藏", "ritual", paneOf("法器"), "drug") + pane("库藏", "craft", '<div class="mz-folio mz-fill">' + craftForm + "</div>", "drug") + "</section>";
+    ]) + pane("库藏", "store", storePane, "store") + pane("库藏", "craft", '<div class="mz-folio mz-fill">' + craftForm + "</div>", "store") + "</section>";
   }
   function settingsHtml() {
     const mode = getPref("optSend", "now");
