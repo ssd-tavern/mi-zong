@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "2.0.4";
+  var CDN_TAG = "2.0.5";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "ticket-notice.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "plaque-entry.webp", "silk-board-core.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp"];
+  var PRELOAD_ASSETS = ["bg-lacquer-red.webp", "paper-scroll.webp", "plaque-header.webp", "seal-chi.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "map-panorama.webp", "paper-whisper.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "card-calling.webp", "slip-title.webp", "paper-folded.webp", "paper-ledger.webp", "card-ledger.webp", "slip-ledger.webp", "icon-lotus.webp", "lotus-rank.webp", "seal-storm.webp", "map-changan.webp", "plaque-entry.webp", "silk-board-core.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp"];
   var PRELOAD_LANES = 3;
   var SEL = {
     entry: "mz-entry",
@@ -39,7 +39,6 @@
     delCancel: "mz-del-cancel",
     delConfirm: "mz-del-confirm",
     jump: "mz-jump",
-    crisis: "mz-crisis",
     corner: "mz-corner",
     lift: "mz-lift",
     liftTitle: "mz-lift-title",
@@ -219,6 +218,20 @@
   ];
   var FAC_PIC = { 丹房: "fac-danfang.webp", 宿曜星堂: "fac-xingtang.webp", 居士客房: "fac-kefang.webp", 护摩火坛: "fac-huotan.webp", 曼荼罗密坛: "fac-mitan.webp", 温汤池: "fac-wentang.webp", 机关声光室: "fac-jiguan.webp", 熔金工坊: "fac-rongjin.webp", 夹壁密档: "fac-midang.webp", 暗室地牢: "fac-dilao.webp", 库房: "fac-kufang.webp", 无尽藏柜坊: "fac-guifang.webp" };
   var OWN_PIC = { 粗成: "own-1-rough.webp", 精工: "own-2-fine.webp", 天工: "own-3-grand.webp" };
+  var CRISIS_NOTE = {
+    不良人索贿敲诈: "京兆府不良人借查案为由闯入破庙搜查，借机坐索大笔常例钱。",
+    金吾卫夜查突袭: "金吾卫巡夜搜捕逃犯或查抄私铸钱，无预警围封城南荒野，盘查出入车马与僧道。",
+    城门香药查扣: "城门守卒根据密报突击开箱，查扣了教团通过暗市采购的西域曼陀罗等原料，押货牙人连人带货被扣。",
+    道门细作暗探: "玄都观或道门派遣的细作伪装求法入寺，暗中打探地宫入口与药炉线索。",
+    官寺恶僧寻衅: "官寺指使的市井泼皮在教团法会前夕砸毁坛场、泼洒污物，试图破坏声誉。",
+    贵妇夫家围门索人: "某位出入内坛的贵妇夜不归宿，其夫家带人围堵城南破庙索要女眷。",
+    千金神思恍惚露馅: "受灌千金归家后受药力影响言语恍惚，提及地宫秘仪，家族长辈已生疑并严加盘问。",
+    西域商道截杀断供: "边关战乱截断商道，西域香药原料断供，暗市药价大涨，已受药信徒渐显戒断焦躁。",
+    外围牙人卷款背叛: "负责引荐香客的居士私吞供养款项，备妥假户籍正欲潜逃外州。",
+    常例拖欠: "本月常例钱拖欠未交，不良人上门坐索、扬言查封，索要数额远超欠额。",
+    道门细作混入信众: "新入教香客举止殷勤但频频打听地宫路径与药方，来历形迹可疑。",
+    信众受审告发地宫: "一名信徒因他事被官府拘捕受审，受刑不过供出城南破庙深夜聚众与地下室之事；差役正核查口供。"
+  };
   var LOAN_PIC = "loan-guifang.webp";
   var PAGE_PIC = { 把柄: "banner-handle.webp", 执事: "banner-steward.webp", 明妃: "banner-consort.webp", 委托: "banner-order.webp" };
   var RITE_PIC = "rite-grand.webp";
@@ -787,33 +800,9 @@
 #mz-send:hover { filter: drop-shadow(0 12px 24px rgba(0,0,0,.6)); translate: 0 -2px; }
 #mz-send:active { translate: 0 2px; }
 
-/* ==== 危机段（桌面端不显，手机端替代悬浮朱票，见 phone.js） ==== */
-/* translateZ 提独立合成层：滤镜结果被缓存，滚动时不逐帧重算，否则投影闪烁 */
-.mz-crisis-line { display: none; position: relative; width: 196px; margin: 8px auto 22px;
-  transform: translateZ(0);
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.5)) drop-shadow(0 8px 14px rgba(0,0,0,.28)); }
-.mz-crisis-line img { width: 100%; }
-.mz-crisis-line .mz-ticket-text { position: absolute; top: 12%; left: 10%; right: 19%; bottom: 12%;
-  display: flex; flex-direction: column; justify-content: center; }
-.mz-crisis-line .mz-ticket-text b { font-size: 12.5px; letter-spacing: 1.5px; color: var(--cinnabar); font-weight: 600; }
-.mz-crisis-line .mz-ticket-text .mz-sub { font-size: 9px; color: var(--ink-dim); margin-top: 3px; letter-spacing: .3px; line-height: 1.5; }
-
-/* ==== 朱票事件层（本月危机非空时钉在正文列右缘外，顶端与首楼齐） ==== */
-#mz-crisis { display: none; position: absolute; z-index: 9; top: calc(var(--top-h) + 48px);
-  /* 列外留白不够时向纸内让位，不出主区 */
-  left: min(calc(100% - var(--col-side) + 8px), calc(100% - 204px));
-  width: 212px; rotate: 4deg; cursor: grab; touch-action: none;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.7)) drop-shadow(0 12px 22px rgba(0,0,0,.5)); }
-#mz-shell-root[data-crisis] #mz-crisis { display: block; animation: stamp var(--t-slow) var(--ease-paper); }
-@keyframes stamp {
-  0% { opacity: 0; scale: 1.1; translate: 0 -10px; filter: drop-shadow(0 6px 4px rgba(0,0,0,.5)) drop-shadow(0 28px 40px rgba(0,0,0,.35)); }
-  55% { opacity: 1; scale: .985; translate: 0 0; filter: drop-shadow(0 1px 1px rgba(0,0,0,.7)) drop-shadow(0 6px 12px rgba(0,0,0,.5)); }
-  100% { scale: 1; } }
-#mz-crisis img { width: 100%; }
-#mz-crisis .mz-ticket-text { position: absolute; top: 12%; left: 10%; right: 19%; bottom: 12%;
-  display: flex; flex-direction: column; justify-content: center; }
-#mz-crisis .mz-ticket-text b { font-size: 13.5px; letter-spacing: 2px; color: var(--cinnabar); font-weight: 600; }
-#mz-crisis .mz-ticket-text .mz-sub { font-size: 9.5px; color: var(--ink-dim); margin-top: 3px; letter-spacing: .3px; line-height: 1.5; }
+/* ==== 危机小字：脚行右块与心声同行，朱字；展开行走 mz-ff-detail ==== */
+.mz-ff-cbtn { color: var(--cinnabar); }
+.mz-ff-cbtn.mz-open { text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgba(160,52,38,.5); }
 
 `;
 
@@ -1332,7 +1321,6 @@
 #mz-viewer img { max-width: 92vw; max-height: 88vh; box-shadow: 0 12px 48px rgba(0,0,0,.6); }
 #mz-viewer span { font-size: var(--fs-read); letter-spacing: 4px; text-indent: 4px; color: rgba(240,230,205,.85); }
 .mz-thumbs i { background-size: cover; background-position: center; }
-#mz-crisis.mz-moved { left: var(--cx); top: var(--cy); }
 @keyframes mz-flash { 0% { color: var(--cinnabar); text-shadow: 0 0 10px rgba(160,52,38,.55); translate: 0 -2px; }
   30% { color: var(--cinnabar); text-shadow: 0 0 0 rgba(160,52,38,0); translate: 0 0; } }
 .mz-flash b, .mz-flash.mz-tb-time { animation: mz-flash 1.4s var(--ease-out); }
@@ -1424,9 +1412,6 @@
   .mz-ff-vars { flex: 1 1 100%; }
   .mz-ff-vars:empty { display: none; }
 
-  /* 手机端撤悬浮朱票，换卷末危机段 */
-  #mz-shell-root[data-crisis] #mz-crisis { display: none; }
-  .mz-crisis-line { display: block; }
 
   /* ==== 浮窗：贴底整幅纸，上留一指宽遮罩可点关，题签仍悬出纸上缘 ==== */
   #mz-lift { align-items: flex-end; }
@@ -2032,10 +2017,6 @@
   var genBaselineId = null;
   function setGenerating(on) {
     sending = on;
-    if (on) {
-      const cl = doc.querySelector("#" + SEL.paper + " .mz-crisis-line");
-      if (cl) cl.remove();
-    }
     const ta = doc.getElementById(SEL.textarea);
     const send = doc.getElementById(SEL.send);
     const regen = doc.getElementById(SEL.regen);
@@ -2726,7 +2707,7 @@
         log.insertAdjacentHTML("beforeend", optionsHtml(opts));
       }
     }
-    syncCrisisLine(log, sending ? "" : readMVU().暗流.本月危机);
+    syncCrisisFoot(log);
   }
   function updateTurnContent(el, data) {
     if (el.classList.contains("mz-editing")) return;
@@ -2932,6 +2913,38 @@
   function footVoices(d) {
     return d && d.delta ? CAST.filter((n) => d.delta["心声." + n] || d.delta["回想." + n]) : [];
   }
+  var crisisMid = null;
+  function crisisNow() {
+    const a = readMVU().暗流 || {};
+    return { name: String(a.本月危机 || "") };
+  }
+  function crisisGroupHtml(name, isOpen) {
+    return '<span class="mz-ff-label">危机</span><button class="mz-ff-voice mz-ff-cbtn' + (isOpen ? " mz-open" : "") + '" data-foot-item="crisis">' + escapeHtml(name) + "</button>";
+  }
+  function crisisPanelHtml(name) {
+    return '<div class="mz-ff-detail mz-ff-cpanel mz-show">' + escapeHtml(CRISIS_NOTE[name] || FORM_MSG.朱票副题) + "</div>";
+  }
+  function syncCrisisFoot(log) {
+    if (!log) return;
+    const turns = log.querySelectorAll(".mz-turn.mz-gm");
+    const last = turns.length ? turns[turns.length - 1] : null;
+    const mid = last ? +last.dataset.mid : NaN;
+    const prev = crisisMid;
+    crisisMid = Number.isInteger(mid) ? mid : null;
+    const redo = /* @__PURE__ */ new Set();
+    if (prev != null && prev !== crisisMid) redo.add(prev);
+    if (crisisMid != null) redo.add(crisisMid);
+    redo.forEach((m) => {
+      const t = log.querySelector('.mz-turn.mz-gm[data-mid="' + m + '"]');
+      if (!t) return;
+      const wrap = t.querySelector(":scope > .mz-ff-wrap");
+      const inner = floorFootInner(m);
+      if (wrap) {
+        if (inner) wrap.innerHTML = inner;
+        else wrap.remove();
+      } else if (inner) t.insertAdjacentHTML("beforeend", '<div class="mz-ff-wrap" data-foot-mid="' + m + '">' + inner + "</div>");
+    });
+  }
   function voiceCardHtml(mid, name, tab) {
     const d = floorData(mid) || { girls: {} };
     const g = d.girls[name] || { 心声: "", 回想: {} };
@@ -2952,13 +2965,18 @@
     const d = floorData(mid);
     if (!d) return "";
     const items = footItems(d), voices = footVoices(d);
-    if (!items.length && !voices.length) return "";
+    const crisis = mid === crisisMid ? crisisNow() : null;
+    const cname = crisis ? crisis.name : "";
+    if (!items.length && !voices.length && !cname) return "";
     const open = String(footOpen.get(mid) || "").split(":");
     const openKey = open[0] === "stat" ? open.join(":") : "";
     const openName2 = open[0] === "voice" ? open[1] : "";
-    const row = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length ? '<div class="mz-ff-side"><span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') + "</div>" : "") + "</div>";
+    const openCrisis = open[0] === "crisis" && !!cname;
+    const row = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length || cname ? '<div class="mz-ff-side">' + (cname ? crisisGroupHtml(cname, openCrisis) : "") + (voices.length ? '<span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') : "") + "</div>" : "") + "</div>";
     let panel = "";
-    if (openKey) {
+    if (openCrisis) {
+      panel = crisisPanelHtml(cname);
+    } else if (openKey) {
       const it = items.find((x) => x.key === openKey);
       if (it) panel = '<div class="mz-ff-detail mz-show">' + it.line + "</div>";
     } else if (openName2 && CAST.includes(openName2)) {
@@ -2996,20 +3014,6 @@
   var storyHtmlCache = /* @__PURE__ */ new Map();
   var thoughtFoldOpen = /* @__PURE__ */ new Set();
   var lastRenderedRef = /* @__PURE__ */ new Map();
-  function crisisLineHtml(name) {
-    return '<div class="mz-crisis-line"><img src="' + asset("ticket-notice.webp") + '" alt="官府朱票"><div class="mz-ticket-text"><b>' + escapeHtml(name) + '</b><div class="mz-sub">' + FORM_MSG.朱票副题 + "</div></div></div>";
-  }
-  function syncCrisisLine(log, name) {
-    if (!log) return;
-    const cur = log.querySelector(".mz-crisis-line");
-    if (!name) {
-      if (cur) cur.remove();
-      return;
-    }
-    if (cur && !cur.nextElementSibling && cur.querySelector("b").textContent === name) return;
-    if (cur) cur.remove();
-    log.insertAdjacentHTML("beforeend", crisisLineHtml(name));
-  }
 
   // src/12-text.js
   function escapeHtml(s) {
@@ -3247,19 +3251,7 @@
     }
   }
   function renderCrisis(D) {
-    const root = doc.getElementById(SHELL_ID);
-    const c = doc.getElementById(SEL.crisis);
-    if (!root || !c) return;
-    const name = D.暗流.本月危机;
-    if (name) {
-      root.setAttribute("data-crisis", "");
-      c.querySelector(".mz-ticket-text b").textContent = name;
-      c.querySelector(".mz-ticket-text .mz-sub").textContent = FORM_MSG.朱票副题;
-    } else {
-      root.removeAttribute("data-crisis");
-      c.classList.remove("mz-moved");
-    }
-    syncCrisisLine(doc.getElementById(SEL.paper), name);
+    syncCrisisFoot(doc.getElementById(SEL.paper));
   }
   function renderAll(force, Darg) {
     const D = Darg || readMVU();
@@ -4100,10 +4092,6 @@
     </div>
     <div id="${SEL.delbar}"><span id="${SEL.delCount}">点选要删去的记录</span><button id="${SEL.delCancel}">取消</button><button class="mz-danger" id="${SEL.delConfirm}" disabled>删除</button></div>
     <button id="${SEL.jump}" title="回至卷尾"></button>
-    <div id="${SEL.crisis}">
-      <img src="${asset("ticket-notice.webp")}" alt="官府朱票">
-      <div class="mz-ticket-text"><b></b><div class="mz-sub"></div></div>
-    </div>
   </div>
   <div id="${SEL.mscrim}"></div>
   <div id="${SEL.lift}"><div class="mz-held"><h3 id="${SEL.liftTitle}"></h3><button class="mz-lift-x" title="收窗">${ICO.close}</button><div class="mz-held-body" id="${SEL.liftBody}"></div></div></div>
@@ -4432,48 +4420,6 @@
       ensureGate();
     }
   });
-  function clampCrisis(c, left, top) {
-    const off = c.parentElement.getBoundingClientRect();
-    const w = window.parent.innerWidth, h = window.parent.innerHeight;
-    c.style.setProperty("--cx", Math.min(Math.max(left, 4 - off.left), w - off.left - c.offsetWidth - 4) + "px");
-    c.style.setProperty("--cy", Math.min(Math.max(top, 4 - off.top), h - off.top - c.offsetHeight - 4) + "px");
-  }
-  function onCrisisResize() {
-    const c = doc.getElementById(SEL.crisis);
-    if (!c || !c.classList.contains("mz-moved")) return;
-    clampCrisis(c, c.offsetLeft, c.offsetTop);
-  }
-  function bindCrisisDrag() {
-    const c = doc.getElementById(SEL.crisis);
-    if (!c || c.dataset.bound) return;
-    c.dataset.bound = "1";
-    let drag = null;
-    const endDrag = () => {
-      drag = null;
-      c.style.cursor = "";
-    };
-    c.addEventListener("pointerdown", (e) => {
-      drag = { x: e.clientX, y: e.clientY, left: c.offsetLeft, top: c.offsetTop, moved: false };
-      c.setPointerCapture(e.pointerId);
-    });
-    c.addEventListener("pointermove", (e) => {
-      if (!drag) return;
-      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
-      if (!drag.moved && Math.abs(dx) + Math.abs(dy) <= 4) return;
-      drag.moved = true;
-      clampCrisis(c, drag.left + dx, drag.top + dy);
-      c.classList.add("mz-moved");
-      c.style.cursor = "grabbing";
-    });
-    c.addEventListener("pointerup", endDrag);
-    c.addEventListener("pointercancel", endDrag);
-    c.addEventListener("lostpointercapture", endDrag);
-    try {
-      window.parent.addEventListener("resize", onCrisisResize);
-    } catch (e) {
-      dbg("crisisResize", e);
-    }
-  }
   async function init() {
     try {
       if (typeof waitGlobalInitialized === "function") await waitGlobalInitialized("Mvu");
@@ -4492,7 +4438,6 @@
     ensureEntry();
     ensureStoryDom();
     bindLift();
-    bindCrisisDrag();
     applyVisibility(prevVisible);
     try {
       doc.addEventListener("keydown", onDocKey);
@@ -4556,7 +4501,6 @@
   window.addEventListener("pagehide", () => {
     try {
       window.parent.removeEventListener("resize", positionPill);
-      window.parent.removeEventListener("resize", onCrisisResize);
       window.parent.removeEventListener("mz-shell-enter", onShellEnter);
       doc.removeEventListener("keydown", onDocKey);
       boundEvents.forEach(([name, fn]) => {
