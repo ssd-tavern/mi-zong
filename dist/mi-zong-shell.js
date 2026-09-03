@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.1";
+  var CDN_TAG = "3.0.2";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -161,9 +161,22 @@
     皇城宫阙: ["皇城", 48, 36.1]
   };
   var MINIMAP_PIN = { 城南道场: ["城南道场", 54, 85], 长安: ["长安", 55, 42], 城外: ["城外", 60, 12] };
-  var YEARS = ["会昌元年", "会昌二年", "会昌三年", "会昌四年", "会昌五年"];
-  var YEAR_SHORT = ["元年", "二年", "三年", "四年", "五年"];
-  var DOOM = ["赵归真入宫建醮", "勒令违戒僧尼还俗", "泽潞用兵搜刮铜钱", "强拆私刹禁绝俗讲", "敕命尽毁天下佛寺"];
+  var ERAS = { 会昌: 841, 大中: 847, 咸通: 860, 乾符: 874, 广明: 880, 中和: 881, 光启: 885, 文德: 888, 龙纪: 889, 大顺: 890, 景福: 892, 乾宁: 894, 光化: 898, 天复: 901, 天祐: 904 };
+  function eraToYear(s) {
+    const m = /^(..)(元|[一二三四五六七八九十]+)年$/.exec(String(s || "").trim());
+    if (!m || !ERAS[m[1]]) return -1;
+    let n = 0, w = 0;
+    for (const c of m[2]) {
+      if (c === "元") n = 1;
+      else if (c === "十") {
+        n += (w || 1) * 10;
+        w = 0;
+      } else w = "一二三四五六七八九".indexOf(c) + 1;
+    }
+    return ERAS[m[1]] + n + w - 1;
+  }
+  var DOOM_BY_YEAR = { 841: "赵归真入宫建醮", 842: "勒令违戒僧尼还俗", 843: "泽潞用兵搜刮铜钱", 844: "强拆私刹禁绝俗讲", 845: "敕命尽毁天下佛寺", 846: "武宗崩 宣宗诛道复寺" };
+  var doomOf = (y) => DOOM_BY_YEAR[y] || (y >= 860 ? "会昌旧事已远" : y >= 847 ? "大中复佛 天下建寺" : DOOM_BY_YEAR[841]);
   var MONTHS = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
   var MONTH_ALIAS = { 一月: "正月", 腊月: "十二月" };
   var GATE = { 开: "卯辰巳午未申", 暮鼓: "酉", 闭: "戌亥子丑寅" };
@@ -182,7 +195,6 @@
     [10, 15, "冬至", 0, "官府休假，晚辈献鞋袜，亲友走动"],
     [11, 30, "岁除", 0, "傩队沿街驱疫，各家通宵守岁"]
   ];
-  var STORM_CLS = { 低: "mz-dim", 中: "", 高: "mz-red" };
   var HALLS = ["破败草庵", "庄严精舍", "敕赐法堂"];
   var HALL_PRICE = { 庄严精舍: 200, 敕赐法堂: 1e3 };
   var HALL_LOOK = { 破败草庵: "殿宇陈旧，泥佛落尘，香客罕至", 庄严精舍: "殿阁一新，钟磬有声，香客盈门", 敕赐法堂: "朝廷题额高悬，自此有名分在身" };
@@ -218,20 +230,6 @@
   ];
   var FAC_PIC = { 丹房: "fac-danfang.webp", 宿曜星堂: "fac-xingtang.webp", 居士客房: "fac-kefang.webp", 护摩火坛: "fac-huotan.webp", 曼荼罗密坛: "fac-mitan.webp", 温汤池: "fac-wentang.webp", 机关声光室: "fac-jiguan.webp", 熔金工坊: "fac-rongjin.webp", 夹壁密档: "fac-midang.webp", 暗室地牢: "fac-dilao.webp", 库房: "fac-kufang.webp", 无尽藏柜坊: "fac-guifang.webp" };
   var OWN_PIC = { 粗成: "own-1-rough.webp", 精工: "own-2-fine.webp", 天工: "own-3-grand.webp" };
-  var CRISIS_NOTE = {
-    不良人索贿敲诈: "京兆府不良人借查案为由闯入破庙搜查，借机坐索大笔常例钱。",
-    金吾卫夜查突袭: "金吾卫巡夜搜捕逃犯或查抄私铸钱，无预警围封城南荒野，盘查出入车马与僧道。",
-    城门香药查扣: "城门守卒根据密报突击开箱，查扣了教团通过暗市采购的西域曼陀罗等原料，押货牙人连人带货被扣。",
-    道门细作暗探: "玄都观或道门派遣的细作伪装求法入寺，暗中打探地宫入口与药炉线索。",
-    官寺恶僧寻衅: "官寺指使的市井泼皮在教团法会前夕砸毁坛场、泼洒污物，试图破坏声誉。",
-    贵妇夫家围门索人: "某位出入内坛的贵妇夜不归宿，其夫家带人围堵城南破庙索要女眷。",
-    千金神思恍惚露馅: "受灌千金归家后受药力影响言语恍惚，提及地宫秘仪，家族长辈已生疑并严加盘问。",
-    西域商道截杀断供: "边关战乱截断商道，西域香药原料断供，暗市药价大涨，已受药信徒渐显戒断焦躁。",
-    外围牙人卷款背叛: "负责引荐香客的居士私吞供养款项，备妥假户籍正欲潜逃外州。",
-    常例拖欠: "本月常例钱拖欠未交，不良人上门坐索、扬言查封，索要数额远超欠额。",
-    道门细作混入信众: "新入教香客举止殷勤但频频打听地宫路径与药方，来历形迹可疑。",
-    信众受审告发地宫: "一名信徒因他事被官府拘捕受审，受刑不过供出城南破庙深夜聚众与地下室之事；差役正核查口供。"
-  };
   var LOAN_PIC = "loan-guifang.webp";
   var PAGE_PIC = { 把柄: "banner-handle.webp", 执事: "banner-steward.webp", 明妃: "banner-consort.webp", 委托: "banner-order.webp" };
   var RITE_PIC = "rite-grand.webp";
@@ -246,8 +244,7 @@
     兴造多: (项, 贯2) => "【兴造】" + cn(项.length) + "事同举：" + 项.join("、") + "已一并破土动工，账房共扣" + cn(贯2) + "贯，此笔不再入账。",
     工巧多: (项, 贯2) => "【工巧】" + cn(项.length) + "事同炉：" + 项.join("、") + "已一并拨资开炉，账房共扣" + cn(贯2) + "贯，此笔不再入账。",
     放贷: (户, 贯2) => "【无尽藏】放贷" + cn(贯2) + "贯与" + 户 + "，立契画押，账房已出" + cn(贯2) + "贯，此笔不再入账。",
-    勒索: (名) => "【勒索】以罪业密簿所载把柄，向" + 名 + "开口勒索。",
-    朱票副题: "祸事临门 须教主亲周旋"
+    勒索: (名) => "【勒索】以罪业密簿所载把柄，向" + 名 + "开口勒索。"
   };
   var DIG = "零一二三四五六七八九";
   function cnBelow10k(n) {
@@ -285,13 +282,14 @@
   var 总文 = (sd) => Math.round((Number(_.get(sd, "资粮.铜钱")) || 0) * 1e3);
   function parseTime(s) {
     const seg = String(s || "").split("/").map((x) => x.trim());
-    const y = YEARS.indexOf(seg[0]);
+    const ad = eraToYear(seg[0]);
+    const y = ad < 0 ? -1 : ad - 841;
     const md = seg[1] || "";
     let mName = MONTHS.concat(Object.keys(MONTH_ALIAS)).filter((m) => md.startsWith(m)).sort((a, b) => b.length - a.length)[0] || null;
     const dayStr = mName ? md.slice(mName.length).replace(/日$/, "") : "";
     if (mName) mName = MONTH_ALIAS[mName] || mName;
     const day = cnToInt(dayStr);
-    return { 年序号: y, 月序号: mName ? MONTHS.indexOf(mName) : -1, 月名: mName, 日: day, 日文: dayStr, 时辰: seg[2] || "", 月标: y >= 0 && mName ? seg[0] + "/" + mName : "" };
+    return { 年序号: y, 年名: seg[0] || "", 公元: ad, 月序号: mName ? MONTHS.indexOf(mName) : -1, 月名: mName, 日: day, 日文: dayStr, 时辰: seg[2] || "", 月标: y >= 0 && mName ? seg[0] + "/" + mName : "" };
   }
   function cnToInt(s) {
     s = String(s || "").replace(/^初/, "");
@@ -392,7 +390,6 @@
       核心女主: girls,
       执事名册: obj(g("执事名册")),
       明妃录: obj(g("明妃录")),
-      暗流: { 风波: str(g("暗流.风波")) || "低", 本月危机: str(g("暗流.本月危机")).trim() },
       系统: { 已解锁: (Array.isArray(g("系统.已解锁")) ? g("系统.已解锁") : []).map(str) },
       _empty: !sdArg && !currentStat()
     };
@@ -405,7 +402,7 @@
 #mz-shell-root {
   /* 一次切断宿主 body 的继承（投影、字体平滑、字号、color-scheme 都从那来），壳要什么下面重新声明 */
   all: initial;
-  /* 字阶九档，见 前端信息架构.md「字体与字阶」 */
+  /* 字阶九档，见 docs/前端速记.md */
   --fs-title: 28px; --ls-title: 14px;
   --fs-head: 20px; --ls-head: 5px;
   --fs-plaque: 14px; --ls-plaque: 6px;
@@ -417,7 +414,7 @@
   --fs-read: 13.5px; --ls-read: .5px;
   --fs-tag: 12px; --ls-tag: 2px;
   --fs-btn: 13.5px; --ls-btn: 2px; --fs-btn-lg: 16px; --ls-btn-lg: 6px;
-  /* 三档时长＋两条曲线，全前端不得另写数字，见 前端信息架构.md「动效」 */
+  /* 三档时长＋两条曲线，全前端不得另写数字 */
   --t-fast: .16s; --t-mid: .28s; --t-slow: .48s;
   --ease-out: cubic-bezier(.22,.61,.36,1);
   --ease-paper: cubic-bezier(.16,.84,.3,1);
@@ -528,7 +525,7 @@
 #mz-minimap .mz-map-pin::after { content: attr(data-label); position: absolute; left: 13px; top: -4px;
   font-size: 10.5px; letter-spacing: 1px; color: var(--txt-dim); white-space: nowrap;
   background: var(--bg3); padding: 1px 5px; }
-/* ==== 舆图下状态整表：地界／(五读数 dup)／风波／灭佛大势带进度条，行式统一 ==== */
+/* ==== 舆图下状态整表：地界／(四读数 dup)／灭佛大势带进度条，行式统一 ==== */
 #mz-minimap .mz-doom { background: color-mix(in srgb, var(--bg0) 60%, #000);
   border: 1px solid var(--gold-line); border-top: 0; padding: 6px 10px 8px; }
 .mz-doom .mz-sr-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
@@ -543,11 +540,6 @@
 /* dup：顶栏已有的五项，桌面隐藏、仅手机端补显 */
 .mz-doom .mz-sr-dup { display: none; }
 /* 灭佛大势：一行「名／年号」＋当年国策小字＋通栏进度条 */
-.mz-doom .mz-doom-row { margin-top: 3px; padding-top: 5px; border-top: 1px solid rgba(var(--gold-rgb), .12); }
-.mz-doom-evt { font-size: 11.5px; letter-spacing: 1px; color: var(--gold); margin: 1px 0 5px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mz-doom .mz-bar { height: 5px; background: rgba(var(--gold-rgb), .15); }
-.mz-doom .mz-bar i { display: block; height: 100%; background: var(--gold); }
 
 /* ==== 玩法入口目录（一列六条，条间一道自左向右淡出的金线） ==== */
 .mz-nav { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 1px; padding-top: 2px; overflow-y: auto; }
@@ -724,12 +716,12 @@
 /* 分隔竖线挂在项自己身上，项一隐线也跟着走 */
 .mz-tb-i::before { content: ''; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
   width: 1px; height: 26px; background: rgba(var(--gold-rgb), .22); }
-/* 读数三态：平象牙／利金（钱、人、节令当日、弛禁）／危红（宵禁、常例临期、风波高），灰是无 */
+/* 读数三态：平象牙／利金（钱、人、节令当日、弛禁）／危红（宵禁），灰是无 */
 .mz-tb-i b { font-size: 14px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-i b.mz-gain { color: var(--gold-hi); }
 .mz-tb-i b.mz-red { color: var(--red); }
 .mz-tb-i b.mz-dim { color: var(--txt-faint); font-weight: 500; }
-/* 顶栏瘦身档：读数挤到工具栏前，舍常例与节令（更新最少），保住时辰／宵禁／铜钱／信众／风波 */
+/* 顶栏瘦身档：读数挤到工具栏前，舍节令与灭佛（更新最少），保住时辰／宵禁／铜钱／信众 */
 @container mz (max-width: 1300px) { .mz-tb-thin { display: none; } }
 
 /* 槽宽 9px（见 tokens.js）两边各占一道，从总留白里扣掉，正文列才与书写区左右对齐 */
@@ -805,10 +797,6 @@
 }
 #mz-send:hover { filter: drop-shadow(0 12px 24px rgba(0,0,0,.6)); translate: 0 -2px; }
 #mz-send:active { translate: 0 2px; }
-
-/* ==== 危机小字：脚行右块与心声同行，朱字；展开行走 mz-ff-detail ==== */
-.mz-ff-cbtn { color: var(--red); }
-.mz-ff-cbtn.mz-open { text-decoration: underline; text-underline-offset: 5px; text-decoration-color: rgba(var(--red-rgb), .5); }
 
 `;
 
@@ -1181,11 +1169,6 @@
 .mz-atlas .mz-lbl { position: absolute; translate: -50% -50%; font-size: 12px; letter-spacing: 1px; color: var(--txt-dim); white-space: nowrap;
   background: color-mix(in srgb, var(--bg0) 82%, transparent); padding: 1px 5px; pointer-events: none; }
 .mz-atlas .mz-lbl.mz-cur { color: var(--red); font-weight: 600; font-size: 13px; }
-/* 风波印：方框＋三档字色 */
-.mz-atlas .mz-storm { position: absolute; top: 8px; right: 8px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--gold-line);
-  font-size: 16px; letter-spacing: 0; font-weight: 700; color: var(--txt-dim); }
-.mz-atlas .mz-storm.mz-low { color: var(--txt-dim); } .mz-atlas .mz-storm.mz-mid { color: var(--gold-hi); } .mz-atlas .mz-storm.mz-high { color: var(--red); }
 .mz-atlas .mz-zones { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
 .mz-atlas .mz-zlist { display: flex; flex-direction: column; gap: 2px; font-size: 14.5px; letter-spacing: 1px; color: var(--txt-dim); }
 .mz-atlas .mz-zlist li { list-style: none; padding: 4px 8px; display: flex; justify-content: space-between; }
@@ -1196,10 +1179,6 @@
   background: color-mix(in srgb, var(--bg0) 90%, transparent); outline: 1px solid rgba(var(--red-rgb),.45); }
 .mz-atlas .mz-abroad-mark b { font-weight: 400; font-size: 11px; color: var(--txt-dim); margin-right: 6px; }
 .mz-doomline { display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; letter-spacing: 1px; color: var(--txt-faint); margin-top: auto; }
-.mz-doomline .mz-yrs { display: flex; gap: 4px; }
-.mz-doomline .mz-yrs span { flex: 1; text-align: center; padding: 4px 0; border: 1px solid var(--line-soft); }
-.mz-doomline .mz-yrs span.mz-cur { color: var(--gold-hi); border-color: var(--gold); background: rgba(var(--gold-rgb),.12); font-weight: 600; }
-.mz-doomline .mz-yrs span.mz-past { background: var(--bg4); }
 
 /* ==== 设置窗 ==== */
 .mz-set-group { display: flex; flex-direction: column; gap: 10px; }
@@ -1297,14 +1276,9 @@
 @media (prefers-reduced-motion: reduce) { #mz-shell-root, #mz-shell-root *, #mz-shell-root *::before, #mz-shell-root *::after, #mz-lift, #mz-lift * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 `;
 
-  // src/css/crisis.js
-  var crisis_default = `
-/* 弹字纪律：一律盖满整壳居中，背景短暂压暗并模糊，字印播完一起散去 */
-.mz-huo { position: absolute; inset: 0; z-index: 50; pointer-events: none;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
-  background: rgba(0,0,0,.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  animation: huo-veil 2.6s var(--ease-out) both; }
-@keyframes huo-veil { 0% { opacity: 0; } 15% { opacity: 1; } 75% { opacity: 1; } 100% { opacity: 0; } }
+  // src/css/stamp.js
+  var stamp_default = `
+/* 弹字纪律：一律盖满整壳居中，背景短暂压暗并模糊，写完揭幕一起散去 */
 /* 发光挂在字上、模糊挂在词上：关键帧的 filter 会整个替换同元素的 filter，两者同层就会互相盖掉 */
 .mz-huo-word { --glyph: min(260px, 36cqw); display: flex; gap: calc(var(--glyph) * .08);
   animation: huo-stamp 2.6s var(--ease-paper) both; }
@@ -1325,9 +1299,6 @@
 @keyframes veil-out { to { opacity: 0; } }
 @keyframes huo-stamp { 0% { opacity: 0; scale: 1.6; filter: blur(3px); } 14% { opacity: 1; scale: 1; filter: blur(0); }
   72% { opacity: 1; scale: 1; } 100% { opacity: 0; scale: 1.03; } }
-.mz-huo small { font-size: var(--fs-read); letter-spacing: 6px; text-indent: 6px; color: var(--gold-hi);
-  animation: huo-name 2.6s var(--ease-out) both; }
-@keyframes huo-name { 0%, 18% { opacity: 0; translate: 0 6px; } 32% { opacity: 1; translate: 0 0; } 72% { opacity: 1; } 100% { opacity: 0; } }
 `;
 
   // src/css/phone.js
@@ -1483,12 +1454,11 @@
 `;
 
   // src/03-theme.js
-  var SHELL_CSS = tokens_default + sides_default + story_default + lift_default + windows_default + extras_default + crisis_default + phone_default + armor_default;
+  var SHELL_CSS = tokens_default + sides_default + story_default + lift_default + windows_default + extras_default + stamp_default + phone_default + armor_default;
 
   // src/glyphs.js
   var GLYPH_H = 1e3;
   var GLYPHS = {
-    "祸": { w: 1e3, d: "M663 593Q676 585 723 602Q770 619 785 638Q792 648 794 656Q795 663 794 686Q794 719 788 726Q782 734 758 731Q737 730 732 722Q727 715 712 699Q698 683 686 666Q673 650 670 650Q667 650 664 636Q661 622 657 622Q655 621 655 616Q655 610 658 602Q660 595 663 593ZM585 133Q660 119 755 140Q799 149 810 154Q821 159 831 170Q841 181 841 191Q841 201 833 217Q825 233 816 240Q809 248 802 264Q794 280 777 294Q741 323 753 334Q765 346 749 371Q735 394 709 385Q697 380 683 380Q673 380 672 382Q671 383 675 387Q682 394 690 415L699 435L724 437Q765 440 832 453Q898 466 923 476Q951 485 961 514Q965 527 964 542Q963 557 955 594Q951 613 948 644Q945 676 940 692Q935 708 935 722Q935 737 932 739Q928 741 926 759Q921 795 912 818Q902 841 882 868Q838 927 797 933Q784 935 780 932Q775 930 762 919Q746 903 746 896Q746 889 734 880Q721 870 721 865Q721 861 704 839Q688 817 670 799Q655 783 646 762Q636 742 630 737Q623 732 623 729Q623 726 630 726Q637 725 644 726Q652 728 653 730Q655 738 676 748Q697 757 714 760Q735 765 759 771Q779 777 784 774Q789 771 796 747Q808 710 822 636Q836 562 837 531Q837 518 825 512Q813 506 775 497Q773 497 768 496Q716 485 706 486Q697 487 691 506Q691 507 690 507Q678 548 671 556Q667 560 667 565Q667 570 654 588Q642 605 642 610Q642 614 638 614Q634 614 632 621Q629 631 592 668Q555 704 536 714Q524 722 524 733Q523 744 532 773Q546 820 525 834Q514 842 506 839Q498 836 487 822Q475 805 472 790Q468 776 466 737Q460 615 458 603L456 594L441 603Q426 610 415 609Q404 608 389 597Q357 571 357 553Q357 543 352 543Q343 543 339 586Q335 629 332 742Q330 801 328 804Q325 806 330 823Q335 844 324 860Q313 875 293 876Q277 878 272 876Q266 873 264 863Q262 850 256 844Q249 837 249 810Q249 782 255 772Q260 762 262 714Q264 667 270 633Q275 599 272 595Q271 594 258 606Q244 619 231 634Q218 648 218 650Q218 652 196 670Q174 688 160 700Q145 713 121 730Q97 746 95 749Q89 756 74 765Q58 774 50 775Q35 777 36 772Q36 765 55 746Q74 727 90 708Q122 668 136 653Q143 646 143 644Q143 643 161 624Q179 604 179 599Q179 594 182 594Q184 594 199 575Q214 556 214 553Q214 551 224 538Q231 528 258 474Q284 421 288 408Q290 402 288 402Q286 402 263 417Q246 428 242 428Q239 428 232 437Q225 446 220 449Q215 452 201 446Q187 439 175 429Q166 421 164 417Q163 413 165 399Q167 379 168 378Q169 378 195 369Q234 356 284 333Q333 310 335 303Q337 296 344 298Q351 301 376 304Q402 306 415 317L428 330L422 348Q415 367 407 376Q371 416 368 424Q365 430 355 446Q345 463 346 470Q347 476 359 476Q372 476 398 481Q424 486 438 492Q448 496 457 488Q466 480 478 475Q488 469 526 459Q563 449 586 445Q599 442 602 439Q606 436 610 424Q614 406 627 393Q642 378 631 381Q626 383 612 390Q594 400 586 400Q579 400 570 388Q560 377 556 367Q554 355 546 337Q525 297 512 254Q500 211 500 186Q500 162 511 159Q518 159 536 149Q553 139 585 133ZM717 180Q704 175 662 173Q621 171 598 179Q575 187 571 196Q567 206 563 206Q560 206 560 212Q559 218 560 224Q562 231 565 233Q571 235 571 240Q571 246 574 253Q578 260 586 288Q595 313 602 318Q610 322 645 318Q678 316 678 310Q678 303 688 287Q710 249 718 222Q722 204 725 197Q730 190 729 188Q728 186 717 180ZM595 498Q595 491 593 489Q591 487 582 487Q540 490 518 505Q508 511 504 511Q501 511 499 520Q495 530 498 579Q502 628 506 651L514 681L524 669Q535 658 535 656Q535 654 548 636Q560 619 560 612Q560 606 563 604Q566 602 576 574L590 527Q595 510 595 498ZM351 260Q336 255 328 240Q319 224 296 189Q273 154 276 142Q278 130 282 124Q287 118 297 120Q307 123 330 127Q384 135 395 161Q403 180 403 201Q403 222 395 236Q378 266 351 260Z" },
     "开": { w: 1e3, d: "M599 259Q610 261 612 258Q613 254 617 254Q621 254 638 275Q656 296 656 301Q657 307 657 361L658 416H684Q709 415 792 415L875 414L894 424Q921 439 930 449Q939 459 940 478Q944 514 916 532Q894 545 868 532Q852 523 848 523Q843 523 825 515Q797 501 710 498L662 495L656 509Q652 521 648 578Q644 635 644 698Q643 753 640 810Q636 866 633 870Q630 873 627 895Q624 917 617 936Q606 962 589 960Q583 959 580 949Q578 940 569 916Q564 900 562 871Q560 842 559 694Q558 495 557 494Q556 493 510 497Q465 501 454 501Q446 504 444 508Q441 512 435 533Q430 561 430 569Q430 590 411 632Q383 699 340 747L301 790Q262 837 234 856Q212 870 205 877Q198 884 192 884Q186 884 176 890Q167 896 162 892Q156 887 172 860Q205 808 228 783Q252 758 265 734Q277 713 287 701Q304 680 318 643Q333 606 337 579Q340 561 344 542Q348 523 344 520Q341 516 324 522Q306 527 264 534Q195 548 195 560Q195 562 190 562Q185 563 178 562Q170 560 162 557Q137 545 134 516Q131 507 133 503Q135 499 142 493Q152 485 162 485Q172 485 222 474Q271 462 309 455Q347 448 351 446Q355 443 360 395Q366 347 375 332Q384 317 388 317Q395 317 410 326Q424 335 430 342Q435 351 438 372Q442 394 440 407Q435 422 438 428Q442 434 453 432Q466 429 517 424L567 421L566 357L565 295L576 276Q583 265 588 262Q592 258 599 259ZM662 168Q681 163 692 168Q708 176 720 197Q726 206 726 226Q727 246 721 248Q702 255 613 247Q572 243 544 247Q517 251 467 254Q393 260 375 282Q361 299 319 279L297 267Q297 267 295 255Q293 243 289 235Q285 227 297 218Q318 199 435 186Q561 171 621 171Q650 173 662 168Z" },
     "山": { w: 1e3, d: "M421 170Q434 160 483 175Q496 179 504 184Q511 189 522 205Q535 222 537 230Q539 237 538 256Q532 310 528 486Q525 663 529 666Q533 670 641 671Q749 672 753 668Q757 665 757 613Q759 548 772 532Q786 517 832 530Q887 544 907 573Q927 602 920 659Q909 749 893 774Q890 780 885 792Q872 821 848 840Q823 859 799 859Q778 859 766 848Q754 837 743 807Q731 776 726 770Q720 764 703 764Q684 764 662 760Q640 757 584 753L527 750L513 775Q499 801 496 814Q494 827 490 830Q486 832 486 841Q486 850 476 868Q467 885 463 886Q456 889 437 880Q418 871 418 860Q418 850 406 849Q394 848 391 837Q388 824 375 798Q362 773 356 768Q351 764 322 771Q294 778 275 787Q259 796 256 796Q246 796 214 816Q181 836 169 848Q150 868 136 871Q125 872 120 870Q114 867 103 856Q92 844 88 836Q85 827 83 803Q78 767 78 760Q78 753 78 736Q79 718 89 703Q103 677 122 625Q141 573 141 554Q141 540 148 524Q154 508 154 496V484L182 487Q229 493 240 511Q246 519 246 531Q245 543 239 551Q227 568 223 620Q221 655 212 686Q202 716 204 718Q205 719 244 710Q271 703 277 700Q283 696 285 687Q287 675 281 664Q275 652 275 646Q275 640 268 634Q262 629 262 612V594L306 640L350 686L375 683Q401 681 406 676Q414 667 418 508Q423 350 417 251Q414 198 414 186Q415 174 421 170Z" },
     "立": { w: 1e3, d: "M386 548Q406 533 410 533Q420 533 415 545Q406 559 399 584Q392 608 395 611Q399 617 398 650Q396 683 391 687Q385 694 370 700Q356 706 349 704Q343 701 326 678Q309 656 301 636Q295 622 292 586Q288 549 293 542Q295 536 306 538Q316 541 326 550Q334 557 350 561Q360 562 366 560Q372 559 386 548ZM594 452Q605 429 605 424Q605 419 615 419Q624 419 651 440Q678 461 680 471Q684 480 696 489Q708 498 708 516Q708 535 698 541Q679 552 631 615Q616 635 604 648Q591 660 591 666Q591 673 578 686Q565 699 552 720Q539 742 521 761L503 780L616 777Q728 775 808 773L886 770L901 786Q920 807 930 849Q940 891 928 900Q921 906 886 904Q851 901 837 893Q809 879 760 877Q728 875 705 872Q596 863 489 868Q382 872 308 890Q282 896 257 898Q232 901 230 904Q227 908 212 911Q196 914 180 923Q163 932 159 939Q155 947 140 951Q124 955 112 952Q97 948 80 931Q69 920 66 914Q64 908 65 898Q67 880 75 871Q83 862 105 856Q184 830 324 805Q371 797 384 786Q405 767 438 723Q470 679 494 638Q528 582 534 576Q550 556 573 501ZM533 307Q594 304 598 300Q601 295 632 297Q664 299 673 305Q684 309 694 326Q704 343 705 356Q705 368 694 376Q688 383 680 384Q672 384 644 383Q385 364 316 407L302 416L285 408Q261 396 260 380Q258 363 278 354Q307 340 380 326Q452 313 533 307ZM367 105Q389 94 443 110Q477 121 493 132Q509 144 521 168Q530 184 522 220Q513 256 498 268Q474 290 448 284Q439 282 429 273Q419 264 418 257Q418 252 412 247Q405 242 405 235Q405 225 390 190Q375 154 365 142Q346 115 367 105Z" },
@@ -1515,7 +1485,7 @@
     const a文 = 总文(prevD), b文 = 总文(curD);
     if (a文 !== b文) out["铜钱"] = { from: a文, to: b文 };
     if (prevD.教务.信众 !== curD.教务.信众) out["信众"] = { from: prevD.教务.信众, to: curD.教务.信众 };
-    [["风波", prevD.暗流.风波, curD.暗流.风波], ["表殿", prevD.道场.表殿等级, curD.道场.表殿等级], ["地界", prevD.时空.当前地界, curD.时空.当前地界], ["时间", prevD.时空.时间, curD.时空.时间]].forEach(([k, a, b]) => {
+    [["表殿", prevD.道场.表殿等级, curD.道场.表殿等级], ["地界", prevD.时空.当前地界, curD.时空.当前地界], ["时间", prevD.时空.时间, curD.时空.时间]].forEach(([k, a, b]) => {
       if (a !== b && b) out[k] = { text: true, from: a, to: b };
     });
     ZONE_DEFS.forEach((z) => {
@@ -2739,7 +2709,6 @@
         log.insertAdjacentHTML("beforeend", optionsHtml(opts));
       }
     }
-    syncCrisisFoot(log);
   }
   function updateTurnContent(el, data) {
     if (el.classList.contains("mz-editing")) return;
@@ -2902,7 +2871,7 @@
   }
 
   // src/13-floor.js
-  var TEXT_LABEL = { 风波: "风波", 表殿: "表殿" };
+  var TEXT_LABEL = { 表殿: "表殿" };
   function footItems(d) {
     const items = [];
     if (!d || !d.delta) return items;
@@ -2945,61 +2914,10 @@
   function footVoices(d) {
     return d && d.delta ? CAST.filter((n) => d.delta["心声." + n] || d.delta["回想." + n]) : [];
   }
-  var crisisMid = null;
-  function crisisNow() {
-    const a = readMVU().暗流 || {};
-    return { name: String(a.本月危机 || "") };
-  }
-  function crisisGroupHtml(name, isOpen) {
-    return '<span class="mz-ff-label">危机</span><button class="mz-ff-voice mz-ff-cbtn' + (isOpen ? " mz-open" : "") + '" data-foot-item="crisis">' + escapeHtml(name) + "</button>";
-  }
-  function crisisPanelHtml(name) {
-    return '<div class="mz-ff-detail mz-ff-cpanel mz-show">' + escapeHtml(CRISIS_NOTE[name] || FORM_MSG.朱票副题) + "</div>";
-  }
   var glyphSvg = (ch) => {
     const g = GLYPHS[ch];
     return g ? '<svg viewBox="0 0 ' + g.w + " " + GLYPH_H + '"><path d="' + g.d + '"/></svg>' : "<b>" + escapeHtml(ch) + "</b>";
   };
-  function stampBig(text, caption, cls) {
-    const root = doc.getElementById(SHELL_ID);
-    if (!root) return;
-    root.querySelectorAll(".mz-huo").forEach((el2) => el2.remove());
-    const el = doc.createElement("div");
-    el.className = "mz-huo" + (cls ? " " + cls : "");
-    el.innerHTML = '<span class="mz-huo-word">' + [...text].map(glyphSvg).join("") + "</span>" + (caption ? "<small>" + escapeHtml(caption) + "</small>" : "");
-    el.addEventListener("animationend", (e) => {
-      if (e.target === el) el.remove();
-    });
-    root.appendChild(el);
-  }
-  var crisisSeen = null;
-  function syncCrisisFoot(log) {
-    const name = crisisNow().name;
-    if (crisisSeen === null) crisisSeen = name;
-    else if (name !== crisisSeen) {
-      crisisSeen = name;
-      if (name && isShellVisible()) stampBig("祸", name);
-    }
-    if (!log) return;
-    const turns = log.querySelectorAll(".mz-turn.mz-gm");
-    const last = turns.length ? turns[turns.length - 1] : null;
-    const mid = last ? +last.dataset.mid : NaN;
-    const prev = crisisMid;
-    crisisMid = Number.isInteger(mid) ? mid : null;
-    const redo = /* @__PURE__ */ new Set();
-    if (prev != null && prev !== crisisMid) redo.add(prev);
-    if (crisisMid != null) redo.add(crisisMid);
-    redo.forEach((m) => {
-      const t = log.querySelector('.mz-turn.mz-gm[data-mid="' + m + '"]');
-      if (!t) return;
-      const wrap = t.querySelector(":scope > .mz-ff-wrap");
-      const inner = floorFootInner(m);
-      if (wrap) {
-        if (inner) wrap.innerHTML = inner;
-        else wrap.remove();
-      } else if (inner) t.insertAdjacentHTML("beforeend", '<div class="mz-ff-wrap" data-foot-mid="' + m + '">' + inner + "</div>");
-    });
-  }
   function voiceCardHtml(mid, name, tab) {
     const d = floorData(mid) || { girls: {} };
     const g = d.girls[name] || { 心声: "", 回想: {} };
@@ -3020,18 +2938,13 @@
     const d = floorData(mid);
     if (!d) return "";
     const items = footItems(d), voices = footVoices(d);
-    const crisis = mid === crisisMid ? crisisNow() : null;
-    const cname = crisis ? crisis.name : "";
-    if (!items.length && !voices.length && !cname) return "";
+    if (!items.length && !voices.length) return "";
     const open = String(footOpen.get(mid) || "").split(":");
     const openKey = open[0] === "stat" ? open.join(":") : "";
     const openName2 = open[0] === "voice" ? open[1] : "";
-    const openCrisis = open[0] === "crisis" && !!cname;
-    const row = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length || cname ? '<div class="mz-ff-side">' + (cname ? crisisGroupHtml(cname, openCrisis) : "") + (voices.length ? '<span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') : "") + "</div>" : "") + "</div>";
+    const row = '<div class="mz-ff"><div class="mz-ff-vars">' + items.map((it) => '<button class="mz-ff-var' + (openKey === it.key ? " mz-open" : "") + '" data-foot-item="' + it.key + '">' + it.html + "</button>").join("") + "</div>" + (voices.length ? '<div class="mz-ff-side"><span class="mz-ff-label">心声</span>' + voices.map((n) => '<button class="mz-ff-voice' + (openName2 === n ? " mz-open" : "") + '" data-foot-item="voice:' + n + '">' + n + "</button>").join("") + (voiceSeen.has(mid) ? "" : '<span class="mz-dot"></span>') + "</div>" : "") + "</div>";
     let panel = "";
-    if (openCrisis) {
-      panel = crisisPanelHtml(cname);
-    } else if (openKey) {
+    if (openKey) {
       const it = items.find((x) => x.key === openKey);
       if (it) panel = '<div class="mz-ff-detail mz-show">' + it.line + "</div>";
     } else if (openName2 && CAST.includes(openName2)) {
@@ -3222,39 +3135,23 @@
       festTxt = "无";
       festCls = "mz-dim";
     }
-    let levy, levyCls;
-    if (D.暗流.本月危机 === "常例拖欠") {
-      levy = "拖欠未清";
-      levyCls = "mz-red";
-    } else if (t.年序号 === 4) {
-      levy = "常例失效";
-      levyCls = "mz-dim";
-    } else if (t.年序号 < 0 || !t.日) {
-      levy = "未知";
-      levyCls = "";
-    } else {
-      const left = Math.max(0, 30 - t.日);
-      levy = left ? "还剩" + cn(left) + "日" : "今日当缴";
-      levyCls = left <= 6 ? "mz-red" : "";
-    }
     const 文 = 总文(D);
     return {
       日期: t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " ")),
       时辰: esc2(t.时辰),
       题: esc2(D.时空.时间.replace(/\//g, " ")),
       宵禁: { k: "宵禁", v: gate.文, cls: gate.cls },
-      常例: { k: "常例", v: levy, cls: levyCls },
       节令: { k: "节令", v: esc2(festTxt), cls: festCls },
       铜钱: { k: "铜钱", v: moneyTop(文), cls: "mz-gain", stat: "铜钱" },
       信众: { k: "信众", v: cn(D.教务.信众) + "人", cls: "mz-gain", stat: "信众" },
-      风波: { k: "风波", v: esc2(D.暗流.风波), cls: STORM_CLS[D.暗流.风波] || "", stat: "风波" }
+      大势: { k: "灭佛大势", v: esc2(t.年序号 >= 0 ? t.年名 : "会昌元年") + " " + esc2(doomOf(t.年序号 >= 0 ? t.公元 : 841)) }
     };
   }
   var tbItem = (r, hide, extra) => '<span class="mz-tb-i' + (hide ? " mz-tb-hide" : "") + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></span>";
   function topbarHtml(D) {
     if (D._empty) return '<span class="mz-tb-time mz-dim">此则无账目</span>';
     const r = readings(D);
-    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '"><span>时辰</span><b>' + r.日期 + " " + r.时辰 + '</b></span><span class="mz-tb-set">' + tbItem(r.宵禁, true) + tbItem(r.常例, true, "mz-tb-thin") + tbItem(r.节令, true, "mz-tb-thin") + tbItem(r.铜钱) + tbItem(r.信众, true) + tbItem(r.风波, true) + "</span>";
+    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '"><span>时辰</span><b>' + r.日期 + " " + r.时辰 + '</b></span><span class="mz-tb-set">' + tbItem(r.宵禁, true) + tbItem(r.节令, true, "mz-tb-thin") + tbItem(r.铜钱) + tbItem(r.信众, true) + tbItem(r.大势, true, "mz-tb-thin") + "</span>";
   }
   var srRow = (r, title, extra) => '<div class="mz-sr-row' + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + (title ? ' title="' + title + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></div>";
   function statusBoxHtml(D) {
@@ -3264,8 +3161,7 @@
     const zone = zoneName(loc), sub = zoneSub(loc);
     const abroad = !!zone && !ZONES.includes(zone);
     const locVal = (abroad ? "城外 " : "") + esc2(zone) + (sub ? "｜" + esc2(sub) : "");
-    const y = Math.max(0, parseTime(D.时空.时间).年序号);
-    return srRow({ k: "地界", v: locVal, stat: "地界" }, esc2(loc.replace(/\//g, " "))) + srRow(r.节令, "", "mz-sr-dup") + srRow(r.宵禁, "", "mz-sr-dup") + srRow(r.常例, "", "mz-sr-dup") + srRow(r.信众, "", "mz-sr-dup") + srRow(r.风波, "", "mz-sr-dup") + '<div class="mz-doom-row"><div class="mz-sr-row"><span>灭佛大势</span><b>' + YEAR_SHORT[y] + '</b></div><div class="mz-doom-evt">' + esc2(DOOM[y]) + '</div><div class="mz-bar"><i style="width:' + (y * 20 + 10) + '%"></i></div></div>';
+    return srRow({ k: "地界", v: locVal, stat: "地界" }, esc2(loc.replace(/\//g, " "))) + srRow(r.节令, "", "mz-sr-dup") + srRow(r.宵禁, "", "mz-sr-dup") + srRow(r.信众, "", "mz-sr-dup") + srRow(r.大势, "", "mz-sr-dup");
   }
   var rankShort = (r) => String(r || "").split("·")[0];
   function navSubHtml(key, D) {
@@ -3305,9 +3201,6 @@
       }
     }
   }
-  function renderCrisis(D) {
-    syncCrisisFoot(doc.getElementById(SEL.paper));
-  }
   function renderAll(force, Darg) {
     const D = Darg || readMVU();
     const top = doc.getElementById(SEL.topbar);
@@ -3323,7 +3216,6 @@
       item.querySelector(".mz-nav-lock").innerHTML = open ? "" : ICO.lock;
     });
     renderMinimap(D);
-    renderCrisis(D);
     if (liftOpenName()) refreshLift(D);
   }
 
@@ -3582,11 +3474,10 @@
     const cur = zoneName(D.时空.当前地界);
     const abroad = !!cur && !ZONES.includes(cur);
     const t = parseTime(D.时空.时间);
-    const y = Math.max(0, t.年序号);
     return '<section class="mz-win mz-atlas-win mz-on"><div class="mz-atlas"><div class="mz-mapbox"><img src="' + asset("map-changan.webp") + '" alt="长安城坊地图"><svg viewBox="0 0 1024 1024" preserveAspectRatio="none">' + ZONES.map((z) => '<path data-zone="' + z + '"' + (z === cur ? ' class="mz-cur"' : "") + ' d="' + ZONE_PATHS[z] + '"><title>' + z + "</title></path>").join("") + "</svg>" + ZONES.map((z) => {
       const l = ZONE_LABELS[z];
       return '<span class="mz-lbl' + (z === cur ? " mz-cur" : "") + '" style="left:' + l[1] + "%;top:" + l[2] + '%">' + l[0] + "</span>";
-    }).join("") + (abroad ? '<div class="mz-abroad-mark"><b>城外</b>' + esc3(cur) + "</div>" : "") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + '<li class="mz-abroad' + (abroad ? " mz-cur" : "") + '"><span>城外</span><small>' + (abroad ? esc3(cur) : "") + '</small></li></ul><div class="mz-doomline"><span>灭佛大势 ' + YEARS[y] + " " + DOOM[y] + '</span><div class="mz-yrs">' + YEAR_SHORT.map((s, i) => '<span class="' + (i === y ? "mz-cur" : i < y ? "mz-past" : "") + '">' + s + "</span>").join("") + "</div></div></div></div></section>";
+    }).join("") + (abroad ? '<div class="mz-abroad-mark"><b>城外</b>' + esc3(cur) + "</div>" : "") + '</div><div class="mz-zones">' + wh("长安十区") + '<ul class="mz-zlist">' + ZONES.map((z) => "<li" + (z === cur ? ' class="mz-cur"' : "") + "><span>" + z + "</span><small>" + (z === cur ? "此刻在此" : "") + "</small></li>").join("") + '<li class="mz-abroad' + (abroad ? " mz-cur" : "") + '"><span>城外</span><small>' + (abroad ? esc3(cur) : "") + '</small></li></ul><div class="mz-doomline"><span>灭佛大势 ' + esc3(t.年序号 >= 0 ? t.年名 : "会昌元年") + " " + doomOf(t.年序号 >= 0 ? t.公元 : 841) + "</span></div></div></div></section>";
   }
   var bondSel = CAST[0];
   function selectBond(name) {
