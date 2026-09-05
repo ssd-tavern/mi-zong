@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.3";
+  var CDN_TAG = "3.0.4";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -2707,14 +2707,14 @@
     try {
       const all = getVariables({ type: "message", message_id: afterSend }) || {};
       const cur = all.stat_data;
-      const 印 = _.get(stat, "系统.前端按钮扣款记录");
+      const 印 = _.get(stat, "系统.扣款记录");
       let prev = null;
       try {
         prev = afterSend > 0 ? (getVariables({ type: "message", message_id: afterSend - 1 }) || {}).stat_data : null;
       } catch (e) {
         dbg("carryPrev", e);
       }
-      if (cur && 印 && _.get(cur, "系统.前端按钮扣款记录") === 印) {
+      if (cur && 印 && _.get(cur, "系统.扣款记录") === 印) {
         setLastStat(_.cloneDeep(_.omit(cur, ["$internal"])));
       } else {
         dbg("carryStat", "用户楼不见代发印记, 兜底替换");
@@ -3720,7 +3720,7 @@
     mutate(stat);
     if (Number(stat.财务 && stat.财务.铜钱) < 0) return deny("铜钱不足");
     const 扣款 = Math.max(0, Math.round((Number(_.get(before, "财务.铜钱")) || 0) - (Number(_.get(stat, "财务.铜钱")) || 0)));
-    _.set(stat, "系统.前端按钮扣款记录", (tag || "代发") + "#" + 扣款 + "#" + Date.now());
+    _.set(stat, "系统.扣款记录", (tag || "代发") + "#" + 扣款 + "#" + Date.now());
     const ops = diffPatch(before, stat);
     if (!ops) return deny("名目里不可含「/」「~」");
     closeLift();
