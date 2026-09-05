@@ -453,14 +453,14 @@
   }
   var isPanelText = (text) => /^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(String(text || ""));
   var LETTER_TITLE = "雪域佛国";
-  var LETTER_SIGN = "阿央";
+  var LETTER_SIGN = "央金";
   var LETTER = [
-    "前几天西市来了一队蕃商，我过去帮着搬皮货，听他们讲了好多逻些的事。那天晚上我坐着想了很久，一直没睡。商队的人说，叔父的令已经烧到了大昭寺门前，寺门全让人钉上了厚铁板。我母亲家里在惹萨的那座家庙，也让兵卒贴了封条锁了门。以前在宫里教过我佛法的几位上师，全脱掉僧袍进山去打猎了。散在民间的那些咒师，没人指点，手里的法只传到一半，断了下文。",
-    "我认得出你传的法。看你开口、看你结手印，路数跟我父亲在世时宫里的一模一样，可你讲出来的道理，比藏地那些传到一半的法更全，也往前多走了一大步。我不是来求你救我的，我手里有东西能给你。我是赞普的女儿，我的名分过了赤岭往西叫得开门，庄园和部落里的老人认得我这条血脉。母亲在惹萨那座被封了的家庙，地方还在，地窖也深，去了正好落脚。我需要你手里的法，你在藏地立足，也用得着我带来的名分和旧宅子。",
-    "我想请你同我西行，去逻些立一座道场。这趟路很长，也很难走，顺着驿路走也要三个多月。出了陇山，过了赤岭往西就没有城了，一路全是草滩和大雪山。去了不知道什么时候能回，长安这边置办的一切也要封存起来。这些难处我都想过了，先把话说明白，是我的性子。",
-    "你想好了，给我一句话就行。"
+    "前几天西市来了一队蕃商，我去帮着搬皮货，听他们说了好多逻些的事。商队的人讲，大昭寺的门全被钉上了厚铁板，我母亲家里在惹萨的那座家庙也贴了封条。以前在宫里教过我念经的上师，全被逼着脱了僧袍进山打猎；散在民间的那些咒师没人指点，手里的法本残缺不全，心里全没了着落。那天夜里我坐在窗边想了很久，一直没能睡下。",
+    "在城南听你讲法、看你结手印，我才确信自己这一路翻山越岭逃来长安，到底是为了什么。你手里的法，路数同我父亲当年宫里传的一样，却比雪山上那些残卷讲得深得多、全得多。我是赞普的女儿，父亲不在了，法脉不能断在我手里。可凭我一个人护不住它，只有跟着你，这法才能真正在雪域活下去。",
+    "翻过赤岭往西，部落和庄园里的老人还认得我的血脉；母亲在惹萨那座被封的家庙地方宽敞、地窖也深，去了能有个落脚立坛的根本。我想请你同我回一趟藏地，去逻些立一座道场。这趟路顺着驿道也要走三个多月，出了关隘全是风雪和大草滩，去了不知何年才能再回长安。这些难处我都反复掂量过，总要先同你把底细说透。",
+    "若你愿意同我走这一趟，等你想好了，同我说一声便好。"
   ];
-  var LETTER_REPLY = "应允阿央所请，同去逻些立道场，即日筹备西行。";
+  var LETTER_REPLY = "应允央金所请，同去逻些立道场，即日筹备进藏。";
   var letterDue = (D) => D.吐蕃之行.进藏行程 === "未出发" && rankIdx(D.核心女主.赤玛央金.灌顶位阶) >= 1;
 
   // src/06-state-mvu.js
@@ -3333,7 +3333,7 @@
   }
   function letterStripHtml(D) {
     if (!letterOpenDue(D)) return "";
-    return '<button class="mz-letter-strip" data-letter="open"><img src="' + asset("letter-envelope.webp") + '" alt="信封"><span>阿央留书一封</span></button>';
+    return '<button class="mz-letter-strip" data-letter="open"><img src="' + asset("letter-envelope.webp") + '" alt="信封"><span>央金留书一封</span></button>';
   }
   function sceneSrc(mid) {
     const d = floorData(mid);
@@ -3774,7 +3774,7 @@
     return diff > 0 ? "铜钱不足，差" + money(diff) : "";
   };
   var gradeWhy = (D, g) => g === "精工" && !Object.keys(D.执事名册).length ? "须执事带工" : g === "天工" && D.教务.信众 < 50 ? "须信众五十人" : "";
-  var routeWhy = (D) => enRoute(D) ? ["行伍在途"] : [];
+  var routeWhy = (D) => enRoute(D) ? ["远行途中"] : [];
   var hallWhys = (D) => {
     const T = baseTab(D);
     const w = routeWhy(D);
@@ -3973,12 +3973,12 @@
   }
   function letterRowHtml(D) {
     const tag = D.吐蕃之行.进藏行程 === "已回长安" ? "已归长安" : !letterDue(D) ? "已启程" : letterAccepted() ? "已应允" : "尚未答复";
-    return '<button class="mz-letter-row" data-letter="open"><img src="' + asset("letter-envelope.webp") + '" alt=""><b>进藏书信</b><span>阿央手书</span><small>' + tag + "</small></button>";
+    return '<button class="mz-letter-row" data-letter="open"><img src="' + asset("letter-envelope.webp") + '" alt=""><b>进藏书信</b><span>央金手书</span><small>' + tag + "</small></button>";
   }
   function escortRowHtml(D, name) {
     if (!abroadOf(D)) return "";
-    const why = name === "赤玛央金" ? "领路西行" : String(D.吐蕃之行.随行[name] || "").trim();
-    return why ? '<div class="mz-escort-line mz-with"><b>随行</b><span>' + esc3(why.replace(/\//g, " ")) + "</span></div>" : '<div class="mz-escort-line"><b>留守长安</b><span>' + (D.吐蕃之行.进藏行程 === "在途" ? "行伍在途，音信不通" : "道场封存，待归再续") + "</span></div>";
+    const why = name === "赤玛央金" ? "领路进藏" : String(D.吐蕃之行.随行[name] || "").trim();
+    return why ? '<div class="mz-escort-line mz-with"><b>随行</b><span>' + esc3(why.replace(/\//g, " ")) + "</span></div>" : '<div class="mz-escort-line"><b>留守长安</b><span>' + (D.吐蕃之行.进藏行程 === "在途" ? "远行途中，音信不通" : "道场封存，待归再续") + "</span></div>";
   }
   function galleryHtml(name, rank, themes, curTheme) {
     return '<div class="mz-gallery">' + themes.map((t) => '<button class="mz-cell' + (curTheme && t[0] === curTheme[0] ? " mz-on" : "") + (t[1] ? "" : " mz-blank") + '" data-theme="' + esc3(t[0]) + '" title="' + esc3(t[0]) + '"><i' + (t[1] ? ` style="background-image:url('` + esc3(t[1]) + `')"` : "") + "></i><span>" + esc3(t[0]) + "</span></button>").join("") + lockedGrades(name, rank).map((r) => '<button class="mz-cell mz-lock" disabled title="' + esc3(r) + '解锁"><i></i><span>' + esc3(r) + "</span></button>").join("") + "</div>";
@@ -4111,7 +4111,7 @@
       head: '<div class="mz-wh">兴造 <b>' + (bp ? esc3(bp.名) : OWN) + "</b>" + (bp ? '<span class="mz-tag mz-layer">' + bp.层 + "</span>" : "") + "</div>",
       text: head,
       below: '<div class="mz-picks mz-row">' + picks + '</div><label class="mz-wonder">奇效<textarea name="奇效" rows="2" placeholder="' + WONDER_PH + '"></textarea><small>天工独有：通达造化，立成定局，后效绵延</small></label>',
-      foot: '<span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "build", !offAll && !lw, enRoute(D) ? "行伍在途" : lw || "铜钱不足", " mz-lg")
+      foot: '<span class="mz-why">库中 ' + money(总文(D)) + "</span>" + sealBtn("记下", "build", !offAll && !lw, enRoute(D) ? "远行途中" : lw || "铜钱不足", " mz-lg")
     });
   }
   function sinHtml(D) {
@@ -4903,7 +4903,7 @@
   var letterOpen = () => !!doc.getElementById(VEIL_ID);
   function letterHtml(answerable) {
     const foot = answerable ? '<button class="mz-letter-btn mz-primary" data-letter="accept">应允同行</button><button class="mz-letter-btn" data-letter="close">先收起</button>' : '<button class="mz-letter-btn" data-letter="close">收起</button>';
-    return '<div class="mz-letter"><div class="mz-letter-in"><div class="mz-letter-scroll"><div class="mz-letter-head">阿央手书</div><div class="mz-letter-body">' + LETTER.map((p) => "<p>" + escapeHtml(p) + "</p>").join("") + '</div><div class="mz-letter-sign">' + escapeHtml(LETTER_SIGN) + '</div></div><div class="mz-letter-foot">' + foot + "</div></div></div>";
+    return '<div class="mz-letter"><div class="mz-letter-in"><div class="mz-letter-scroll"><div class="mz-letter-head">央金手书</div><div class="mz-letter-body">' + LETTER.map((p) => "<p>" + escapeHtml(p) + "</p>").join("") + '</div><div class="mz-letter-sign">' + escapeHtml(LETTER_SIGN) + '</div></div><div class="mz-letter-foot">' + foot + "</div></div></div>";
   }
   function openLetter() {
     if (letterOpen()) return;
