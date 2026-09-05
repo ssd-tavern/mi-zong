@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.5";
+  var CDN_TAG = "3.0.6";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -461,7 +461,7 @@
     "若你愿意同我走这一趟，等你想好了，同我说一声便好。"
   ];
   var LETTER_REPLY = "应允央金所请，同去逻些立道场，即日筹备进藏。";
-  var letterDue = (D) => D.吐蕃之行.进藏行程 === "未出发" && rankIdx(D.核心女主.赤玛央金.灌顶位阶) >= 1;
+  var letterDue = (D) => D.吐蕃之行.进藏行程 === "未出发" && D.吐蕃之行.来信 === true;
 
   // src/06-state-mvu.js
   var lastStat = null;
@@ -518,7 +518,7 @@
       执事名册: obj(g("执事名册")),
       明妃录: obj(g("明妃录")),
       系统: { 已解锁: (Array.isArray(g("系统.已解锁")) ? g("系统.已解锁") : []).map(str) },
-      吐蕃之行: { 进藏行程: str(g("吐蕃之行.进藏行程")) || "未出发", 赞普遇刺: g("吐蕃之行.赞普遇刺") === true || g("吐蕃之行.赞普遇刺") === "true", 抵达逻些日期: str(g("吐蕃之行.抵达逻些日期")), 随行: obj(g("吐蕃之行.随行")) },
+      吐蕃之行: { 进藏行程: str(g("吐蕃之行.进藏行程")) || "未出发", 赞普遇刺: g("吐蕃之行.赞普遇刺") === true || g("吐蕃之行.赞普遇刺") === "true", 抵达逻些日期: str(g("吐蕃之行.抵达逻些日期")), 来信: g("吐蕃之行.来信") === true || g("吐蕃之行.来信") === "true", 随行: obj(g("吐蕃之行.随行")) },
       _empty: !sdArg && !currentStat()
     };
   }
@@ -1561,13 +1561,13 @@
 .mz-letter-strip:hover { color: var(--gold-hi); }
 .mz-letter-strip:hover img { translate: 0 -3px; filter: drop-shadow(0 8px 14px rgba(var(--sh-rgb),.55)) drop-shadow(0 0 10px rgba(var(--gold-rgb), .35)); }
 
-/* 信笺弹层：壳根内 absolute 盖满，暗底模糊；藏纸按 2:3 原比例居中（宽随壳宽与壳高取小），纸只带毛边，纹框是 CSS 双线（赭石外线、藏青内线）避开毛边内嵌，字区再退一步；正文在纸内自滚，钮行常驻 */
+/* 信笺弹层：壳根内 absolute 盖满，暗底模糊；藏纸整体 brightness 压暗一档贴近长安主题（叠色层会填掉毛边，故走 filter）；藏纸按 2:3 原比例居中（宽随壳宽与壳高取小），纸只带毛边，纹框是 CSS 双线（赭石外线、藏青内线）避开毛边内嵌，字区再退一步；正文在纸内自滚，钮行常驻 */
 .mz-letter-veil { position: absolute; inset: 0; z-index: 45; background: var(--scrim); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center; padding: 20px; animation: veil-in var(--t-mid) var(--ease-out) both; }
 .mz-letter-veil.mz-out { animation: veil-out var(--t-mid) var(--ease-out) both; pointer-events: none; }
 .mz-letter { width: min(640px, 92cqw, calc((100cqh - 40px) * 2 / 3)); aspect-ratio: 2 / 3; position: relative; container-type: size;
   background: url('${A4}paper-tibet.webp') center / 100% 100% no-repeat;
-  filter: drop-shadow(0 3px 5px rgba(var(--sh-rgb),.4)) drop-shadow(0 24px 48px rgba(var(--sh-rgb),.55)); animation: mz-reveal var(--t-slow) var(--ease-paper) both; }
+  filter: brightness(.86) drop-shadow(0 3px 5px rgba(var(--sh-rgb),.4)) drop-shadow(0 24px 48px rgba(var(--sh-rgb),.55)); animation: mz-reveal var(--t-slow) var(--ease-paper) both; }
 /* 纹框：毛边约占四边 4%，框退到 7%（cq 单位以 .mz-letter 为容器，横竖换算后等宽）；outline 画外线 */
 .mz-letter::before { content: ''; position: absolute; inset: 5cqh 7cqw; pointer-events: none;
   border: 1px solid var(--paper-line-in); outline: 1px solid var(--paper-line-out); outline-offset: 3px; }
@@ -3992,7 +3992,7 @@
     const lit = rankIdx(rank);
     const memoN = Object.keys(g.回想).length;
     const tab = tabOf("同心缕", "voice");
-    return '<section class="mz-win mz-bond-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc3(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme && curTheme[1] ? '<img src="' + esc3(curTheme[1]) + '" alt="' + esc3(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc3(rank) + "</b></div>" + escortRowHtml(D, bondSel) + (bondSel === "赤玛央金" && rankIdx(rank) >= 1 ? letterRowHtml(D) : "") + '<div class="mz-tabs mz-tabs-sub"><button' + (tab === "voice" ? ' class="mz-on"' : "") + ' data-pane="voice">心声</button><button' + (tab === "memoir" ? ' class="mz-on"' : "") + ' data-pane="memoir">回想' + (memoN ? '<span class="mz-n">' + cn(memoN) + "则</span>" : "") + "</button><button" + (tab === "gallery" ? ' class="mz-on"' : "") + ' data-pane="gallery">立绘<span class="mz-n">' + cn(themes.length) + "幅</span></button></div>" + pane("同心缕", "voice", g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc3(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>', "voice") + pane("同心缕", "memoir", memoHtml(g.回想), "voice") + pane("同心缕", "gallery", galleryHtml(bondSel, rank, themes, curTheme), "voice") + "</div></div></section>";
+    return '<section class="mz-win mz-bond-win mz-on ' + STAMP[bondSel] + '"><div class="mz-tabs mz-names">' + CAST.map((n) => girlUnlocked(D, n) ? "<button" + (n === bondSel ? ' class="mz-on"' : "") + ' data-bond="' + n + '">' + n + '<span class="mz-n">' + esc3(D.核心女主[n].灌顶位阶) + "</span></button>" : '<button class="mz-off" disabled>' + CAST_HINT[n] + '<span class="mz-n">未识</span></button>').join("") + '</div><div class="mz-wrow"><div class="mz-portrait"><div class="mz-pic">' + (curTheme && curTheme[1] ? '<img src="' + esc3(curTheme[1]) + '" alt="' + esc3(curTheme[0]) + '">' : "<span>立绘待补</span>") + '</div></div><div class="mz-wcol" style="flex:1"><div class="mz-lotus-row">' + [1, 2, 3, 4].map((i) => "<i" + (i <= lit ? ' class="mz-lit"' : "") + "></i>").join("") + "<span>灌顶位阶</span><b>" + esc3(rank) + "</b></div>" + escortRowHtml(D, bondSel) + (bondSel === "赤玛央金" && (D.吐蕃之行.来信 === true || D.吐蕃之行.进藏行程 !== "未出发") ? letterRowHtml(D) : "") + '<div class="mz-tabs mz-tabs-sub"><button' + (tab === "voice" ? ' class="mz-on"' : "") + ' data-pane="voice">心声</button><button' + (tab === "memoir" ? ' class="mz-on"' : "") + ' data-pane="memoir">回想' + (memoN ? '<span class="mz-n">' + cn(memoN) + "则</span>" : "") + "</button><button" + (tab === "gallery" ? ' class="mz-on"' : "") + ' data-pane="gallery">立绘<span class="mz-n">' + cn(themes.length) + "幅</span></button></div>" + pane("同心缕", "voice", g.心声 ? '<div class="mz-voice-sheet ' + STAMP[bondSel] + '">' + esc3(g.心声) + "</div>" : '<div class="mz-none">尚无心声</div>', "voice") + pane("同心缕", "memoir", memoHtml(g.回想), "voice") + pane("同心缕", "gallery", galleryHtml(bondSel, rank, themes, curTheme), "voice") + "</div></div></section>";
   }
   var facSel = null;
   var bpSel = null;
