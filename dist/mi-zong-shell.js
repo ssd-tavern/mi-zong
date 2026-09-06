@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.6";
+  var CDN_TAG = "3.0.7";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -3230,7 +3230,10 @@
         patchLetterStrip(log);
         applyUserEdit(log);
       }
-      if (stick) {
+      const openingOnly = totalCount <= 1 && (coldStart || prevTop === 0);
+      if (openingOnly) {
+        log.scrollTop = 0;
+      } else if (stick) {
         log.scrollTop = log.scrollHeight;
       } else if (loadingEarlier) {
         log.scrollTop = prevTop + (log.scrollHeight - prevHeight);
