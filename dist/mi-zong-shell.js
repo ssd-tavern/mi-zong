@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.14";
+  var CDN_TAG = "3.0.15";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -18,7 +18,7 @@
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
   var PRELOAD_ASSETS = ["bg-ink.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "map-panorama.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "lotus-rank.webp", "map-changan.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp", "banner-craft.webp", "sect-1-bliss.webp", "sect-2-illusion.webp", "sect-3-mercy.webp", "sect-4-asura.webp", "sect-5-strings.webp", "letter-envelope.webp", "paper-tibet.webp", "stamp-gesang.webp", "map-road.webp", "map-lhasa.webp", "scene-xishi.webp", "scene-pingkang.webp", "scene-dongshi.webp", "scene-xiangfu.webp", "scene-ximin.webp", "scene-tianjie.webp", "scene-lengfang.webp", "scene-qujiang.webp", "scene-huangcheng.webp", "scene-hall-1.webp", "scene-hall-2.webp", "scene-hall-3.webp", "scene-longshan.webp", "scene-qinzhou.webp", "scene-hezhou.webp", "scene-shanzhou.webp", "scene-chiling.webp", "scene-baihai.webp", "scene-yushu.webp", "scene-naqu.webp", "scene-dazhao.webp", "scene-xiaozhao.webp", "scene-hongshan.webp", "scene-yalong.webp", "scene-luoxie.webp", "scene-luoxie-2.webp", "scene-luoxie-3.webp", "hall-lx-1-sealed.webp", "hall-lx-2-opened.webp", "hall-lx-3-court.webp", "fac-lx-danfang.webp", "fac-lx-yijing.webp", "fac-lx-keshe.webp", "fac-lx-huotan.webp", "fac-lx-yicang.webp", "fac-lx-tancheng.webp", "fac-lx-wenquan.webp", "fac-lx-jiguan.webp", "fac-lx-gongfang.webp", "fac-lx-mijiao.webp", "fac-lx-dilao.webp", "fac-lx-kufang.webp", "own-lx-1-rough.webp", "own-lx-2-fine.webp", "own-lx-3-grand.webp"];
-  var PRELOAD_LANES = 3;
+  var PRELOAD_LANES = 6;
   var SEL = {
     entry: "mz-entry",
     entryEnter: "mz-entry-enter",
