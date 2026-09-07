@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.9";
+  var CDN_TAG = "3.0.10";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1672,7 +1672,8 @@
   #mz-corner button.mz-on { color: var(--gold-hi); }
 
   /* ==== 侧栏即落下面板：自顶栏下方落下覆盖正文，正文位置不动 ==== */
-  .mz-side { position: absolute; left: 0; right: 0; top: var(--top-h); bottom: 0; width: auto; z-index: 30;
+  /* 顶栏在 .mz-main 的状态栏留空之下，落下面板与遮罩的起点也要加上这段 */
+  .mz-side { position: absolute; left: 0; right: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); bottom: 0; width: auto; z-index: 30;
     border-right: none; overflow-y: auto; gap: 10px;
     padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px));
     translate: 0 -110%; transition: translate var(--t-slow) var(--ease-paper);
@@ -1684,7 +1685,7 @@
   .mz-doom .mz-sr-dup { display: flex; }
   /* 整面板一条滚动，目录跟着面板走 */
   .mz-nav { flex: none; overflow: visible; }
-  #mz-mscrim { display: block; position: absolute; left: 0; right: 0; top: var(--top-h); bottom: 0; z-index: 29;
+  #mz-mscrim { display: block; position: absolute; left: 0; right: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); bottom: 0; z-index: 29;
     background: var(--scrim); opacity: 0; pointer-events: none;
     transition: opacity var(--t-mid) var(--ease-out); }
   #mz-mscrim.mz-open { opacity: 1; pointer-events: auto; }
