@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.11";
+  var CDN_TAG = "3.0.12";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1622,10 +1622,11 @@
 @container mz (max-width: 900px) {
   #mz-shell-root { --top-h: 52px; --fs-body: calc(16px * var(--fs-scale)); }
   /* ==== 主区：正文列铺满，底部只剩书写区 ==== */
-  .mz-main { --col-side: 14px; }
+  .mz-main { --col-side: 22px; }
   /* 状态栏留空放在顶栏内，让账头底色一直铺到屏幕顶边，不留一条纸色带 */
   .mz-topbar { height: calc(var(--top-h) + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); }
-  #mz-paper { padding: 22px 5px 16px; }
+  /* iOS 滚动条不占位，不再从留白里扣槽宽，正文与书写区仍按 --col-side 对齐 */
+  #mz-paper { padding: 22px var(--col-side) 16px; scrollbar-gutter: auto; }
   .mz-turn.mz-gm, .mz-turn.mz-zhu { line-height: 1.95; }
   #mz-writing { padding: 8px var(--col-side) calc(12px + env(safe-area-inset-bottom, 0px)); }
   #mz-send { width: 42px; height: 44px; font-size: 18px; }
