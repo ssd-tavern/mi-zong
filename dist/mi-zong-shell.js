@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.13";
+  var CDN_TAG = "3.0.14";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1067,7 +1067,8 @@
 /* 两步同一副骨架：左整幅 3:2 图、右文或右格，两列 minmax(0,…) 图的固有宽不许撑列 */
 .mz-gate-body { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow-y: auto; }
 .mz-gate-two { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; align-items: stretch; flex: none; }
-.mz-gate-img { min-width: 0; aspect-ratio: 3 / 2; background: var(--bg3) center / cover no-repeat; box-shadow: inset 0 0 0 1px var(--line); }
+/* 空盒子在拉伸对齐的网格里靠 aspect-ratio 撑高，iOS 会算成零高，改用内边距撑出 3:2 */
+.mz-gate-img { min-width: 0; height: 0; padding-top: 66.667%; background: var(--bg3) center / cover no-repeat; box-shadow: inset 0 0 0 1px var(--line); }
 /* 右列走卷题＋正文两档：题名 20px，简介同正文字号 */
 .mz-gate-text { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding-top: 2px; }
 .mz-gate-text b { font-size: var(--fs-head); letter-spacing: var(--ls-head); color: var(--txt); font-weight: 600; }
