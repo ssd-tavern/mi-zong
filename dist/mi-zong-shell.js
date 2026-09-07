@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.10";
+  var CDN_TAG = "3.0.11";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1622,7 +1622,9 @@
 @container mz (max-width: 900px) {
   #mz-shell-root { --top-h: 52px; --fs-body: calc(16px * var(--fs-scale)); }
   /* ==== 主区：正文列铺满，底部只剩书写区 ==== */
-  .mz-main { --col-side: 14px; padding-top: env(safe-area-inset-top, 0px); }
+  .mz-main { --col-side: 14px; }
+  /* 状态栏留空放在顶栏内，让账头底色一直铺到屏幕顶边，不留一条纸色带 */
+  .mz-topbar { height: calc(var(--top-h) + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); }
   #mz-paper { padding: 22px 5px 16px; }
   .mz-turn.mz-gm, .mz-turn.mz-zhu { line-height: 1.95; }
   #mz-writing { padding: 8px var(--col-side) calc(12px + env(safe-area-inset-bottom, 0px)); }
@@ -1636,7 +1638,7 @@
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
 
   /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样）；宵禁／节令／大势下沉抽屉 ==== */
-  .mz-topbar { padding: 0 10px; gap: 10px; }
+  .mz-topbar { padding-left: 10px; padding-right: 10px; gap: 10px; }
   /* 落单在 logo 角，纯图标像装饰：加一圈金线＋淡填底，收成一枚可点小牌 */
   .mz-tb-plaque { display: flex; color: var(--txt-dim); width: 26px; height: 26px; padding: 5px;
     border: 1px solid rgba(var(--gold-rgb), .38); border-radius: 7px;
@@ -1676,9 +1678,15 @@
   .mz-side { position: absolute; left: 0; right: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); bottom: 0; width: auto; z-index: 30;
     border-right: none; overflow-y: auto; gap: 10px;
     padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px));
-    translate: 0 -110%; transition: translate var(--t-slow) var(--ease-paper);
+    /* 收起要把尾巴挪出屏顶：自身高度之外再加起点那段与阴影 */
+    translate: 0 calc(-100% - var(--top-h) - env(safe-area-inset-top, 0px) - 40px); transition: translate var(--t-slow) var(--ease-paper);
     box-shadow: 0 12px 30px rgba(var(--sh-rgb),.45); }
   .mz-side.mz-open { translate: 0 0; }
+  /* iOS 把可滚动面板单独合成一层，层内叠色纹理不混色直接盖上；改成同元素三层背景混色，数值上与原叠色等价 */
+  .mz-side.mz-tex::before { display: none; }
+  .mz-side { background: linear-gradient(color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent), color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent)),
+    var(--tex) 0 0 / 1024px 1024px repeat, var(--bg0);
+    background-blend-mode: normal, overlay, normal; }
   /* 匾额缩成顶栏那枚钮，题头与开关是同一块牌子 */
   .mz-plaque { display: none; }
   /* 顶栏舍下的五项在手机端补显进状态表 */
