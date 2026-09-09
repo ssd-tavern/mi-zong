@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.15";
+  var CDN_TAG = "3.0.16";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -103,32 +103,32 @@
   var STAMP = { 苏白芷: "mz-su", 裴清砚: "mz-pei", 叶玄薇: "mz-ye", 萧夜沉: "mz-xiao", 赤玛央金: "mz-chi" };
   var RANKS = ["待度欲种", "一灌·瓶灌", "二灌·密灌", "三灌·慧灌", "四灌·大乐"];
   var rankIdx = (r) => Math.max(0, RANKS.indexOf(String(r || "").trim()));
-  var CB = (id) => "https://files.catbox.moe/" + id + ".png";
+  var CB = (p) => "https://i.postimg.cc/" + p;
   var GAL = {
     苏白芷: {
-      work: [["日常药铺", CB("s00gej")], ["后院药圃", CB("d89n9l")], ["高门出诊", CB("iosk7b")], ["灯下私语", CB("8hrc60")]],
-      rite: [["法事佛殿", CB("1v4vc6")], ["地宫坛城", CB("ym6sho")]],
-      grade: [["一灌瓶灌", CB("eueumq")], ["二灌密灌", CB("ltzlih")], ["三灌慧灌", CB("alancw")], ["四灌大乐", CB("nxejmb")]]
+      work: [["日常药铺", CB("PfCzdpVb/su-bai-zhi-ri-chang-yao-pu.png")], ["后院药圃", CB("NGK7Q9C9/su-bai-zhi-hou-yuan-yao-pu.png")], ["高门出诊", CB("bNbxtXhb/su-bai-zhi-gao-men-chu-zhen.png")], ["灯下私语", CB("GhYFy0CH/su-bai-zhi-deng-xia-si-yu.png")]],
+      rite: [["法事佛殿", CB("SN86M0hQ/su-bai-zhi-fa-shi-fu-dian.png")], ["地宫坛城", CB("ryDCq0ZC/su-bai-zhi-de-gong-tan-cheng.png")]],
+      grade: [["一灌瓶灌", CB("QCFBs7XJ/su-bai-zhi-yi-guan-ping-guan.png")], ["二灌密灌", CB("J0symX1x/su-bai-zhi-er-guan-mi-guan.png")], ["三灌慧灌", CB("8c7FDv1b/su-bai-zhi-san-guan-hui-guan.png")], ["四灌大乐", CB("8k7BTJX4/su-bai-zhi-si-guan-da-le.png")]]
     },
     裴清砚: {
-      work: [["书斋挥毫", CB("3j73il")], ["上元灯船", CB("xthmz4")], ["煮茶失误", CB("bhv9nz")], ["风雪庭院", CB("s2kylc")]],
-      rite: [["法事求道", CB("5bfwfo")], ["荒野古刹", CB("f7a50t")]],
-      grade: [["一灌瓶灌", CB("6fyn2u")], ["二灌密灌", CB("aszq05")], ["三灌慧灌", CB("eb6z4u")], ["四灌大乐", CB("y11fwk")]]
+      work: [["书斋挥毫", CB("htd9TkRD/pei-qing-yan-shu-zhai-hui-hao.png")], ["上元灯船", CB("P5wmYgnd/pei-qing-yan-shang-yuan-deng-chuan.png")], ["煮茶失误", CB("k41Vksd7/pei-qing-yan-zhu-cha-shi-wu.png")], ["风雪庭院", CB("90D4V9WP/pei-qing-yan-feng-xue-ting-yuan.png")]],
+      rite: [["法事求道", CB("Qt4BRmr8/pei-qing-yan-fa-shi-qiu-dao.png")], ["荒野古刹", CB("76sCp9yY/pei-qing-yan-huang-ye-gu-sha.png")]],
+      grade: [["一灌瓶灌", CB("xT7vk0h2/pei-qing-yan-yi-guan-ping-guan.png")], ["二灌密灌", CB("XYCwdR6V/pei-qing-yan-er-guan-mi-guan.png")], ["三灌慧灌", CB("YqV64pZj/pei-qing-yan-san-guan-hui-guan.png")], ["四灌大乐", CB("V6GS3gcm/pei-qing-yan-si-guan-da-le.png")]]
     },
     叶玄薇: {
-      work: [["街头执法", CB("qmblzw")], ["校场切磋", CB("szlrfw")], ["西市肉饼", CB("ap762h")], ["丹房格物", CB("0m8xyn")]],
-      rite: [["斋醮法坛", CB("ufmtsy")], ["地宫对峙", CB("ooeomu")]],
-      grade: [["一灌瓶灌", CB("pwwlih")], ["二灌密灌", CB("uzopeb")], ["三灌慧灌", CB("41vm4u")], ["四灌大乐", CB("d8hgib")]]
+      work: [["街头执法", CB("3JJhyhpm/ye-xuan-wei-jie-tou-zhi-fa.png")], ["校场切磋", CB("hv0KkPmd/ye-xuan-wei-xiao-chang-qie-cuo.png")], ["西市肉饼", CB("m224c4M7/ye-xuan-wei-xi-shi-rou-bing.png")], ["丹房格物", CB("TPZ2msGq/ye-xuan-wei-dan-fang-ge-wu.png")]],
+      rite: [["斋醮法坛", CB("T1cTzYby/ye-xuan-wei-zhai-jiao-fa-tan.png")], ["地宫对峙", CB("cCcdp43v/ye-xuan-wei-de-gong-dui-zhi.png")]],
+      grade: [["一灌瓶灌", CB("SKwQ8Pq9/ye-xuan-wei-yi-guan-ping-guan.png")], ["二灌密灌", CB("s2tfSLyS/ye-xuan-wei-er-guan-mi-guan.png")], ["三灌慧灌", CB("TPZ2msG5/ye-xuan-wei-san-guan-hui-guan.png")], ["四灌大乐", CB("qqGpPMKk/ye-xuan-wei-si-guan-da-le.png")]]
     },
     萧夜沉: {
-      work: [["酒肆当垆", CB("edctyi")], ["暗市验货", CB("stieeb")], ["内室鉴香", CB("o302a6")], ["后院听雨", CB("f7ay4l")]],
-      rite: [["大寺供香", CB("11zlk1")], ["法事密谋", CB("v1th0q")]],
-      grade: [["一灌瓶灌", CB("utqt5v")], ["二灌密灌", CB("kovkxr")], ["三灌慧灌", CB("nq0q5n")], ["四灌大乐", CB("9ced93")]]
+      work: [["酒肆当垆", CB("gkPw1nC6/xiao-ye-chen-jiu-si-dang-lu.png")], ["暗市验货", CB("zX1L4Vs5/xiao-ye-chen-an-shi-yan-huo.png")], ["内室鉴香", CB("TwLLvm29/xiao-ye-chen-nei-shi-jian-xiang.png")], ["后院听雨", CB("MTMMJRZt/xiao-ye-chen-hou-yuan-ting-yu.png")]],
+      rite: [["大寺供香", CB("dQCkW8xV/xiao-ye-chen-da-si-gong-xiang.png")], ["法事密谋", CB("nctsNCyh/xiao-ye-chen-fa-shi-mi-mou.png")]],
+      grade: [["一灌瓶灌", CB("gkRVZ9W8/xiao-ye-chen-yi-guan-ping-guan.png")], ["二灌密灌", CB("0QT6kQrw/xiao-ye-chen-er-guan-mi-guan.png")], ["三灌慧灌", CB("pThhM8VC/xiao-ye-chen-san-guan-hui-guan.png")], ["四灌大乐", CB("MZBMsyrm/xiao-ye-chen-si-guan-da-le.png")]]
     },
     赤玛央金: {
-      work: [["洁白哈达", CB("q14usj")], ["西市摊头", CB("ehv38v")], ["长袖踏歌", CB("tytmqx")], ["王宫灯影", CB("p5hk9h")]],
-      rite: [["红山回望", CB("k3o9xx")], ["圣湖濯足", CB("5rg1pb")]],
-      grade: [["一灌瓶灌", CB("ddjti9")], ["二灌密灌", CB("3e9m9l")], ["三灌慧灌", CB("0d1mir")], ["四灌大乐", CB("so7z0q")]]
+      work: [["洁白哈达", CB("QC8bq0kY/chi-ma-yang-jin-jie-bai-ha-da.png")], ["西市摊头", CB("MK47cWNx/chi-ma-yang-jin-xi-shi-tan-tou.png")], ["长袖踏歌", CB("7Yc3Cxd4/chi-ma-yang-jin-zhang-xiu-ta-ge.png")], ["王宫灯影", CB("D0vgcBdD/chi-ma-yang-jin-wang-gong-deng-ying.png")]],
+      rite: [["红山回望", CB("HsKwJpRC/chi-ma-yang-jin-hong-shan-hui-wang.png")], ["圣湖濯足", CB("yx1PTvXn/chi-ma-yang-jin-sheng-hu-zhuo-zu.png")]],
+      grade: [["一灌瓶灌", CB("Hx4z5f5t/chi-ma-yang-jin-yi-guan-ping-guan.png")], ["二灌密灌", CB("d1m6dzd5/chi-ma-yang-jin-er-guan-mi-guan.png")], ["三灌慧灌", CB("FRgpc2cn/chi-ma-yang-jin-san-guan-hui-guan.png")], ["四灌大乐", CB("RFQdfjfP/chi-ma-yang-jin-si-guan-da-le.png")]]
     }
   };
   function unlockedThemes(name, rank) {
@@ -1855,7 +1855,7 @@
   // src/17-gate.js
   var GATE_WIN = "开坛";
   var GATE_TITLE = "开山立坛";
-  var CB2 = (id) => "https://files.catbox.moe/" + id + ".png";
+  var CB2 = (p) => "https://i.postimg.cc/" + p;
   var SECTS = [
     { key: "理趣大乐", line: "借香汤声色破戒，以肉身作坛城。" },
     { key: "造境摄魂", line: "布暗室光影与迷香，造神迹以摄魄。" },
@@ -1865,8 +1865,8 @@
   ];
   var SECT_PIC = { 理趣大乐: "sect-1-bliss.webp", 造境摄魂: "sect-2-illusion.webp", 慈悲蛊心: "sect-3-mercy.webp", 尸陀修罗: "sect-4-asura.webp", 罪业提线: "sect-5-strings.webp" };
   var OPENINGS_META = [
-    { title: "破庙开山", blurb: "会昌元年三月，你重回城南荒庙，在断臂佛像下掘开空置的地窖，借满城欲念开坛立教。", img: CB2("lsgkeh") },
-    { title: "雪域缘起", blurb: "会昌元年五月，地宫密坛粗成，四女皆已入坛受灌，西市摆摊的落难蕃女正立于庙门之外，雪域佛国自此起局。", img: CB2("dm6sv5") }
+    { title: "破庙开山", blurb: "会昌元年三月，你重回城南荒庙，在断臂佛像下掘开空置的地窖，借满城欲念开坛立教。", img: CB2("0jvwGjx0/ying-xiong-tu-de-gong-da-fa-hui.png") },
+    { title: "雪域缘起", blurb: "会昌元年五月，地宫密坛粗成，四女皆已入坛受灌，西市摆摊的落难蕃女正立于庙门之外，雪域佛国自此起局。", img: CB2("DZTyg3QQ/ying-xiong-tu-xue-yu-fu-guo.png") }
   ];
   var chosenSect = null;
   var page = 0;
