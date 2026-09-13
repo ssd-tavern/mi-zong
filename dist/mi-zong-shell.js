@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.35";
+  var CDN_TAG = "3.0.36";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1693,16 +1693,14 @@
   .mz-side { background: linear-gradient(color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent), color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent)),
     var(--tex) 0 0 / 1024px 1024px repeat, var(--bg0);
     background-blend-mode: normal, overlay, normal; }
-  /* 匾额改抽屉头行：题字靠左、收起叉靠右，只留底下一道线 */
   /* 抽屉头行：题字靠左、收起叉靠右，底下一道线与目录分开 */
   .mz-plaque { justify-content: space-between; height: 44px; border-bottom: 1px solid var(--gold-line); text-indent: 0; }
   .mz-side-x { display: block; flex: none; width: 32px; height: 32px; border: none; background: none; cursor: pointer; padding: 8px;
     color: var(--txt-faint); transition: color var(--t-fast) var(--ease-out); }
   .mz-side-x:active, .mz-side-x:hover { color: var(--gold-hi); }
   .mz-side-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-  /* 顶栏舍下的五项在手机端补显进状态表 */
-  /* 整面板一条滚动，目录跟着面板走 */
-  .mz-nav { flex: none; overflow: visible; }
+  /* 整面板一条滚动，目录跟着面板走；有余量时六条同桌面端均分撑高（单条 84 封顶），装不下时不缩、整面板滚 */
+  .mz-nav { flex: 1 0 auto; overflow: visible; }
   #mz-mscrim { display: block; position: absolute; inset: 0; z-index: 29;
     background: var(--scrim); opacity: 0; pointer-events: none;
     transition: opacity var(--t-mid) var(--ease-out); }
