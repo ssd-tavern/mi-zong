@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.34";
+  var CDN_TAG = "3.0.35";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -604,7 +604,7 @@
   --scrim: rgba(0,0,0,.62);
   /* 底纹只此一种：灰度墨云纹以 overlay 叠在侧栏顶栏，似有似无，两主题同值；浮窗与纸面永不加纹 */
   --tex: url('${A}bg-ink.webp');
-  --tex-op: .18;
+  --tex-op: .12;
   --read-col: 700px;
   --side-w: clamp(260px, 22vw, 420px);
   --top-h: 64px;
