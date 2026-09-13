@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.39";
+  var CDN_TAG = "3.0.40";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1655,8 +1655,8 @@
   .mz-tb-plaque.mz-ret svg:first-child { display: none; }
   .mz-tb-plaque.mz-ret svg:last-child { display: block; }
   .mz-tb-plaque[disabled] { opacity: .4; }
-  /* 窄屏回到一排 flex：诸务钮／读数靠左／工具栏，工具栏不再绝对定位；600～900 读数字阶与标签同桌面端，只把间距收到 20 */
-  .mz-tb-face { justify-content: flex-start; gap: 20px; padding: 0; scrollbar-gutter: auto; }
+  /* 窄屏回到一排 flex：诸务钮／读数／工具栏，工具栏不再绝对定位；读数在两端钮之间的空位里居中（不补边，宽度留给读数）；600～900 读数字阶与标签同桌面端，只把间距收到 20 */
+  .mz-tb-face { justify-content: center; gap: 20px; padding: 0; scrollbar-gutter: auto; }
   .mz-topbar > #mz-corner { position: static; translate: none; }
   .mz-tb-set { gap: 20px; }
   .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
