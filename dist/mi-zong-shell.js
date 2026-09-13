@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.19";
+  var CDN_TAG = "3.0.20";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -672,15 +672,13 @@
 .mz-tex::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background: var(--tex) 0 0 / 1024px 1024px repeat; mix-blend-mode: overlay; opacity: var(--tex-op); }
 .mz-tex > * { position: relative; z-index: 1; }
+/* 滚动条：槽宽 9px 占位不变（正文列对齐靠它），槽内不画轨道，只一条 3px 淡金细杆，悬停才亮 */
 #mz-shell-root ::-webkit-scrollbar { width: 9px; height: 9px; }
-#mz-shell-root ::-webkit-scrollbar-corner { background: transparent; }
-#mz-shell-root ::-webkit-scrollbar-track { background: linear-gradient(90deg,
-  transparent calc(50% - .5px), rgba(var(--gold-rgb), .25) calc(50% - .5px),
-  rgba(var(--gold-rgb), .25) calc(50% + .5px), transparent calc(50% + .5px)); }
-#mz-shell-root ::-webkit-scrollbar-thumb { min-height: 48px; border: 2px solid transparent;
-  background-clip: border-box; border-radius: 5px;
-  background-color: color-mix(in srgb, var(--gold) 62%, transparent); }
-#mz-shell-root ::-webkit-scrollbar-thumb:hover { background-color: var(--gold); }
+#mz-shell-root ::-webkit-scrollbar-corner, #mz-shell-root ::-webkit-scrollbar-track { background: transparent; }
+#mz-shell-root ::-webkit-scrollbar-thumb { min-height: 48px; border: 3px solid transparent;
+  background-clip: padding-box; border-radius: 5px;
+  background-color: color-mix(in srgb, var(--gold) 38%, transparent); }
+#mz-shell-root ::-webkit-scrollbar-thumb:hover { background-color: color-mix(in srgb, var(--gold) 70%, transparent); }
 /* 禁用态光标总规则：表单件与钮走原生 disabled，非表单件走 .mz-off（.mz-lock／.mz-locked 同义） */
 #mz-shell-root [disabled], #mz-shell-root .mz-off, #mz-shell-root .mz-lock, #mz-shell-root .mz-locked { cursor: not-allowed; }
 
@@ -709,6 +707,8 @@
   background: rgba(var(--gold-rgb), .35); }
 .mz-plaque::before { top: 3px; }
 .mz-plaque::after { bottom: 3px; }
+/* 收起叉只在窄屏抽屉头行出现 */
+.mz-side-x { display: none; }
 
 /* ==== 舆图缩略（侧栏舆图一组） ==== */
 #mz-minimap { flex: none; cursor: pointer; transition: translate var(--t-fast) var(--ease-out); }
@@ -1675,27 +1675,34 @@
   #mz-corner button:hover { color: var(--gold-hi); }
   #mz-corner button.mz-on { color: var(--gold-hi); }
 
-  /* ==== 侧栏即落下面板：自顶栏下方落下覆盖正文，正文位置不动 ==== */
-  /* 顶栏在 .mz-main 的状态栏留空之下，落下面板与遮罩的起点也要加上这段 */
-  .mz-side { position: absolute; left: 0; right: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); bottom: 0; width: auto; z-index: 30;
-    border-right: none; overflow-y: auto; gap: 10px;
-    padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px));
-    /* 收起要把尾巴挪出屏顶：自身高度之外再加起点那段与阴影 */
-    translate: 0 calc(-100% - var(--top-h) - env(safe-area-inset-top, 0px) - 40px); transition: translate var(--t-slow) var(--ease-paper);
-    box-shadow: 0 12px 30px rgba(var(--sh-rgb),.45); }
+  /* ==== 侧栏即左抽屉：八成宽整高，自左滑入盖住顶栏与正文，点叉或遮罩收起，不接手势 ==== */
+  .mz-side { position: absolute; left: 0; top: 0; bottom: 0; width: min(80cqw, 380px); z-index: 30;
+    border-right: 1px solid var(--line); overflow-y: auto; gap: 10px;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 14px calc(14px + env(safe-area-inset-bottom, 0px));
+    /* 收起要把阴影一并挪出屏左 */
+    translate: calc(-100% - 40px) 0; transition: translate var(--t-slow) var(--ease-paper);
+    box-shadow: 12px 0 30px rgba(var(--sh-rgb),.45); }
   .mz-side.mz-open { translate: 0 0; }
+  /* 短屏抽屉内容装不下时照滚，但不画桌面浏览器那条占位滚动条（真机本就是浮层细条） */
+  .mz-side { scrollbar-width: none; }
+  .mz-side::-webkit-scrollbar { display: none; }
   /* iOS 把可滚动面板单独合成一层，层内叠色纹理不混色直接盖上；改成同元素三层背景混色，数值上与原叠色等价 */
   .mz-side.mz-tex::before { display: none; }
   .mz-side { background: linear-gradient(color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent), color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent)),
     var(--tex) 0 0 / 1024px 1024px repeat, var(--bg0);
     background-blend-mode: normal, overlay, normal; }
-  /* 匾额缩成顶栏那枚钮，题头与开关是同一块牌子 */
-  .mz-plaque { display: none; }
+  /* 匾额改抽屉头行：题字靠左、收起叉靠右，只留底下一道线 */
+  .mz-plaque { justify-content: space-between; height: 44px; border-width: 0 0 1px; text-indent: 0; }
+  .mz-plaque::before, .mz-plaque::after { display: none; }
+  .mz-side-x { display: block; flex: none; width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 7px;
+    color: var(--txt-faint); transition: color var(--t-fast) var(--ease-out); }
+  .mz-side-x:active, .mz-side-x:hover { color: var(--gold-hi); }
+  .mz-side-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   /* 顶栏舍下的五项在手机端补显进状态表 */
   .mz-doom .mz-sr-dup { display: flex; }
   /* 整面板一条滚动，目录跟着面板走 */
   .mz-nav { flex: none; overflow: visible; }
-  #mz-mscrim { display: block; position: absolute; left: 0; right: 0; top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); bottom: 0; z-index: 29;
+  #mz-mscrim { display: block; position: absolute; inset: 0; z-index: 29;
     background: var(--scrim); opacity: 0; pointer-events: none;
     transition: opacity var(--t-mid) var(--ease-out); }
   #mz-mscrim.mz-open { opacity: 1; pointer-events: auto; }
@@ -4631,7 +4638,7 @@
   function skeletonHtml() {
     return `
   <div class="mz-side mz-tex">
-    <div class="mz-plaque">密宗模拟器</div>
+    <div class="mz-plaque">密宗模拟器<button class="mz-side-x" title="收起">${ICO.close}</button></div>
     <div id="${SEL.minimap}" data-lift="舆图">
       <div class="mz-map-wrap"><img src="${asset("map-panorama.webp")}" alt="舆图" data-mode="home"><div class="mz-map-pin"></div></div>
       <div class="mz-doom" id="${SEL.doom}"></div>
@@ -4730,6 +4737,7 @@
     });
     doc.getElementById(SEL.mplaque).addEventListener("click", () => toggleDrawer("l"));
     doc.getElementById(SEL.mscrim).addEventListener("click", () => setDrawer(null));
+    root.querySelector(".mz-side-x").addEventListener("click", () => setDrawer(null));
   }
 
   // src/02-visibility.js
