@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "4.0.5";
+  var CDN_TAG = "4.0.6";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -856,13 +856,13 @@
 .mz-ff-detail.mz-show { display: block; animation: mz-reveal var(--t-mid) var(--ease-out) both; }
 .mz-ff-detail b { color: var(--gold-hi); font-weight: 600; }
 .mz-ff-voice { display: inline-flex; align-items: center; border: none; background: none; cursor: pointer;
-  font-family: inherit; font-size: 12.5px; letter-spacing: 1px; color: var(--gold-hi); padding: 3px 4px;
+  font-family: inherit; font-size: 12.5px; letter-spacing: 1px; color: var(--txt); padding: 3px 4px;
   transition: color var(--t-fast) var(--ease-out); }
 /* 新语红点：楼尾整行共用一枚，不逐人配点 */
 .mz-ff-side > .mz-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--red);
   box-shadow: 0 0 6px var(--red); animation: breathe 2.6s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity: .95; } 50% { opacity: .4; } }
-.mz-ff-voice:hover, .mz-ff-voice.mz-open { color: var(--txt); }
+.mz-ff-voice:hover, .mz-ff-voice.mz-open { color: var(--gold-hi); }
 /* 心声卡：花押叠印右下角 */
 .mz-vc { display: none; gap: 14px; padding: 17px 22px 16px; margin: 0 0 22px;
   position: relative; background: var(--bg3); border: 1px solid var(--line);
@@ -885,7 +885,7 @@
 .mz-vc-main { flex: 1; min-width: 0; }
 .mz-vc-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 7px;
   font-size: 14.5px; letter-spacing: 2px; font-weight: 600; color: var(--txt); }
-.mz-vc-tabs { font-size: 11.5px; letter-spacing: 2px; color: var(--txt-faint); font-weight: 400; }
+.mz-vc-tabs { display: inline-flex; gap: 10px; font-size: 11.5px; letter-spacing: 2px; color: var(--txt-faint); font-weight: 400; }
 .mz-vc-tabs button { border: none; background: none; cursor: pointer; font-family: inherit; font-size: inherit;
   letter-spacing: inherit; color: var(--txt-faint); padding: 2px 3px; transition: color var(--t-fast) var(--ease-out); }
 .mz-vc-tabs button.mz-on, .mz-vc-tabs button:hover { color: var(--gold-hi); }
@@ -3089,7 +3089,7 @@
       memoHtml2 = '<div class="mz-vc-memos"><div class="mz-vc-memo"><b>' + escapeHtml(last[0]) + (when ? "（" + escapeHtml(when) + "）" : "") + "</b>　" + escapeHtml(body) + "</div></div>";
     }
     const tabBtn = (k, label) => "<button" + (tab === k ? ' class="mz-on"' : "") + ' data-foot-tab="voice:' + name + ":" + k + '">' + label + "</button>";
-    return '<div class="mz-vc mz-show ' + STAMP[name] + (tab === "memoir" ? " mz-memoir" : "") + '"><div class="mz-vc-img" title="查阅同心缕" data-foot-char="' + name + '">' + (img ? '<img src="' + escapeHtml(img) + '" alt="' + name + '">' : "<span>立绘待补</span>") + '</div><div class="mz-vc-main"><div class="mz-vc-head">' + name + '<span class="mz-vc-tabs">' + tabBtn("voice", "心声") + "｜" + tabBtn("memoir", "回想") + "</span></div>" + (g.心声 ? '<div class="mz-vc-text">' + escapeHtml(g.心声) + "</div>" : '<div class="mz-vc-text mz-vc-empty">此刻未通心曲</div>') + (tab === "memoir" ? memoHtml2 : '<div class="mz-vc-memos"></div>') + "</div></div>";
+    return '<div class="mz-vc mz-show ' + STAMP[name] + (tab === "memoir" ? " mz-memoir" : "") + '"><div class="mz-vc-img" title="查阅同心缕" data-foot-char="' + name + '">' + (img ? '<img src="' + escapeHtml(img) + '" alt="' + name + '">' : "<span>立绘待补</span>") + '</div><div class="mz-vc-main"><div class="mz-vc-head">' + name + '<span class="mz-vc-tabs">' + tabBtn("voice", "心声") + tabBtn("memoir", "回想") + "</span></div>" + (g.心声 ? '<div class="mz-vc-text">' + escapeHtml(g.心声) + "</div>" : '<div class="mz-vc-text mz-vc-empty">此刻未通心曲</div>') + (tab === "memoir" ? memoHtml2 : '<div class="mz-vc-memos"></div>') + "</div></div>";
   }
   function floorFootInner(mid) {
     const d = floorData(mid);
