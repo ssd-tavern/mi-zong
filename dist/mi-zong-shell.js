@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.37";
+  var CDN_TAG = "3.0.38";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -749,14 +749,12 @@
 .mz-doom .mz-sr-row b.mz-red { color: var(--red); }
 .mz-doom .mz-sr-row b.mz-dim { color: var(--txt-faint); opacity: .6; }
 
-/* ==== 玩法入口目录（一列六条，条间一道自左向右淡出的金线） ==== */
+/* ==== 玩法入口目录（一列六条，条间不画线：图标、名、小字三层加留白已足够分开） ==== */
 /* 条高随屏高：目录有余量时六条均分撑高、到 84px 封顶，余量不足时不缩只滚（flex-shrink 0） */
 .mz-nav { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 1px; padding-top: 2px; overflow-y: auto; }
 .mz-nav-item { position: relative; flex: 1 0 auto; max-height: 84px; display: flex; align-items: center; gap: 10px; padding: 10px 9px 10px 8px; cursor: pointer;
   border-left: 3px solid transparent;
   transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
-.mz-nav-item + .mz-nav-item::before { content: ''; position: absolute; left: 8px; right: 6px; top: 0; height: 1px;
-  background: linear-gradient(90deg, rgba(var(--gold-rgb), .22), transparent 88%); }
 .mz-nav-ico { width: 26px; height: 26px; flex: none; display: flex; align-items: center; justify-content: center; }
 .mz-nav-ico img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 2px 3px rgba(var(--sh-rgb),.5)); }
 .mz-nav-main { flex: 1; min-width: 0; }
