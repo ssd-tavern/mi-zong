@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.18";
+  var CDN_TAG = "3.0.19";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1855,6 +1855,7 @@
   // src/17-gate.js
   var GATE_WIN = "开坛";
   var GATE_TITLE = "开山立坛";
+  var CB2 = (p) => "https://i.postimg.cc/" + p;
   var SECTS = [
     { key: "理趣大乐", line: "借香汤声色破戒，以肉身作坛城。" },
     { key: "造境摄魂", line: "布暗室光影与迷香，造神迹以摄魄。" },
@@ -1864,8 +1865,8 @@
   ];
   var SECT_PIC = { 理趣大乐: "sect-1-bliss.webp", 造境摄魂: "sect-2-illusion.webp", 慈悲蛊心: "sect-3-mercy.webp", 尸陀修罗: "sect-4-asura.webp", 罪业提线: "sect-5-strings.webp" };
   var OPENINGS_META = [
-    { title: "破庙开山", blurb: "会昌元年三月，你重回城南荒庙，在断臂佛像下掘开空置的地窖，借满城欲念开坛立教。", img: "https://i.imgur.com/EUzYT8S.png" },
-    { title: "雪域缘起", blurb: "会昌元年五月，地宫密坛粗成，四女皆已入坛受灌，西市摆摊的落难蕃女正立于庙门之外，雪域佛国自此起局。", img: "https://i.imgur.com/8r2QCVU.png" }
+    { title: "破庙开山", blurb: "会昌元年三月，你重回城南荒庙，在断臂佛像下掘开空置的地窖，借满城欲念开坛立教。", img: CB2("0jvwGjx0/ying-xiong-tu-de-gong-da-fa-hui.png") },
+    { title: "雪域缘起", blurb: "会昌元年五月，地宫密坛粗成，四女皆已入坛受灌，西市摆摊的落难蕃女正立于庙门之外，雪域佛国自此起局。", img: CB2("DZTyg3QQ/ying-xiong-tu-xue-yu-fu-guo.png") }
   ];
   var chosenSect = null;
   var page = 0;
