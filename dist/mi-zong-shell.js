@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "4.0.0";
+  var CDN_TAG = "4.0.1";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1064,7 +1064,7 @@
 /* 右列走卷题＋正文两档：题名 20px，简介同正文字号 */
 .mz-gate-text { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding-top: 2px; }
 .mz-gate-text b { font-size: var(--fs-head); letter-spacing: var(--ls-head); color: var(--txt); font-weight: 600; }
-.mz-gate-text p { margin: 0; font-size: var(--fs-body); line-height: 2; color: var(--txt-dim); text-align: justify; }
+.mz-gate-text p { margin: 0; font-size: var(--fs-body); line-height: 2; color: var(--txt-dim); text-align: start; }
 .mz-gate-text .mz-gate-nav { margin-top: auto; }
 .mz-gate-nav { display: flex; align-items: center; justify-content: flex-start; gap: 14px; font-size: 12.5px; letter-spacing: 2px; color: var(--txt-faint); margin-top: 2px; }
 .mz-gate-nav button { border: none; background: none; cursor: pointer; color: var(--txt-dim); width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
@@ -1553,7 +1553,7 @@
 .mz-letter-scroll { flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px; scrollbar-width: thin; }
 .mz-letter-head { text-align: center; font-size: var(--fs-head); letter-spacing: var(--ls-head); text-indent: var(--ls-head); color: var(--paper-ink); font-weight: 600; margin-bottom: .6em; }
 /* 信文与正文同字同号同行距 */
-.mz-letter-body p { margin: 0 0 .5em; text-indent: 2em; font-size: var(--fs-body); line-height: 2; letter-spacing: .3px; color: var(--paper-ink); text-align: justify; }
+.mz-letter-body p { margin: 0 0 .5em; text-indent: 2em; font-size: var(--fs-body); line-height: 2; letter-spacing: .3px; color: var(--paper-ink); text-align: start; }
 .mz-letter-sign { text-align: right; padding-right: 1em; margin-top: .3em; font-size: var(--fs-body); letter-spacing: 4px; color: var(--paper-ink-dim); }
 .mz-letter-foot { flex: none; display: flex; justify-content: flex-end; align-items: stretch; gap: 12px; margin-top: 12px; }
 .mz-letter-btn { box-sizing: border-box; height: 36px; line-height: 34px; border: 1px solid rgba(var(--paper-ink-rgb), .45); background: none; cursor: pointer; font-family: inherit; color: var(--paper-ink);
