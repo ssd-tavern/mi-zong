@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "4.0.6";
+  var CDN_TAG = "4.0.7";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -745,6 +745,7 @@
   color: var(--txt); overflow: hidden; text-overflow: ellipsis; }
 .mz-doom .mz-sr-row b.mz-red { color: var(--red); }
 .mz-doom .mz-sr-row b.mz-dim { color: var(--txt-faint); opacity: .6; }
+.mz-doom .mz-sr-row b .mz-loc-sub { font-style: normal; margin-left: 8px; }
 
 /* ==== 玩法入口目录（一列六条，条间不画线：图标、名、小字三层加留白已足够分开） ==== */
 /* 条高随屏高：目录有余量时六条均分撑高、到 84px 封顶，余量不足时不缩只滚（flex-shrink 0） */
@@ -3611,7 +3612,7 @@
     const loc = D.时空.当前地界;
     const zone = zoneName(loc), sub = zoneSub(loc);
     const prefix = abroadOf(D) ? "蕃地 " : zone && !ZONES.includes(zone) ? "城外 " : "";
-    const locVal = prefix + esc2(zone) + (sub ? "｜" + esc2(sub) : "");
+    const locVal = prefix + esc2(zone) + (sub ? '<i class="mz-loc-sub">' + esc2(sub) + "</i>" : "");
     return srRow({ k: "地界", v: locVal, stat: "地界" }, esc2(loc.replace(/\//g, " "))) + srRow(r.大势);
   }
   var rankShort = (r) => String(r || "").split("·")[0];
