@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.23";
+  var CDN_TAG = "3.0.24";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1636,7 +1636,7 @@
 
   /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样）；宵禁／节令／大势下沉抽屉 ==== */
   /* 两端钮的图标边与正文首字对齐：钮内边距 5，故顶栏留白＝正文留白－5 */
-  .mz-topbar { padding-left: calc(var(--col-side) - 5px); padding-right: calc(var(--col-side) - 5px); gap: 10px; }
+  .mz-topbar { padding-left: calc(var(--col-side) - 5px); padding-right: calc(var(--col-side) - 7px); gap: 10px; }
   /* 只留线稿图标，不加框不填底，与右端工具栏同族 */
   .mz-tb-plaque { display: flex; color: var(--txt-dim); width: 28px; height: 28px; padding: 5px;
     transition: color var(--t-fast) var(--ease-out); }
@@ -1666,8 +1666,9 @@
   .mz-tb-i b.mz-gain { color: var(--gold-hi); }
   .mz-tb-i b.mz-red { color: var(--red); }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
-  #mz-corner { gap: 2px; }
-  #mz-corner button { color: var(--txt-faint); width: 26px; height: 26px; padding: 5px; }
+  /* 设置与出卷两钮：点击区 30、相隔 10，中心相距 40 免误触；图标仍 16 */
+  #mz-corner { gap: 10px; }
+  #mz-corner button { color: var(--txt-faint); width: 30px; height: 30px; padding: 7px; }
   #mz-corner button:hover { color: var(--gold-hi); }
   #mz-corner button.mz-on { color: var(--gold-hi); }
   /* 玩法窗开着时收起设置／出卷，免得误触退回酒馆；开坛窗仍留出卷 */
