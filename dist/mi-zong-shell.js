@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.30";
+  var CDN_TAG = "3.0.31";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -547,7 +547,7 @@
   /* 字阶九档，见 docs/前端速记.md */
   --fs-title: 28px; --ls-title: 14px;
   --fs-head: 20px; --ls-head: 5px;
-  --fs-plaque: 14px; --ls-plaque: 6px;
+  --fs-plaque: 17px; --ls-plaque: 7px;
   --fs-name: 15.5px; --ls-name: 3px;
   --fs-label: 12.5px; --ls-label: 3px;
   /* 正文字号＝断点基准×设置里的倍数；窄屏基准另见 phone.js */
@@ -703,24 +703,20 @@
 /* ==== 侧栏骨架 ==== */
 .mz-side {
   width: var(--side-w); flex: none; display: flex; flex-direction: column;
-  padding: 8px 11px 8px; gap: 12px; overflow: hidden;
+  /* 栏底留白 16 加目录末条内边距 10，等于题字下缘到舆图上缘那段（间距 12 加匾额半个余量） */
+  padding: 8px 11px 16px; gap: 12px; overflow: hidden;
   background: var(--bg0);
   border-right: 1px solid var(--line);
 }
 
-/* 栏头匾额（上下各一道金线，线内 3px 再各一道细金线） */
+/* 栏头题字：不加线（暗底上的横线与界面分隔线撞车），只靠亮金字与字距立住 */
 .mz-plaque {
   position: relative;
   flex: none; display: flex; align-items: center; justify-content: center;
   height: 44px; color: var(--gold-hi);
   font-size: var(--fs-plaque); letter-spacing: var(--ls-plaque); text-indent: var(--ls-plaque);   /* 抵消末字字距，题字真居中 */
   font-weight: 600;
-  border-style: solid; border-color: var(--gold-line); border-width: 1px 0;
 }
-.mz-plaque::before, .mz-plaque::after { content: ''; position: absolute; left: 0; right: 0; height: 1px;
-  background: rgba(var(--gold-rgb), .35); }
-.mz-plaque::before { top: 3px; }
-.mz-plaque::after { bottom: 3px; }
 /* 收起叉只在窄屏抽屉头行出现 */
 .mz-side-x { display: none; }
 
@@ -1699,8 +1695,8 @@
     var(--tex) 0 0 / 1024px 1024px repeat, var(--bg0);
     background-blend-mode: normal, overlay, normal; }
   /* 匾额改抽屉头行：题字靠左、收起叉靠右，只留底下一道线 */
-  .mz-plaque { justify-content: space-between; height: 44px; border-width: 0 0 1px; text-indent: 0; }
-  .mz-plaque::before, .mz-plaque::after { display: none; }
+  /* 抽屉头行：题字靠左、收起叉靠右，底下一道线与目录分开 */
+  .mz-plaque { justify-content: space-between; height: 44px; border-bottom: 1px solid var(--gold-line); text-indent: 0; }
   .mz-side-x { display: block; flex: none; width: 32px; height: 32px; border: none; background: none; cursor: pointer; padding: 8px;
     color: var(--txt-faint); transition: color var(--t-fast) var(--ease-out); }
   .mz-side-x:active, .mz-side-x:hover { color: var(--gold-hi); }
