@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.29";
+  var CDN_TAG = "3.0.30";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -915,19 +915,17 @@
   color: var(--txt);
   background: var(--bg1); }
 
-/* ==== 顶栏（账头：整条对齐正文列——时辰左缘落在列左缘，六项读数跟在后面；纸上只此一条横带） ==== */
-/* 顶栏本身不留左内边距：读数框的百分比按顶栏内容盒算，--col-side 里的 100% 才等于整张纸宽 */
-.mz-topbar { flex: none; height: var(--top-h); display: flex; align-items: center; gap: 22px; padding: 0;
+/* ==== 顶栏（桌面端三项读数整组居中于整张纸，工具栏绝对定位贴右不占读数框；纸上只此一条横带） ==== */
+.mz-topbar { position: relative; flex: none; height: var(--top-h); display: flex; align-items: center; gap: 22px; padding: 0;
   background: var(--bg0); border-bottom: 1px solid var(--line); }
-/* 工具栏是顶栏末子项，右留 30 顶替顶栏右内边距 */
-.mz-topbar > :last-child { margin-right: 30px; }
+.mz-topbar > #mz-corner { position: absolute; right: 30px; top: 50%; translate: 0 -50%; }
 /* 诸务钮：桌面端不存在，窄屏才是落下面板（侧栏）的开关；描线图标，与右侧工具栏同族 */
 .mz-tb-plaque { display: none; flex: none; align-items: center; justify-content: center;
   width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 6px; }
 .mz-tb-plaque svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-/* overflow:hidden 把溢出读数裁在读数框内；工具栏是同排 flex 项，读数够不到图标（margin 只留一道间隙） */
-.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; gap: 22px;
-  padding-left: var(--col-side); margin-right: 16px; overflow: hidden; height: 100%; }
+/* 读数框铺满顶栏、内容居中；overflow:hidden 把溢出读数裁在框内 */
+.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 22px;
+  overflow: hidden; height: 100%; }
 .mz-tb-set { display: flex; align-items: center; gap: 22px; min-width: 0; }
 /* 时辰与六项同式同字阶（上「时辰」标签，下「日期 时辰」） */
 .mz-tb-time { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -1665,8 +1663,9 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mz-tb-time b { font-size: 12px; color: var(--txt); }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
-  .mz-tb-face { padding-left: 0; gap: 10px; margin-right: 0; }
-  .mz-topbar > :last-child { margin-right: 0; }
+  /* 窄屏回到一排 flex：诸务钮／读数靠左／工具栏，工具栏不再绝对定位 */
+  .mz-tb-face { justify-content: flex-start; gap: 10px; }
+  .mz-topbar > #mz-corner { position: static; translate: none; }
   .mz-tb-set { gap: 10px; }
   .mz-tb-i { flex-direction: row; align-items: baseline; gap: 6px; font-size: 12px; letter-spacing: .5px; text-indent: 0; color: var(--gold); }
   /* 贯与人自带单位，窄屏不印「铜钱」「信众」标签 */
