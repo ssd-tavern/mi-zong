@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.52";
+  var CDN_TAG = "3.0.53";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1699,19 +1699,21 @@
   #mz-lift.mz-show, #mz-lift.mz-hide { animation: none; }
   #mz-lift .mz-held { width: 100%; height: 100%; }
   #mz-lift .mz-held h3 { left: 10px; top: 0; font-size: 13px; letter-spacing: 4px; padding: 16px 10px; }
-  #mz-lift .mz-held .mz-held-body { padding: 14px 4px calc(8px + env(safe-area-inset-bottom, 0px)); }
+  /* 窗内两侧留 14：裸文字（区名题、时局行、注）离屏边 14；自带 8 内边距的行表与折页内容落在 22，对齐正文首字 */
+  #mz-lift .mz-held .mz-held-body { padding: 14px 14px calc(8px + env(safe-area-inset-bottom, 0px)); }
+  .mz-folio { padding: 4px 8px 10px; }
   .mz-card { padding: 12px 0 11px; font-size: 13.5px; }
   .mz-card:has(> .mz-seal-btn) { padding-right: 0; }
   .mz-card b { padding-right: 34px; font-size: 14.5px; letter-spacing: 2px; }
   .mz-card .mz-seal-btn { position: static; display: block; margin: 8px 0 0 auto; }
-  .mz-vc { padding: 14px 14px 14px; }
+  .mz-vc { padding: 14px 8px 14px; }
   .mz-atlas { flex-direction: column; overflow-y: auto; }
   .mz-atlas .mz-mapbox { width: 100%; height: auto; }
   /* 驿路长卷手机端横滚：盒宽随幅面，只滚不缩 */
   .mz-atlas .mz-mapbox.mz-road { width: auto; min-width: 720px; height: 288px; }
   .mz-atlas .mz-zlist-road { grid-template-columns: minmax(0, 1fr); }
   /* 页签栏：等宽一行，小字折到名下，尾注独占一行靠右 */
-  .mz-tabs { gap: 0; flex-wrap: wrap; margin: -2px 0 0; padding-left: 40px; }
+  .mz-tabs { gap: 0; flex-wrap: wrap; margin: -2px 0 0; padding-left: 30px; }
   .mz-tabs button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 4px 2px 6px; }
   .mz-tabs button .mz-n { margin-left: 0; font-size: 11px; line-height: 1.3; text-align: center; white-space: normal; }
   .mz-tabs > .mz-why { flex: 0 0 100%; margin: 4px 0 0; text-align: right; }
