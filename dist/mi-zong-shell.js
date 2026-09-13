@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "4.0.2";
+  var CDN_TAG = "4.0.3";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -2105,225 +2105,6 @@
     return s || String(raw);
   }
 
-  // src/adapters/presets.js
-  function esc(s) {
-    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  }
-  function lastMatch(s, re) {
-    const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
-    let m, last = null;
-    while (m = g.exec(s)) {
-      last = m;
-      if (!m[0].length) g.lastIndex++;
-    }
-    return last;
-  }
-  var MAIN_TAGS = ["maintext", "content", "正文", "dream_body", "game"];
-  var MAIN_OPEN_RE = new RegExp("(?:^|\\n)[ \\t]*<(" + MAIN_TAGS.join("|") + ")(?:\\s[^<>]*)?>", "gi");
-  function lastMainOpen(s) {
-    const m = lastMatch(s, MAIN_OPEN_RE);
-    if (!m) return null;
-    const index = m.index + m[0].indexOf("<");
-    return { index, end: m.index + m[0].length, tag: m[1].toLowerCase() };
-  }
-  function mainBlocks(s) {
-    const last = lastMainOpen(s);
-    if (!last) return null;
-    const re = new RegExp("(?:^|\\n)[ \\t]*<" + last.tag + "(?:\\s[^<>]*)?>", "gi");
-    const opens = [];
-    let m;
-    while (m = re.exec(s)) opens.push({ start: m.index + m[0].indexOf("<"), end: m.index + m[0].length });
-    const close = "</" + last.tag + ">";
-    const lower = s.toLowerCase();
-    return opens.map((o, i) => {
-      const limit = i + 1 < opens.length ? opens[i + 1].start : s.length;
-      const j = lower.indexOf(close, o.end);
-      if (j >= 0 && j < limit) return s.slice(o.end, j).trim();
-      const body = s.slice(o.end, limit);
-      return (i + 1 < opens.length ? body : body.replace(TAIL_CUT_RE, "")).trim();
-    });
-  }
-  var DOC_ROOT_RE = /<dream_plot(?:\s[^<>]*)?>/i;
-  var TG_PRE_RE = /(?:^|\n)[ \t]*<!--\s*\d\.\s*正文前的格式\s*-->/g;
-  var TG_BODY_RE = /(?:^|\n)[ \t]*<!--\s*\d\.\s*正文\s*-->/g;
-  var TG_AFTER_RE = /(?:^|\n)[ \t]*<!--\s*\d\.\s*正文后的格式\s*-->/;
-  function tgCut(s) {
-    const b = lastMatch(s, TG_BODY_RE);
-    const pre = lastMatch(b ? s.slice(0, b.index) : s, TG_PRE_RE);
-    return pre ? pre.index : b ? b.index : -1;
-  }
-  var GEMINI_TURN_RE = /<\|im_start\|>\s*gemini[^\n]*\n?[\s\S]*?(?:<\|im_end\|>|$)/gi;
-  var CONTROL_TOKEN_RE = /<\|im_start\|>[^\n]*|<\|(?:im_end|pad|pad_end)\|>|<-(?:begin|end)-response->/gi;
-  function stripControlTurns(s) {
-    if (s.indexOf("<|") < 0 && s.indexOf("<-") < 0) return s;
-    return s.replace(GEMINI_TURN_RE, "").replace(CONTROL_TOKEN_RE, "");
-  }
-  var THOUGHT_TAGS = ["thinking", "think", "cot", "reasoning", "meow", "think_nya~", "konatan_planning~", "draft_notes", "draft", "preparation"];
-  var THOUGHT_NAMES = THOUGHT_TAGS.map(esc).join("|");
-  var THOUGHT_OPEN = "<(?:" + THOUGHT_NAMES + ")(?:\\s[^<>]*)?>";
-  var THOUGHT_CLOSE = "</(?:" + THOUGHT_NAMES + ")\\s*>";
-  var THOUGHT_BLOCK_RE = new RegExp(THOUGHT_OPEN + "([\\s\\S]*?)" + THOUGHT_CLOSE, "gi");
-  var THOUGHT_TAIL_RE = new RegExp(THOUGHT_OPEN + "([\\s\\S]*)$", "i");
-  var BARE_CLOSE_RE = new RegExp("(?:" + THOUGHT_CLOSE + "|<!--\\s*(?:end_of_梳理|1·思考结束|end_of_Subtext_think)\\s*-->|<｜end▁of▁thinking｜>|前尘已定，梦境将演。|(?:好的[，,]\\s*)?我将进行符合需求的创作：|#{1,6}[ \\t]*正式创作|#{1,6}[ \\t]*正文[ \\t]*(?=\\r?\\n|$))", "i");
-  var FAKE_THINK = /* @__PURE__ */ new Set(["我think完了。", "Thought budget exceeded."]);
-  var HEAD_MARK_RE = /^\s*(?:\[(?:metacognition|love_qkll)\]|<｜begin▁of▁thinking｜>|吾有一梦，今方始筑：?)/i;
-  var TIDE_HEAD_RE = /^\s*<基础确认>/i;
-  function cleanThought(s) {
-    return s.replace(HEAD_MARK_RE, "").replace(new RegExp(THOUGHT_OPEN + "|" + THOUGHT_CLOSE, "gi"), "").replace(/<!--[\s\S]*?-->/g, "").replace(/<\/[^<>\n]{1,40}>/g, "").replace(/<([^<>\n]{1,40})>/g, "$1").trim();
-  }
-  function splitThought(raw, streaming) {
-    let rest = stripControlTurns(String(raw)).replace(/<draft_notes>\s*<draft>/gi, "<draft_notes>").replace(/<\/draft>\s*<\/draft_notes>/gi, "</draft_notes>");
-    const thoughts = [];
-    const tg = tgCut(rest);
-    if (tg >= 0) return { thoughts: rest.slice(0, tg).trim() ? [rest.slice(0, tg)] : [], rest: rest.slice(tg), closed: true };
-    const mainAt = () => {
-      const m = lastMainOpen(rest);
-      return m ? m.index : -1;
-    };
-    if (TIDE_HEAD_RE.test(rest)) {
-      const i2 = mainAt();
-      if (i2 > 0) return { thoughts: [rest.slice(0, i2)], rest: rest.slice(i2), closed: true };
-      if (streaming) return { thoughts: [rest], rest: "", closed: false };
-    }
-    let closed = false;
-    rest = rest.replace(THOUGHT_BLOCK_RE, (m, body) => {
-      thoughts.push(body);
-      if (!FAKE_THINK.has(body.trim())) closed = true;
-      return "";
-    });
-    const tail = rest.match(THOUGHT_TAIL_RE);
-    if (tail) {
-      const m = lastMainOpen(tail[1]);
-      if (m) {
-        thoughts.push(tail[1].slice(0, m.index));
-        rest = rest.slice(0, tail.index) + tail[1].slice(m.index);
-      } else {
-        thoughts.push(tail[1]);
-        rest = rest.slice(0, tail.index);
-      }
-    }
-    if (thoughts.length) return { thoughts, rest, closed };
-    const i = mainAt();
-    const c = rest.match(BARE_CLOSE_RE);
-    if (c && (i < 0 || c.index < i)) return { thoughts: [rest.slice(0, c.index)], rest: rest.slice(c.index + c[0].length), closed: true };
-    const r = rest.match(DOC_ROOT_RE);
-    if (r && (i < 0 || r.index < i)) return { thoughts: [rest.slice(0, r.index)], rest: rest.slice(r.index + r[0].length), closed: true };
-    if (HEAD_MARK_RE.test(rest) && i > 0) return { thoughts: [rest.slice(0, i)], rest: rest.slice(i), closed: true };
-    if (streaming && i < 0 && rest.trim()) return { thoughts: [rest], rest: "", closed: false };
-    return { thoughts, rest, closed: false };
-  }
-  function extractThought(raw, streaming) {
-    if (!raw) return "";
-    return splitThought(raw, streaming).thoughts.map(cleanThought).filter((t) => t && !FAKE_THINK.has(t)).join("\n\n");
-  }
-  var STRIP_TAGS = [
-    "details",
-    "summary",
-    "tucao",
-    "danmu",
-    "konatan_chat",
-    "progress",
-    "current_event",
-    "advice",
-    "htmlcontent",
-    "guifan",
-    "done",
-    "disclaimer",
-    "Reference_Example",
-    "w2g",
-    "VariableCheck",
-    "memo",
-    "choice",
-    "safe",
-    "theater",
-    "recap",
-    "background",
-    "parallel_world",
-    "meow_FM",
-    "time_format",
-    "aftertalk",
-    "Shiosai",
-    "snow",
-    "quote",
-    "math",
-    "finish",
-    "WF",
-    "style",
-    "script",
-    "scene",
-    "image",
-    "imgthink",
-    "options",
-    "branches",
-    "SUOT",
-    "UpdateVariable",
-    "状态面板",
-    "角色状态面板",
-    "dream_scene",
-    "dream_option",
-    "dream_after_format",
-    "dream_parallel_event",
-    "simple_thinking",
-    "dream_summary",
-    "dream_discuss",
-    "dream_big_discuss",
-    "dream_after_thinking",
-    "original",
-    "analysis",
-    "safety_check",
-    "SexualScene"
-  ];
-  var STRIP_RE = new RegExp("<(" + STRIP_TAGS.map(esc).join("|") + ")(?:\\s[^<>]*)?>[\\s\\S]*?(?:<\\/\\1\\s*>[ \\t]*\\r?\\n?|$)", "gi");
-  var ANY_TAG_RE = /<\/?[A-Za-z_一-鿿][\w\-~:.一-鿿]*(?:\s[^<>]*)?\/?>/g;
-  var TAIL_CUT_RE = /<(options|branches|choice|dream_option|w2g|SUOT|dream_after_format|UpdateVariable)(?:\s[^<>]*)?>(?:(?!<\/\1)[\s\S])*$|<!--(?:(?!-->)[\s\S])*$|<\/?[^<>\s]*$/i;
-  var CAT_INNER_RE = /<details(?:\s[^<>]*)?>\s*<summary(?:\s[^<>]*)?>\s*内心\s*[-－—–:：]\s*([^<>\n]*?)\s*<\/summary\s*>([\s\S]*?)<\/details\s*>[ \t]*\r?\n?/gi;
-  function stripNoise(text) {
-    return text.replace(CAT_INNER_RE, (m, who, body) => body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => "*" + who + "：" + l + "*").join("\n") + "\n").replace(/<htm1fenge(?:\s[^<>]*)?>([\s\S]*?)(?:<\/htm1fenge\s*>|$)/gi, (m, inner) => {
-      const d = inner.match(/<span[^<>]*display:\s*none[^<>]*>([\s\S]*?)<\/span>/i);
-      return d ? d[1].trim() : "";
-    }).replace(STRIP_RE, "").replace(/<Q>[\s\S]*?(?:<\/WF>|$)/gi, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<br\s*\/?>|<\/paragraph\s*>/gi, "\n").replace(ANY_TAG_RE, "").replace(/^[ \t]*#{1,6}[ \t]*正文[ \t]*(?:\r?\n|$)/gm, "").replace(/^[ \t]*#{1,6}[ \t]+(?=\S)/gm, "").replace(/([」』])\{([^{}\n]+)\}/g, (m, q, t) => "（" + t + "）" + q).replace(/^.*[぀-ヿ].*\{[^{}\n]+\}.*$/gm, (line) => line.replace(/\{([^{}\n]+)\}/g, "（$1）")).replace(/^([ \t]*「)([^」\n]*[぀-ヿ][^」\n]*)」[ \t]*\r?\n[ \t]*「([^」\n]+)」[ \t]*(?=\r?\n|$)/gm, "$1$2（$3）」").replace(/^[ \t]*>[ \t]*凝嘤嘤[：:].*(?:\r?\n|$)/gm, "").replace(/^[ \t]*现在开始我的konatan_planning思考。[ \t]*(?:\r?\n|$)/gm, "").replace(/《end》/g, "").replace(/\n{3,}/g, "\n\n");
-  }
-  function finish(body, depth) {
-    return applyDisplayRegexes(stripNoise(body), depth).trim();
-  }
-  function extractMainText(raw, streaming, depth) {
-    if (!raw) return "";
-    if (/^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(raw)) return "";
-    const split = splitThought(raw, streaming);
-    const rest = split.rest;
-    const blocks = mainBlocks(rest);
-    if (blocks) return finish(blocks.join("\n\n"), depth);
-    const tg = lastMatch(rest, TG_BODY_RE);
-    if (tg) {
-      let body = rest.slice(tg.index + tg[0].length);
-      const e = body.search(TG_AFTER_RE);
-      body = e >= 0 ? body.slice(0, e) : body.replace(TAIL_CUT_RE, "");
-      return finish(body, depth);
-    }
-    if (streaming && !split.closed) return "";
-    return finish(streaming ? rest.replace(TAIL_CUT_RE, "") : rest, depth);
-  }
-  var OPTION_TAGS = ["options", "choice", "branches", "dream_option", "w2g", "SUOT"];
-  var OPTION_PREFIX_RE = /^\s*>?\s*(?:\d+\s*[.、):：]|[A-Za-z]\s*[.、):：]|[-*•]|选项[一二三四五六七八九十\d]+\s*[：:]|[①②③④⑤⑥⑦⑧])?\s*(?:[[【][^\]】\n]{1,12}[\]】])?\s*/;
-  function extractOptions(raw, depth) {
-    if (!raw) return [];
-    const s = splitThought(raw, false).rest;
-    let inner = null;
-    for (const tag of OPTION_TAGS) {
-      const m = lastMatch(s, new RegExp("<" + tag + "(?:\\s[^<>]*)?>", "i"));
-      if (!m) continue;
-      const body = s.slice(m.index + m[0].length);
-      const j = body.toLowerCase().indexOf("</" + tag.toLowerCase() + ">");
-      if (j >= 0) {
-        inner = body.slice(0, j);
-        break;
-      }
-    }
-    if (inner == null) return [];
-    const text = applyDisplayRegexes(inner, depth).replace(/<summary(?:\s[^<>]*)?>[\s\S]*?<\/summary\s*>/gi, "").replace(/<\/option\s*>/gi, "\n").replace(ANY_TAG_RE, "");
-    return text.split(/\n|\|/).map((l) => l.replace(OPTION_PREFIX_RE, "").trim()).filter(Boolean).slice(0, 10);
-  }
-
   // src/16-story-actions.js
   function setStoryStatus(text) {
     const el = doc.getElementById(SEL.status);
@@ -2505,18 +2286,20 @@
       await closeUserEdit(true);
       if (editState) return;
     }
-    let raw = null, block = "";
+    let raw = null, block = "", moved = null;
     try {
       const m = getChatMessages(mid)[0];
       if (m && m.role === "user") {
-        raw = userDisplayText(m.message);
-        block = (String(m.message).match(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/i) || [""])[0];
+        const src = userFloorText(m);
+        raw = userDisplayText(src);
+        block = (src.match(/<UpdateVariable>[\s\S]*?<\/UpdateVariable>/i) || [""])[0];
+        if (isAdviceMoved(m)) moved = m;
       }
     } catch (e) {
       dbg("readUserMsg", e);
     }
     if (raw == null) return;
-    editState = { mid, draft: raw, block };
+    editState = { mid, draft: raw, block, moved };
     const log = doc.getElementById(SEL.paper);
     if (log) applyUserEdit(log);
     setStoryStatus("改写中……");
@@ -2527,8 +2310,10 @@
     const text = String(editState.draft == null ? "" : editState.draft).trim();
     if (save && text) {
       try {
-        await setChatMessages([{ message_id: mid, message: editState.block ? text + "\n" + editState.block : text }], { refresh: "affected" });
-        storyCacheDrop(mid);
+        const full = editState.block ? text + "\n" + editState.block : text;
+        const edits = editState.moved ? adviceMoveEdits(editState.moved, full) : [{ message_id: mid, message: full }];
+        await setChatMessages(edits, { refresh: "affected" });
+        edits.forEach((e) => storyCacheDrop(e.message_id));
       } catch (e) {
         setStoryStatus("出错: " + (e && e.message ? e.message : e));
         return;
@@ -2917,12 +2702,14 @@
     if (!ex) return "";
     return ex.reasoning || ex.extra && ex.extra.reasoning || "";
   }
-  function cachedTurnData(m) {
+  function cachedTurnData(m, prev) {
     let data = storyHtmlCache.get(m.message_id);
     if (m.role === "user") {
       if (data === void 0) {
-        data = { role: "user", text: userDisplayText(m.message), thought: "", mid: m.message_id };
-        storyHtmlCache.set(m.message_id, data);
+        const moved = isAdviceMoved(m);
+        const src = userFloorText(m, prev);
+        data = { role: "user", text: userDisplayText(src), thought: "", mid: m.message_id };
+        if (!moved || src !== ADVICE_CONTINUE) storyHtmlCache.set(m.message_id, data);
       }
       return data;
     }
@@ -3105,8 +2892,10 @@
   function patchStoryLog(log, messages, coldStart) {
     const desiredMids = /* @__PURE__ */ new Set();
     const desiredData = [];
+    let prev = null;
     for (const m of messages) {
-      const data = cachedTurnData(m);
+      const data = cachedTurnData(m, prev);
+      prev = m;
       if (!data.text) continue;
       desiredMids.add(m.message_id);
       desiredData.push({ mid: m.message_id, data });
@@ -3500,6 +3289,261 @@
     return '<div class="mz-thinking"><span class="mz-rule mz-l"></span><img src="' + asset("incense-coil.webp") + '" alt="推演中"><span class="mz-rule mz-r"></span></div>';
   }
 
+  // src/adapters/presets.js
+  function esc(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+  function lastMatch(s, re) {
+    const g = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
+    let m, last = null;
+    while (m = g.exec(s)) {
+      last = m;
+      if (!m[0].length) g.lastIndex++;
+    }
+    return last;
+  }
+  var MAIN_TAGS = ["maintext", "content", "正文", "dream_body", "game"];
+  var MAIN_OPEN_RE = new RegExp("(?:^|\\n)[ \\t]*<(" + MAIN_TAGS.join("|") + ")(?:\\s[^<>]*)?>", "gi");
+  function lastMainOpen(s) {
+    const m = lastMatch(s, MAIN_OPEN_RE);
+    if (!m) return null;
+    const index = m.index + m[0].indexOf("<");
+    return { index, end: m.index + m[0].length, tag: m[1].toLowerCase() };
+  }
+  function mainBlocks(s) {
+    const last = lastMainOpen(s);
+    if (!last) return null;
+    const re = new RegExp("(?:^|\\n)[ \\t]*<" + last.tag + "(?:\\s[^<>]*)?>", "gi");
+    const opens = [];
+    let m;
+    while (m = re.exec(s)) opens.push({ start: m.index + m[0].indexOf("<"), end: m.index + m[0].length });
+    const close = "</" + last.tag + ">";
+    const lower = s.toLowerCase();
+    return opens.map((o, i) => {
+      const limit = i + 1 < opens.length ? opens[i + 1].start : s.length;
+      const j = lower.indexOf(close, o.end);
+      if (j >= 0 && j < limit) return s.slice(o.end, j).trim();
+      const body = s.slice(o.end, limit);
+      return (i + 1 < opens.length ? body : body.replace(TAIL_CUT_RE, "")).trim();
+    });
+  }
+  var DOC_ROOT_RE = /<dream_plot(?:\s[^<>]*)?>/i;
+  var TG_PRE_RE = /(?:^|\n)[ \t]*<!--\s*\d\.\s*正文前的格式\s*-->/g;
+  var TG_BODY_RE = /(?:^|\n)[ \t]*<!--\s*\d\.\s*正文\s*-->/g;
+  var TG_AFTER_RE = /(?:^|\n)[ \t]*<!--\s*\d\.\s*正文后的格式\s*-->/;
+  function tgCut(s) {
+    const b = lastMatch(s, TG_BODY_RE);
+    const pre = lastMatch(b ? s.slice(0, b.index) : s, TG_PRE_RE);
+    return pre ? pre.index : b ? b.index : -1;
+  }
+  var GEMINI_TURN_RE = /<\|im_start\|>\s*gemini[^\n]*\n?[\s\S]*?(?:<\|im_end\|>|$)/gi;
+  var CONTROL_TOKEN_RE = /<\|im_start\|>[^\n]*|<\|(?:im_end|pad|pad_end)\|>|<-(?:begin|end)-response->/gi;
+  function stripControlTurns(s) {
+    if (s.indexOf("<|") < 0 && s.indexOf("<-") < 0) return s;
+    return s.replace(GEMINI_TURN_RE, "").replace(CONTROL_TOKEN_RE, "");
+  }
+  var THOUGHT_TAGS = ["thinking", "think", "cot", "reasoning", "meow", "think_nya~", "konatan_planning~", "draft_notes", "draft", "preparation"];
+  var THOUGHT_NAMES = THOUGHT_TAGS.map(esc).join("|");
+  var THOUGHT_OPEN = "<(?:" + THOUGHT_NAMES + ")(?:\\s[^<>]*)?>";
+  var THOUGHT_CLOSE = "</(?:" + THOUGHT_NAMES + ")\\s*>";
+  var THOUGHT_BLOCK_RE = new RegExp(THOUGHT_OPEN + "([\\s\\S]*?)" + THOUGHT_CLOSE, "gi");
+  var THOUGHT_TAIL_RE = new RegExp(THOUGHT_OPEN + "([\\s\\S]*)$", "i");
+  var BARE_CLOSE_RE = new RegExp("(?:" + THOUGHT_CLOSE + "|<!--\\s*(?:end_of_梳理|1·思考结束|end_of_Subtext_think)\\s*-->|<｜end▁of▁thinking｜>|前尘已定，梦境将演。|(?:好的[，,]\\s*)?我将进行符合需求的创作：|#{1,6}[ \\t]*正式创作|#{1,6}[ \\t]*正文[ \\t]*(?=\\r?\\n|$))", "i");
+  var FAKE_THINK = /* @__PURE__ */ new Set(["我think完了。", "Thought budget exceeded."]);
+  var HEAD_MARK_RE = /^\s*(?:\[(?:metacognition|love_qkll)\]|<｜begin▁of▁thinking｜>|吾有一梦，今方始筑：?)/i;
+  var TIDE_HEAD_RE = /^\s*<基础确认>/i;
+  function cleanThought(s) {
+    return s.replace(HEAD_MARK_RE, "").replace(new RegExp(THOUGHT_OPEN + "|" + THOUGHT_CLOSE, "gi"), "").replace(/<!--[\s\S]*?-->/g, "").replace(/<\/[^<>\n]{1,40}>/g, "").replace(/<([^<>\n]{1,40})>/g, "$1").trim();
+  }
+  function splitThought(raw, streaming) {
+    let rest = stripControlTurns(String(raw)).replace(/<draft_notes>\s*<draft>/gi, "<draft_notes>").replace(/<\/draft>\s*<\/draft_notes>/gi, "</draft_notes>");
+    const thoughts = [];
+    const tg = tgCut(rest);
+    if (tg >= 0) return { thoughts: rest.slice(0, tg).trim() ? [rest.slice(0, tg)] : [], rest: rest.slice(tg), closed: true };
+    const mainAt = () => {
+      const m = lastMainOpen(rest);
+      return m ? m.index : -1;
+    };
+    if (TIDE_HEAD_RE.test(rest)) {
+      const i2 = mainAt();
+      if (i2 > 0) return { thoughts: [rest.slice(0, i2)], rest: rest.slice(i2), closed: true };
+      if (streaming) return { thoughts: [rest], rest: "", closed: false };
+    }
+    let closed = false;
+    rest = rest.replace(THOUGHT_BLOCK_RE, (m, body) => {
+      thoughts.push(body);
+      if (!FAKE_THINK.has(body.trim())) closed = true;
+      return "";
+    });
+    const tail = rest.match(THOUGHT_TAIL_RE);
+    if (tail) {
+      const m = lastMainOpen(tail[1]);
+      if (m) {
+        thoughts.push(tail[1].slice(0, m.index));
+        rest = rest.slice(0, tail.index) + tail[1].slice(m.index);
+      } else {
+        thoughts.push(tail[1]);
+        rest = rest.slice(0, tail.index);
+      }
+    }
+    if (thoughts.length) return { thoughts, rest, closed };
+    const i = mainAt();
+    const c = rest.match(BARE_CLOSE_RE);
+    if (c && (i < 0 || c.index < i)) return { thoughts: [rest.slice(0, c.index)], rest: rest.slice(c.index + c[0].length), closed: true };
+    const r = rest.match(DOC_ROOT_RE);
+    if (r && (i < 0 || r.index < i)) return { thoughts: [rest.slice(0, r.index)], rest: rest.slice(r.index + r[0].length), closed: true };
+    if (HEAD_MARK_RE.test(rest) && i > 0) return { thoughts: [rest.slice(0, i)], rest: rest.slice(i), closed: true };
+    if (streaming && i < 0 && rest.trim()) return { thoughts: [rest], rest: "", closed: false };
+    return { thoughts, rest, closed: false };
+  }
+  function extractThought(raw, streaming) {
+    if (!raw) return "";
+    return splitThought(raw, streaming).thoughts.map(cleanThought).filter((t) => t && !FAKE_THINK.has(t)).join("\n\n");
+  }
+  var STRIP_TAGS = [
+    "details",
+    "summary",
+    "tucao",
+    "danmu",
+    "konatan_chat",
+    "progress",
+    "current_event",
+    "advice",
+    "htmlcontent",
+    "guifan",
+    "done",
+    "disclaimer",
+    "Reference_Example",
+    "w2g",
+    "VariableCheck",
+    "memo",
+    "choice",
+    "safe",
+    "theater",
+    "recap",
+    "background",
+    "parallel_world",
+    "meow_FM",
+    "time_format",
+    "aftertalk",
+    "Shiosai",
+    "snow",
+    "quote",
+    "math",
+    "finish",
+    "WF",
+    "style",
+    "script",
+    "scene",
+    "image",
+    "imgthink",
+    "options",
+    "branches",
+    "SUOT",
+    "UpdateVariable",
+    "状态面板",
+    "角色状态面板",
+    "dream_scene",
+    "dream_option",
+    "dream_after_format",
+    "dream_parallel_event",
+    "simple_thinking",
+    "dream_summary",
+    "dream_discuss",
+    "dream_big_discuss",
+    "dream_after_thinking",
+    "original",
+    "analysis",
+    "safety_check",
+    "SexualScene"
+  ];
+  var STRIP_RE = new RegExp("<(" + STRIP_TAGS.map(esc).join("|") + ")(?:\\s[^<>]*)?>[\\s\\S]*?(?:<\\/\\1\\s*>[ \\t]*\\r?\\n?|$)", "gi");
+  var ANY_TAG_RE = /<\/?[A-Za-z_一-鿿][\w\-~:.一-鿿]*(?:\s[^<>]*)?\/?>/g;
+  var TAIL_CUT_RE = /<(options|branches|choice|dream_option|w2g|SUOT|dream_after_format|UpdateVariable)(?:\s[^<>]*)?>(?:(?!<\/\1)[\s\S])*$|<!--(?:(?!-->)[\s\S])*$|<\/?[^<>\s]*$/i;
+  var CAT_INNER_RE = /<details(?:\s[^<>]*)?>\s*<summary(?:\s[^<>]*)?>\s*内心\s*[-－—–:：]\s*([^<>\n]*?)\s*<\/summary\s*>([\s\S]*?)<\/details\s*>[ \t]*\r?\n?/gi;
+  function stripNoise(text) {
+    return text.replace(CAT_INNER_RE, (m, who, body) => body.split(/\r?\n/).map((l) => l.trim()).filter(Boolean).map((l) => "*" + who + "：" + l + "*").join("\n") + "\n").replace(/<htm1fenge(?:\s[^<>]*)?>([\s\S]*?)(?:<\/htm1fenge\s*>|$)/gi, (m, inner) => {
+      const d = inner.match(/<span[^<>]*display:\s*none[^<>]*>([\s\S]*?)<\/span>/i);
+      return d ? d[1].trim() : "";
+    }).replace(STRIP_RE, "").replace(/<Q>[\s\S]*?(?:<\/WF>|$)/gi, "").replace(/<!--[\s\S]*?-->/g, "").replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/<br\s*\/?>|<\/paragraph\s*>/gi, "\n").replace(ANY_TAG_RE, "").replace(/^[ \t]*#{1,6}[ \t]*正文[ \t]*(?:\r?\n|$)/gm, "").replace(/^[ \t]*#{1,6}[ \t]+(?=\S)/gm, "").replace(/([」』])\{([^{}\n]+)\}/g, (m, q, t) => "（" + t + "）" + q).replace(/^.*[぀-ヿ].*\{[^{}\n]+\}.*$/gm, (line) => line.replace(/\{([^{}\n]+)\}/g, "（$1）")).replace(/^([ \t]*「)([^」\n]*[぀-ヿ][^」\n]*)」[ \t]*\r?\n[ \t]*「([^」\n]+)」[ \t]*(?=\r?\n|$)/gm, "$1$2（$3）」").replace(/^[ \t]*>[ \t]*凝嘤嘤[：:].*(?:\r?\n|$)/gm, "").replace(/^[ \t]*现在开始我的konatan_planning思考。[ \t]*(?:\r?\n|$)/gm, "").replace(/《end》/g, "").replace(/\n{3,}/g, "\n\n");
+  }
+  function finish(body, depth) {
+    return applyDisplayRegexes(stripNoise(body), depth).trim();
+  }
+  function extractMainText(raw, streaming, depth) {
+    if (!raw) return "";
+    if (/^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(raw)) return "";
+    const split = splitThought(raw, streaming);
+    const rest = split.rest;
+    const blocks = mainBlocks(rest);
+    if (blocks) return finish(blocks.join("\n\n"), depth);
+    const tg = lastMatch(rest, TG_BODY_RE);
+    if (tg) {
+      let body = rest.slice(tg.index + tg[0].length);
+      const e = body.search(TG_AFTER_RE);
+      body = e >= 0 ? body.slice(0, e) : body.replace(TAIL_CUT_RE, "");
+      return finish(body, depth);
+    }
+    if (streaming && !split.closed) return "";
+    return finish(streaming ? rest.replace(TAIL_CUT_RE, "") : rest, depth);
+  }
+  var ADVICE_CONTINUE = "按照advice继续吧。";
+  var ADVICE_BLOCK_RE = /<advice\b[^>]*>((?:(?!<advice\b|<\/(?:konatan_planning(?:~[^>]*)?|details|script|think(?:ing)?)\s*>)[\s\S])*?)<\/advice\s*>/gi;
+  function isAdviceMoved(m) {
+    return !!m && m.role === "user" && String(m.message).trim() === ADVICE_CONTINUE;
+  }
+  function adviceMeta(m) {
+    const ex = m && m.extra;
+    const meta = ex && (ex.izumi_advice || ex.extra && ex.extra.izumi_advice);
+    return meta && typeof meta.text === "string" ? meta : null;
+  }
+  function prevAssistantFloor(mid) {
+    for (let i = mid - 1; i >= 0 && i >= mid - 5; i--) {
+      const p = getChatMessages(i)[0];
+      if (p && p.role !== "user") return p;
+    }
+    return null;
+  }
+  function userFloorText(m, prev) {
+    if (!isAdviceMoved(m)) return String(m.message);
+    const meta = adviceMeta(m);
+    if (meta) return meta.text;
+    const p = prev === void 0 ? prevAssistantFloor(m.message_id) : prev;
+    const last = p && p.role !== "user" ? lastMatch(String(p.message), ADVICE_BLOCK_RE) : null;
+    return last ? last[1].trim() : String(m.message);
+  }
+  function adviceMoveEdits(m, text) {
+    const p = prevAssistantFloor(m.message_id);
+    if (!p) return [{ message_id: m.message_id, message: text }];
+    const src = String(p.message);
+    const last = lastMatch(src, ADVICE_BLOCK_RE);
+    const block = "<advice>" + text + "</advice>";
+    const next = last ? src.slice(0, last.index) + block + src.slice(last.index + last[0].length) : src.replace(/\s*$/, "") + "\n" + block;
+    const old = adviceMeta(m);
+    const extra = Object.assign({}, m.extra || {}, { izumi_advice: { version: 1, text, assistantId: p.message_id, revision: (old ? old.revision || 0 : 0) + 1 } });
+    return [{ message_id: p.message_id, message: next }, { message_id: m.message_id, message: ADVICE_CONTINUE, extra }];
+  }
+  var OPTION_TAGS = ["options", "choice", "branches", "dream_option", "w2g", "SUOT"];
+  var OPTION_PREFIX_RE = /^\s*>?\s*(?:\d+\s*[.、):：]|[A-Za-z]\s*[.、):：]|[-*•]|选项[一二三四五六七八九十\d]+\s*[：:]|[①②③④⑤⑥⑦⑧])?\s*(?:[[【][^\]】\n]{1,12}[\]】])?\s*/;
+  function extractOptions(raw, depth) {
+    if (!raw) return [];
+    const s = splitThought(raw, false).rest;
+    let inner = null;
+    for (const tag of OPTION_TAGS) {
+      const m = lastMatch(s, new RegExp("<" + tag + "(?:\\s[^<>]*)?>", "i"));
+      if (!m) continue;
+      const body = s.slice(m.index + m[0].length);
+      const j = body.toLowerCase().indexOf("</" + tag.toLowerCase() + ">");
+      if (j >= 0) {
+        inner = body.slice(0, j);
+        break;
+      }
+    }
+    if (inner == null) return [];
+    const text = applyDisplayRegexes(inner, depth).replace(/<summary(?:\s[^<>]*)?>[\s\S]*?<\/summary\s*>/gi, "").replace(/<\/option\s*>/gi, "\n").replace(ANY_TAG_RE, "");
+    return text.split(/\n|\|/).map((l) => l.replace(OPTION_PREFIX_RE, "").trim()).filter(Boolean).slice(0, 10);
+  }
+
   // src/09-board.js
   var esc2 = escapeHtml;
   var zoneName = (loc) => String(loc || "").split("/")[0].trim();
@@ -3618,7 +3662,7 @@
     if (!Number.isInteger(mid)) return true;
     try {
       const m = getChatMessages(mid)[0];
-      return !!m && m.role === "user" && String(m.message).includes(LETTER_REPLY);
+      return !!m && m.role === "user" && userFloorText(m).includes(LETTER_REPLY);
     } catch (e) {
       return true;
     }
