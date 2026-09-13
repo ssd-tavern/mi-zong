@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.22";
+  var CDN_TAG = "3.0.23";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1626,8 +1626,8 @@
   .mz-turn.mz-gm, .mz-turn.mz-zhu { line-height: 1.95; }
   #mz-writing { padding: 8px var(--col-side) calc(12px + env(safe-area-inset-bottom, 0px)); }
   #mz-send { width: 42px; height: 44px; font-size: 18px; }
-  /* 木鱼中心对齐敕印中心：窄屏敕印宽 42，木鱼宽 34，故左移 21+17 */
-  #mz-jump { bottom: 76px; left: calc(100% - var(--col-side) - 38px); right: auto; }
+  /* 木鱼中心对齐敕印中心：窄屏敕印宽 42，木鱼宽 34，故左移 21+17；抬高到书写区之上一指，随状态栏留空一起抬 */
+  #mz-jump { bottom: calc(100px + env(safe-area-inset-bottom, 0px)); left: calc(100% - var(--col-side) - 38px); right: auto; }
   .mz-letter-veil { padding: 10px; }
   .mz-letter { width: min(96cqw, calc((100cqh - 20px) * 2 / 3)); }
   .mz-letter-strip img { width: 60px; height: 60px; }
@@ -1635,7 +1635,8 @@
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
 
   /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样）；宵禁／节令／大势下沉抽屉 ==== */
-  .mz-topbar { padding-left: 10px; padding-right: 10px; gap: 10px; }
+  /* 两端钮的图标边与正文首字对齐：钮内边距 5，故顶栏留白＝正文留白－5 */
+  .mz-topbar { padding-left: calc(var(--col-side) - 5px); padding-right: calc(var(--col-side) - 5px); gap: 10px; }
   /* 只留线稿图标，不加框不填底，与右端工具栏同族 */
   .mz-tb-plaque { display: flex; color: var(--txt-dim); width: 28px; height: 28px; padding: 5px;
     transition: color var(--t-fast) var(--ease-out); }
