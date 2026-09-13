@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.31";
+  var CDN_TAG = "3.0.32";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -919,9 +919,9 @@
 .mz-tb-plaque { display: none; flex: none; align-items: center; justify-content: center;
   width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 6px; }
 .mz-tb-plaque svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-/* 读数框铺满顶栏、内容居中；overflow:hidden 把溢出读数裁在框内 */
+/* 读数框铺满顶栏、内容居中；左右留白与滚动条预留槽照抄正文纸（#mz-paper），读数中线才严格落在正文列中线上；overflow:hidden 顺带裁掉溢出读数 */
 .mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 22px;
-  overflow: hidden; height: 100%; }
+  overflow: hidden; scrollbar-gutter: stable both-edges; padding: 0 calc(var(--col-side) - 9px); height: 100%; }
 .mz-tb-set { display: flex; align-items: center; gap: 22px; min-width: 0; }
 /* 时辰与六项同式同字阶（上「时辰」标签，下「日期 时辰」） */
 .mz-tb-time { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
@@ -1660,7 +1660,7 @@
   .mz-tb-time b { font-size: 12px; color: var(--txt); }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
   /* 窄屏回到一排 flex：诸务钮／读数靠左／工具栏，工具栏不再绝对定位 */
-  .mz-tb-face { justify-content: flex-start; gap: 10px; }
+  .mz-tb-face { justify-content: flex-start; gap: 10px; padding: 0; scrollbar-gutter: auto; }
   .mz-topbar > #mz-corner { position: static; translate: none; }
   .mz-tb-set { gap: 10px; }
   .mz-tb-i { flex-direction: row; align-items: baseline; gap: 6px; font-size: 12px; letter-spacing: .5px; text-indent: 0; color: var(--gold); }
