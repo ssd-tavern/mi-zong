@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.25";
+  var CDN_TAG = "3.0.26";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -230,7 +230,6 @@
   var doomRow = (D, t) => abroadOf(D) ? { k: "蕃地时局", v: (t.年序号 >= 0 ? t.年名 : "会昌元年") + " " + tibetDoom(D), cls: D.吐蕃之行.赞普遇刺 ? "mz-red" : "" } : { k: "灭佛大势", v: (t.年序号 >= 0 ? t.年名 : "会昌元年") + " " + doomOf(t.年序号 >= 0 ? t.公元 : 841), cls: "" };
   var MONTHS = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"];
   var MONTH_ALIAS = { 一月: "正月", 腊月: "十二月" };
-  var GATE = { 开: "卯辰巳午未申", 暮鼓: "酉", 闭: "戌亥子丑寅" };
   var FESTIVALS = [
     [0, 1, "元日", 0, "官民贺岁饮屠苏，市肆歇业数日"],
     [0, 15, "上元", 1, "三日弛禁，满城夜游赏灯"],
@@ -444,13 +443,24 @@
     }
     return { 今日, 将至 };
   }
-  function gateState(t, fest) {
-    const h = t.时辰.replace(/时$/, "")[0] || "";
-    if (!h) return { 文: "未知", cls: "" };
-    if (GATE.开.includes(h)) return { 文: "坊门已开", cls: "" };
-    if (fest && fest.今日 && fest.今日.名 === "上元") return { 文: "上元弛禁", cls: "mz-gain" };
-    if (GATE.暮鼓.includes(h)) return { 文: "暮鼓将响", cls: "mz-red" };
-    return { 文: "坊门已闭", cls: "mz-red" };
+  var FEST_PIC = {
+    元日: ["fest-yuanri.webp", "fest-yuanri-xue.webp"],
+    上元: ["fest-shangyuan.webp", "fest-shangyuan-xue.webp"],
+    晦日: ["fest-huiri.webp", "fest-huiri-xue.webp"],
+    寒食: ["fest-hanshi.webp", "fest-hanshi-xue.webp"],
+    清明: ["fest-qingming.webp", "fest-qingming-xue.webp"],
+    上巳: ["fest-shangsi.webp", "fest-shangsi-xue.webp"],
+    浴佛: ["fest-yufo.webp", "fest-yufo-xue.webp"],
+    端午: ["fest-duanwu.webp", "fest-duanwu-xue.webp"],
+    七夕: ["fest-qixi.webp", "fest-qixi-xue.webp"],
+    盂兰盆: ["fest-yulanpen.webp", "fest-yulanpen-xue.webp"],
+    重阳: ["fest-chongyang.webp", "fest-chongyang-xue.webp"],
+    冬至: ["fest-dongzhi.webp", "fest-dongzhi-xue.webp"],
+    岁除: ["fest-suichu.webp", "fest-suichu-xue.webp"]
+  };
+  function festToday(D) {
+    const f = festivalState(parseTime(D.时空.时间)).今日;
+    return f ? { 名: f.名, 氛围: f.氛围, src: FEST_PIC[f.名][abroadOf(D) ? 1 : 0] } : null;
   }
   var isPanelText = (text) => /^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(String(text || ""));
   var LETTER_TITLE = "雪域佛国";
@@ -727,7 +737,7 @@
 #mz-minimap .mz-map-pin::after { content: attr(data-label); position: absolute; left: 13px; top: -4px;
   font-size: 10.5px; letter-spacing: 1px; color: var(--txt-dim); white-space: nowrap;
   background: var(--bg3); padding: 1px 5px; }
-/* ==== 舆图下状态整表：地界／(四读数 dup)／灭佛大势带进度条，行式统一 ==== */
+/* ==== 舆图下状态整表：地界／灭佛大势，行式统一 ==== */
 #mz-minimap .mz-doom { background: var(--sunk);
   border: 1px solid var(--gold-line); border-top: 0; padding: 6px 10px 8px; }
 .mz-doom .mz-sr-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
@@ -739,13 +749,11 @@
 .mz-doom .mz-sr-row b.mz-gain { color: var(--gold-hi); }
 .mz-doom .mz-sr-row b.mz-red { color: var(--red); }
 .mz-doom .mz-sr-row b.mz-dim { color: var(--txt-faint); opacity: .6; }
-/* dup：顶栏已有的五项，桌面隐藏、仅手机端补显 */
-.mz-doom .mz-sr-dup { display: none; }
-/* 灭佛大势：一行「名／年号」＋当年国策小字＋通栏进度条 */
 
 /* ==== 玩法入口目录（一列六条，条间一道自左向右淡出的金线） ==== */
+/* 条高随屏高：目录有余量时六条均分撑高、到 84px 封顶，余量不足时不缩只滚（flex-shrink 0） */
 .mz-nav { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 1px; padding-top: 2px; overflow-y: auto; }
-.mz-nav-item { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 9px 10px 8px; cursor: pointer;
+.mz-nav-item { position: relative; flex: 1 0 auto; max-height: 84px; display: flex; align-items: center; gap: 10px; padding: 10px 9px 10px 8px; cursor: pointer;
   border-left: 3px solid transparent;
   transition: background var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out); }
 .mz-nav-item + .mz-nav-item::before { content: ''; position: absolute; left: 8px; right: 6px; top: 0; height: 1px;
@@ -812,10 +820,12 @@
 
 /* ==== 章头图（换地那一楼，思维链下正文上，3:1 横幅，地名 HTML 叠左下） ==== */
 .mz-scene { margin: 0 0 14px; cursor: pointer; }
+/* 节令横幅只看不点，与章头图同幅同注 */
+.mz-scene.mz-fest { cursor: default; }
 .mz-scene img { display: block; width: 100%; aspect-ratio: 3 / 1; object-fit: cover; background: var(--bg1); opacity: 0; transition: opacity var(--t-slow) var(--ease-out); }
 .mz-scene img.mz-loaded { opacity: 1; }
 .mz-scene figcaption { margin-top: 5px; text-align: right; font-size: 11px; letter-spacing: 3px; color: var(--txt-faint); transition: color var(--t-fast) var(--ease-out); }
-.mz-scene:hover figcaption { color: var(--gold-hi); }
+.mz-scene[data-open-atlas]:hover figcaption { color: var(--gold-hi); }
 
 /* ==== 行动选项（末楼下方一列，点击即发送） ==== */
 .mz-opts { margin: 2px 0 12px; }
@@ -926,13 +936,11 @@
 /* 分隔竖线挂在项自己身上，项一隐线也跟着走 */
 .mz-tb-i::before { content: ''; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
   width: 1px; height: 26px; background: rgba(var(--gold-rgb), .22); }
-/* 读数三态：平象牙／利金（钱、人、节令当日、弛禁）／危红（宵禁），灰是无 */
+/* 读数三态：平象牙／利金（钱、人）／危红（遇刺），灰是无 */
 .mz-tb-i b { font-size: 14px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-i b.mz-gain { color: var(--gold-hi); }
 .mz-tb-i b.mz-red { color: var(--red); }
 .mz-tb-i b.mz-dim { color: var(--txt-faint); font-weight: 500; }
-/* 顶栏瘦身档：舍节令与大势（更新最少），保住时辰／铜钱／信众／宵禁 */
-@container mz (max-width: 1300px) { .mz-tb-thin { display: none; } }
 
 /* 槽宽 9px（见 tokens.js）两边各占一道，从总留白里扣掉，正文列才与书写区左右对齐 */
 #mz-paper { flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable both-edges;
@@ -996,16 +1004,16 @@
 #mz-writing textarea::placeholder { color: var(--txt-faint); opacity: 1; }
 #mz-send {
   width: 46px; height: 48px; flex: none; border: none;
-  background: var(--red);
+  background: var(--red-soft);
   color: var(--chi); cursor: pointer;
   font-family: inherit; font-size: 20px; font-weight: 600;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: inset 0 0 0 2px var(--red-soft), inset 0 0 0 3px var(--gold), 0 0 24px rgba(var(--red-rgb), .45);
+  box-shadow: inset 0 0 0 2px var(--red-soft), inset 0 0 0 3px var(--gold);
   text-shadow: 0 1px 2px rgba(var(--sh-rgb),.6), 0 0 1px rgba(var(--sh-rgb),.4);
-  filter: drop-shadow(0 8px 18px rgba(var(--sh-rgb),.45));
+  filter: drop-shadow(0 6px 14px rgba(var(--sh-rgb),.4));
   transition: translate var(--t-fast) var(--ease-out), filter var(--t-fast) var(--ease-out);
 }
-#mz-send:hover { filter: drop-shadow(0 12px 24px rgba(var(--sh-rgb),.6)); translate: 0 -2px; }
+#mz-send:hover { filter: drop-shadow(0 8px 18px rgba(var(--sh-rgb),.5)); translate: 0 -2px; }
 #mz-send:active { translate: 0 2px; }
 
 `;
@@ -1634,7 +1642,7 @@
   /* iOS Safari 聚焦字号 <16px 的输入框会放大页面 */
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
 
-  /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样）；宵禁／节令／大势下沉抽屉 ==== */
+  /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样） ==== */
   /* ==== 顶栏钮一套规格：32 点击区、8 内边距、16 图标；钮与读数隔 12，钮与钮隔 8（中心相距 40）；两端图标边与正文首末字对齐（留白＝正文留白－8） ==== */
   .mz-topbar { --tb-btn: 32px; --tb-pad: 8px; padding-left: calc(var(--col-side) - var(--tb-pad)); padding-right: calc(var(--col-side) - var(--tb-pad)); gap: 12px; }
   /* 只留线稿图标，不加框不填底，与右端工具栏同规格 */
@@ -1646,7 +1654,6 @@
   .mz-tb-plaque.mz-ret svg:first-child { display: none; }
   .mz-tb-plaque.mz-ret svg:last-child { display: block; }
   .mz-tb-plaque[disabled] { opacity: .4; }
-  .mz-tb-i.mz-tb-hide { display: none; }
   /* 窄屏顶栏一行式：时辰只留「日期 时辰」，标签不显 */
   .mz-tb-time > span { display: none; }
   /* 三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：值 12px、字距半像素、间距 10；时辰仍留省略号兜底 */
@@ -1697,7 +1704,6 @@
   .mz-side-x:active, .mz-side-x:hover { color: var(--gold-hi); }
   .mz-side-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   /* 顶栏舍下的五项在手机端补显进状态表 */
-  .mz-doom .mz-sr-dup { display: flex; }
   /* 整面板一条滚动，目录跟着面板走 */
   .mz-nav { flex: none; overflow: visible; }
   #mz-mscrim { display: block; position: absolute; inset: 0; z-index: 29;
@@ -3085,14 +3091,13 @@
     }
   }
   function syncScene(el, mid) {
-    const existing = el.querySelector(".mz-scene");
-    const src = sceneSrc(mid);
-    if (!src) {
-      if (existing) existing.remove();
-      return;
-    }
-    if (existing && existing.dataset.scene === src) return;
-    if (existing) existing.remove();
+    const existing = [...el.querySelectorAll(".mz-scene")];
+    const at = (fest) => {
+      const f = existing.find((x) => x.classList.contains("mz-fest") === fest);
+      return f ? f.dataset.scene : "";
+    };
+    if (at(true) + "|" + at(false) === headKey(mid)) return;
+    existing.forEach((f) => f.remove());
     const textEl = el.querySelector(".mz-text");
     if (textEl) textEl.insertAdjacentHTML("beforebegin", sceneHeadHtml(mid));
   }
@@ -3362,11 +3367,30 @@
     }
     return src;
   }
+  function festHead(mid) {
+    const d = floorData(mid);
+    const f = d ? festToday(d.D) : null;
+    if (!f) return null;
+    if (mid > 0) {
+      const prev = floorData(mid - 1) || (mid > 1 ? floorData(mid - 2) : null);
+      const pf = prev ? festToday(prev.D) : null;
+      if (pf && pf.名 === f.名) return null;
+    }
+    return f;
+  }
+  var headKey = (mid) => {
+    const f = festHead(mid);
+    return (f ? f.src : "") + "|" + sceneSrc(mid);
+  };
   function sceneHeadHtml(mid) {
-    const src = sceneSrc(mid);
-    if (!src) return "";
-    const zone = sceneZone(floorData(mid).D);
-    return '<figure class="mz-scene" data-scene="' + src + '" data-open-atlas title="查阅舆图"><img src="' + asset(src) + '" alt="' + zone + '"><figcaption>' + zone + "</figcaption></figure>";
+    const f = festHead(mid), src = sceneSrc(mid);
+    let html = "";
+    if (f) html += '<figure class="mz-scene mz-fest" data-scene="' + f.src + '"><img src="' + asset(f.src) + '" alt="' + f.名 + '"><figcaption>' + f.名 + "　" + f.氛围 + "</figcaption></figure>";
+    if (src) {
+      const zone = sceneZone(floorData(mid).D);
+      html += '<figure class="mz-scene" data-scene="' + src + '" data-open-atlas title="查阅舆图"><img src="' + asset(src) + '" alt="' + zone + '"><figcaption>' + zone + "</figcaption></figure>";
+    }
+    return html;
   }
   function storyTurnHtml(role, text, mid, thought, open, foot, head) {
     const cls = role === "user" ? "mz-zhu" : "mz-gm";
@@ -3533,35 +3557,15 @@
     if (key === "同心缕") return CAST.some((n) => girlUnlocked(D, n));
     return false;
   }
-  var curfewOn = (D) => {
-    if (abroadOf(D)) return false;
-    const z = zoneName(D.时空.当前地界);
-    return !z || ZONES.includes(z);
-  };
   var money贯 = (文) => cn(Math.floor(Math.max(0, 文) / 1e3)) + "贯";
   var moneyTop = (文) => 文 > 1e4 ? money贯(文) : money(文);
   function readings(D) {
     const t = parseTime(D.时空.时间);
-    const fest = festivalState(t);
-    const gate = gateState(t, fest);
-    let festTxt, festCls;
-    if (fest.今日) {
-      festTxt = fest.今日.名;
-      festCls = "mz-gain";
-    } else if (fest.将至) {
-      festTxt = cn(fest.将至.余日) + "日后" + fest.将至.名;
-      festCls = "";
-    } else {
-      festTxt = "无";
-      festCls = "mz-dim";
-    }
     const 文 = 总文(D);
     return {
       日期: t.年序号 >= 0 ? esc2(t.月名 || "") + esc2(t.日文) : esc2(D.时空.时间.replace(/\//g, " ")),
       时辰: esc2(t.时辰),
       题: esc2(D.时空.时间.replace(/\//g, " ")),
-      宵禁: { k: "宵禁", v: gate.文, cls: gate.cls },
-      节令: { k: "节令", v: esc2(festTxt), cls: festCls },
       // 藏地无铜钱，标签改绢帛，值仍是账上的贯
       铜钱: { k: abroadOf(D) ? "绢帛" : "铜钱", v: moneyTop(文), cls: "mz-gain", stat: "铜钱" },
       信众: { k: "信众", v: cn(D.教务.信众) + "人", cls: "mz-gain", stat: "信众" },
@@ -3571,7 +3575,7 @@
       })()
     };
   }
-  var tbItem = (r, hide, extra) => '<span class="mz-tb-i' + (hide ? " mz-tb-hide" : "") + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></span>";
+  var tbItem = (r) => '<span class="mz-tb-i"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></span>";
   function panelStuck() {
     try {
       const m0 = getChatMessages(0)[0];
@@ -3583,7 +3587,7 @@
   function topbarHtml(D) {
     if (D._empty) return '<span class="mz-tb-time mz-dim">' + (panelStuck() ? "第零楼仍是入口面板，未选开场白，请删至第零楼再入卷" : "此则无账目") + "</span>";
     const r = readings(D);
-    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '"><span>时辰</span><b>' + r.日期 + " " + r.时辰 + '</b></span><span class="mz-tb-set">' + tbItem(r.铜钱) + tbItem(r.信众) + (curfewOn(D) ? tbItem(r.宵禁, true) : "") + tbItem(r.节令, true, "mz-tb-thin") + tbItem(r.大势, true, "mz-tb-thin") + "</span>";
+    return '<span class="mz-tb-time" data-stat="时间" title="' + r.题 + '"><span>时辰</span><b>' + r.日期 + " " + r.时辰 + '</b></span><span class="mz-tb-set">' + tbItem(r.铜钱) + tbItem(r.信众) + "</span>";
   }
   var srRow = (r, title, extra) => '<div class="mz-sr-row' + (extra ? " " + extra : "") + '"' + (r.stat ? ' data-stat="' + r.stat + '"' : "") + (title ? ' title="' + title + '"' : "") + "><span>" + r.k + "</span><b" + (r.cls ? ' class="' + r.cls + '"' : "") + ">" + r.v + "</b></div>";
   function statusBoxHtml(D) {
@@ -3593,7 +3597,7 @@
     const zone = zoneName(loc), sub = zoneSub(loc);
     const prefix = abroadOf(D) ? "蕃地 " : zone && !ZONES.includes(zone) ? "城外 " : "";
     const locVal = prefix + esc2(zone) + (sub ? "｜" + esc2(sub) : "");
-    return srRow({ k: "地界", v: locVal, stat: "地界" }, esc2(loc.replace(/\//g, " "))) + (curfewOn(D) ? srRow(r.宵禁, "", "mz-sr-dup") : "") + srRow(r.节令, "", "mz-sr-dup") + srRow(r.大势, "", "mz-sr-dup");
+    return srRow({ k: "地界", v: locVal, stat: "地界" }, esc2(loc.replace(/\//g, " "))) + srRow(r.大势);
   }
   var rankShort = (r) => String(r || "").split("·")[0];
   function navSubHtml(key, D) {
