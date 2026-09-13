@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.40";
+  var CDN_TAG = "3.0.41";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -928,9 +928,6 @@
 .mz-tb-time.mz-dim { color: var(--txt-faint); font-weight: 500; }
 .mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
   font-size: 13px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
-/* 分隔竖线只在窄屏出现（窄屏去标签后要靠线分项），挂在项自己身上 */
-.mz-tb-i::before { content: ''; display: none; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
-  width: 1px; height: 26px; background: rgba(var(--gold-rgb), .22); }
 /* 桌面端顶栏值只两色：象牙（常态）／红（危）；亮金只留窄屏 */
 .mz-tb-i b { font-size: 16px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-i b.mz-red { color: var(--red); }
@@ -1662,14 +1659,13 @@
   .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
-  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：去标签只留值（贯与人自带单位）、值 12px、字距半像素、间距 10、项间竖线；时辰仍留省略号兜底 */
+  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：去标签只留值（贯与人自带单位）、值 12px、字距半像素、项间只靠 14 空隔开不画线；时辰仍留省略号兜底 */
   @container mz (max-width: 599px) {
     .mz-tb-time > span, .mz-tb-i > span { display: none; }
-    .mz-tb-face, .mz-tb-set { gap: 10px; }
+    .mz-tb-face, .mz-tb-set { gap: 14px; }
     .mz-tb-time { gap: 6px; font-size: 12px; letter-spacing: .5px; color: var(--gold-hi); }
     .mz-tb-time b { font-size: 12px; }
     .mz-tb-i { gap: 6px; font-size: 12px; letter-spacing: .5px; }
-    .mz-tb-i::before { display: block; left: -5px; height: 15px; background: rgba(var(--gold-rgb), .22); }
     .mz-tb-i b { font-size: 12px; }
     .mz-tb-i b.mz-gain { color: var(--gold-hi); }
     .mz-tb-i b.mz-red { color: var(--red); }
