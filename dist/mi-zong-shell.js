@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.53";
+  var CDN_TAG = "3.0.54";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1140,8 +1140,8 @@
 /* 设施卡：图上名下不加框，整格可点进详情，悬停图上半强度朱框预告；地宫格两行（图、名与档次标），兴造格三行多脚注；两页都一行四格 */
 .mz-cave-grid, .mz-bp-grid { grid-auto-rows: auto; gap: 22px 20px; }
 .mz-cave-grid > .mz-empty { grid-column: 1 / -1; }
-/* 地宫剖面：一层一条横带不加底色，整幅只铺一道由上而下渐深的淡墨晕（叠影色不新增色）；层间一道金线作阶；未凿层不加纹样，只印一行字与开凿钮 */
-.mz-cave-sect { display: flex; flex-direction: column; background: linear-gradient(180deg, transparent 0, rgba(var(--sh-rgb),.04) 30%, rgba(var(--sh-rgb),.14) 100%); }
+/* 地宫剖面：一层一条横带不加底色不铺晕；层间一道金线作阶；未凿层不加纹样，只印一行字与开凿钮 */
+.mz-cave-sect { display: flex; flex-direction: column; }
 .mz-stratum { display: grid; grid-template-columns: 34px minmax(0, 1fr); column-gap: 18px; padding: 14px 14px 14px 0; }
 .mz-stratum-name { writing-mode: vertical-rl; align-self: start; justify-self: center; font-size: 13px; letter-spacing: 5px; color: var(--txt-faint); padding-top: 2px; }
 .mz-stratum.mz-l0 .mz-stratum-name { color: var(--gold-hi); }
