@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.33";
+  var CDN_TAG = "3.0.34";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -923,19 +923,18 @@
 .mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 40px;
   overflow: hidden; scrollbar-gutter: stable both-edges; padding: 0 calc(var(--col-side) - 9px); height: 100%; }
 .mz-tb-set { display: flex; align-items: center; gap: 40px; min-width: 0; }
-/* 一行账头：标签金小字在前、值在后同一行，三项同式；桌面端不画竖线，项间靠 40 空隔开 */
+/* 一行账头：标签金 13px 在前、值象牙 16px 在后同一行，三项同式；桌面端不画竖线，项间靠 40 空隔开；桌面端值一律象牙不标金 */
 .mz-tb-time { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
-  font-size: 12px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
-.mz-tb-time b { font-size: 15px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
+  font-size: 13px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
+.mz-tb-time b { font-size: 16px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-time.mz-dim { color: var(--txt-faint); font-weight: 500; }
 .mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
-  font-size: 12px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
+  font-size: 13px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
 /* 分隔竖线只在窄屏出现（窄屏去标签后要靠线分项），挂在项自己身上 */
 .mz-tb-i::before { content: ''; display: none; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
   width: 1px; height: 26px; background: rgba(var(--gold-rgb), .22); }
-/* 读数三态：平象牙／利金（钱、人）／危红（遇刺），灰是无 */
-.mz-tb-i b { font-size: 15px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
-.mz-tb-i b.mz-gain { color: var(--gold-hi); }
+/* 桌面端顶栏值只两色：象牙（常态）／红（危）；亮金只留窄屏 */
+.mz-tb-i b { font-size: 16px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-i b.mz-red { color: var(--red); }
 .mz-tb-i b.mz-dim { color: var(--txt-faint); font-weight: 500; }
 
