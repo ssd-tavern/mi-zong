@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.50";
+  var CDN_TAG = "3.0.51";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -937,6 +937,8 @@
 .mz-turn { margin-bottom: 22px; }
 /* 正文左对齐不两端对齐：汉字等宽，两端对齐会把行尾空隙摊进字距，窄行上下行字距忽宽忽窄 */
 .mz-turn.mz-gm { line-height: 2.0; font-size: var(--fs-body); letter-spacing: .3px; color: var(--txt); line-break: strict; text-wrap: pretty; text-align: start; }
+/* 段宽取字宽（字号＋字距）的整数倍并居中：左对齐时不足一字的行尾余量两边各分一半，不在右侧堆成一条空列 */
+.mz-turn.mz-gm p { width: round(down, 100%, calc(var(--fs-body) + .3px)); margin-inline: auto; }
 .mz-turn.mz-gm p + p { margin-top: .9em; }
 .mz-quote { color: var(--gold-say); }
 .mz-inner { color: var(--txt-dim); }
