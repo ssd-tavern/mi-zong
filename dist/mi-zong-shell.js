@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.45";
+  var CDN_TAG = "3.0.46";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -922,15 +922,15 @@
 .mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 40px;
   overflow: hidden; scrollbar-gutter: stable both-edges; padding: 0 calc(var(--col-side) - 9px); height: 100%; }
 .mz-tb-set { display: flex; align-items: center; gap: 40px; min-width: 0; }
-/* 一行账头：标签金 13px 在前、值象牙 16px 在后同一行，三项同式；桌面端不画竖线，项间靠 40 空隔开；桌面端值一律象牙不标金 */
-.mz-tb-time { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
-  font-size: 13px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
-.mz-tb-time b { font-size: 16px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
+/* 一行账头：标签金常规体在前、值象牙粗体在后，双端同 16px、同 .5 字距，标签与值固定隔 5；三项同式；桌面端不画竖线，组间靠 40 空隔开；桌面端值一律象牙不标金 */
+.mz-tb-time { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 5px;
+  font-size: 16px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
+.mz-tb-time b { text-indent: 0; color: var(--txt); font-weight: 700; }
 .mz-tb-time.mz-dim { color: var(--txt-faint); font-weight: 500; }
-.mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
-  font-size: 13px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
-/* 桌面端顶栏值只两色：象牙（常态）／红（危）；亮金只留窄屏 */
-.mz-tb-i b { font-size: 16px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
+.mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 5px;
+  font-size: 16px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
+/* 顶栏值只两色：象牙（常态）／红（危） */
+.mz-tb-i b { text-indent: 0; color: var(--txt); font-weight: 700; }
 .mz-tb-i b.mz-red { color: var(--red); }
 .mz-tb-i b.mz-dim { color: var(--txt-faint); font-weight: 500; }
 
@@ -1616,7 +1616,7 @@
 /* ==== 遮罩（桌面端不存在） ==== */
 #mz-mscrim { display: none; }
 
-/* ==== 窄桌面：侧栏收到 240、两侧留白降到 32，正文列随宽 597～740；读数间距 40 收到 28 ==== */
+/* ==== 窄桌面：侧栏收到 240、两侧留白降到 32，正文列随宽 597～740；读数组间距 40 收到 28 ==== */
 @container mz (900px < width <= 1079px) {
   .mz-side { width: 240px; }
   .mz-main { --col-side: max(32px, calc((100% - var(--read-col)) / 2)); }
@@ -1653,22 +1653,17 @@
   .mz-tb-plaque.mz-ret svg:first-child { display: none; }
   .mz-tb-plaque.mz-ret svg:last-child { display: block; }
   .mz-tb-plaque[disabled] { opacity: .4; }
-  /* 窄屏回到一排 flex：诸务钮／读数／工具栏，工具栏不再绝对定位；读数在两端钮之间的空位里居中（不补边，宽度留给读数）；600～900 读数字阶与标签同桌面端，只把间距收到 20 */
+  /* 窄屏回到一排 flex：诸务钮／读数／工具栏，工具栏不再绝对定位；读数在两端钮之间的空位里居中（不补边，宽度留给读数）；读数字阶字色字重双端同，600～900 只把组间距收到 20 */
   .mz-tb-face { justify-content: center; gap: 20px; padding: 0; scrollbar-gutter: auto; }
   .mz-topbar > #mz-corner { position: static; translate: none; }
   .mz-tb-set { gap: 20px; }
   .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
-  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：时辰去标签只留「日期 时辰」，铜钱（在藏绢帛）与信众的两字标签金、值象牙，同字号直接拼作一串「铜钱一万二千八百贯」；值 12px、字距半像素、项间只靠 14 空隔开不画线；时辰仍留省略号兜底 */
+  /* 手机（<600）：时辰去标签只留「日期 时辰」，铜钱（在藏绢帛）与信众的两字标签照留，字阶字色同桌面端；组间距再收到 12；时辰仍留省略号兜底 */
   @container mz (max-width: 599px) {
     .mz-tb-time > span { display: none; }
-    .mz-tb-face, .mz-tb-set { gap: 14px; }
-    .mz-tb-time { gap: 6px; font-size: 12px; letter-spacing: .5px; color: var(--gold-hi); }
-    .mz-tb-time b { font-size: 12px; }
-    .mz-tb-i { gap: 0; font-size: 12px; letter-spacing: .5px; }
-    .mz-tb-i b { font-size: 12px; color: var(--txt); }
-    .mz-tb-i b.mz-red { color: var(--red); }
+    .mz-tb-face, .mz-tb-set { gap: 12px; }
   }
   #mz-corner { gap: 8px; }
   #mz-corner button { color: var(--txt-faint); opacity: 1; width: var(--tb-btn); height: var(--tb-btn); padding: var(--tb-pad); }
