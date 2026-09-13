@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.32";
+  var CDN_TAG = "3.0.33";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -920,21 +920,21 @@
   width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 6px; }
 .mz-tb-plaque svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 /* 读数框铺满顶栏、内容居中；左右留白与滚动条预留槽照抄正文纸（#mz-paper），读数中线才严格落在正文列中线上；overflow:hidden 顺带裁掉溢出读数 */
-.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 22px;
+.mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 40px;
   overflow: hidden; scrollbar-gutter: stable both-edges; padding: 0 calc(var(--col-side) - 9px); height: 100%; }
-.mz-tb-set { display: flex; align-items: center; gap: 22px; min-width: 0; }
-/* 时辰与六项同式同字阶（上「时辰」标签，下「日期 时辰」） */
-.mz-tb-time { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 11px; line-height: 1.2; letter-spacing: 2px; text-indent: 2px; color: var(--gold); white-space: nowrap; }
-.mz-tb-time b { font-size: 14px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
+.mz-tb-set { display: flex; align-items: center; gap: 40px; min-width: 0; }
+/* 一行账头：标签金小字在前、值在后同一行，三项同式；桌面端不画竖线，项间靠 40 空隔开 */
+.mz-tb-time { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
+  font-size: 12px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
+.mz-tb-time b { font-size: 15px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-time.mz-dim { color: var(--txt-faint); font-weight: 500; }
-.mz-tb-i { position: relative; flex: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  font-size: 11px; line-height: 1.2; letter-spacing: 2px; text-indent: 2px; color: var(--gold); white-space: nowrap; }
-/* 分隔竖线挂在项自己身上，项一隐线也跟着走 */
-.mz-tb-i::before { content: ''; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
+.mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 8px;
+  font-size: 12px; line-height: 1.2; letter-spacing: 2px; text-indent: 0; color: var(--gold); white-space: nowrap; }
+/* 分隔竖线只在窄屏出现（窄屏去标签后要靠线分项），挂在项自己身上 */
+.mz-tb-i::before { content: ''; display: none; position: absolute; left: -11px; top: 50%; translate: 0 -50%;
   width: 1px; height: 26px; background: rgba(var(--gold-rgb), .22); }
 /* 读数三态：平象牙／利金（钱、人）／危红（遇刺），灰是无 */
-.mz-tb-i b { font-size: 14px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
+.mz-tb-i b { font-size: 15px; letter-spacing: .5px; text-indent: 0; color: var(--txt); font-weight: 600; }
 .mz-tb-i b.mz-gain { color: var(--gold-hi); }
 .mz-tb-i b.mz-red { color: var(--red); }
 .mz-tb-i b.mz-dim { color: var(--txt-faint); font-weight: 500; }
@@ -1666,7 +1666,7 @@
   .mz-tb-i { flex-direction: row; align-items: baseline; gap: 6px; font-size: 12px; letter-spacing: .5px; text-indent: 0; color: var(--gold); }
   /* 贯与人自带单位，窄屏不印「铜钱」「信众」标签 */
   .mz-tb-i > span { display: none; }
-  .mz-tb-i::before { left: -5px; height: 15px; background: rgba(var(--gold-rgb), .22); }
+  .mz-tb-i::before { display: block; left: -5px; height: 15px; background: rgba(var(--gold-rgb), .22); }
   .mz-tb-i b { font-size: 12px; color: var(--txt); }
   .mz-tb-i b.mz-gain { color: var(--gold-hi); }
   .mz-tb-i b.mz-red { color: var(--red); }
