@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.20";
+  var CDN_TAG = "3.0.21";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -93,6 +93,7 @@
     menu: svg('<path d="M4 6h16M4 12h16M4 18h10"/>'),
     close: svg('<path d="M5 5l14 14M19 5L5 19"/>'),
     settings: svg('<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>'),
+    back: svg('<path d="M15 5l-7 7 7 7"/>'),
     chev: svg('<path d="M9 6l6 6-6 6"/>'),
     lock: svg('<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')
   };
@@ -1031,11 +1032,6 @@
   box-shadow: inset 0 0 0 1px var(--gold-hi), 0 6px 14px rgba(var(--sh-rgb),.6); }
 /* 滚动容器缩进内圈金线之内（线在 9px，容器留 10px 外边距），内容滚到头也压不过线；原留白总量不变 */
 #mz-lift .mz-held .mz-held-body { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; margin: 10px; padding: 20px 24px 16px; }
-/* 收窗叉桌面端不显（点遮罩即关），手机端与开坛窗的显隐见 phone.js */
-#mz-lift .mz-lift-x { display: none; position: absolute; top: 10px; right: 10px; z-index: 3; width: 34px; height: 34px; padding: 8px;
-  border: none; background: none; cursor: pointer; color: var(--txt-faint); opacity: .55; transition: opacity var(--t-fast) var(--ease-out); }
-#mz-lift .mz-lift-x:hover { opacity: .95; }
-#mz-lift .mz-lift-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 #mz-lift .mz-held .mz-stub { margin: auto; text-align: center; color: var(--txt-faint); font-size: 13.5px; letter-spacing: 4px; }
 /* 开窗四层错拍；mz-hide 由 closeLift 挂，动画播完才卸 mz-show */
 #mz-lift.mz-show { animation: lift-scrim var(--t-mid) var(--ease-out) both; }
@@ -1621,7 +1617,8 @@
 #mz-mscrim { display: none; }
 
 @container mz (max-width: 900px) {
-  #mz-shell-root { --top-h: 52px; --fs-body: calc(16px * var(--fs-scale)); }
+  /* 容器查询命不中容器自身，窄屏令牌挂在壳根的直接子元素上再往下继承 */
+  #mz-shell-root > * { --top-h: 52px; --fs-body: calc(16px * var(--fs-scale)); }
   /* ==== 主区：正文列铺满，底部只剩书写区 ==== */
   .mz-main { --col-side: 22px; }
   /* 状态栏留空放在顶栏内，让账头底色一直铺到屏幕顶边，不留一条纸色带 */
@@ -1650,6 +1647,11 @@
     border-color: rgba(var(--gold-rgb), .65); background: rgba(var(--gold-rgb), .14); }
   .mz-tb-plaque.mz-on { color: var(--on-gold); border-color: var(--gold-hi);
     background: var(--gold-hi); }
+  /* 钮里两枚图标：诸务三横／返回箭头，随窗态二选一；开坛窗时置灰 */
+  .mz-tb-plaque svg:last-child { display: none; }
+  .mz-tb-plaque.mz-ret svg:first-child { display: none; }
+  .mz-tb-plaque.mz-ret svg:last-child { display: block; }
+  .mz-tb-plaque[disabled] { opacity: .4; }
   .mz-tb-i.mz-tb-hide { display: none; }
   /* 窄屏顶栏一行式：时辰只留「日期 时辰」，标签不显 */
   .mz-tb-time > span { display: none; }
@@ -1712,12 +1714,11 @@
   .mz-ff-vars:empty { display: none; }
 
 
-  /* ==== 浮窗：贴底整幅纸，上留一指宽遮罩可点关，题签仍悬出纸上缘 ==== */
-  #mz-lift { align-items: flex-end; }
-  #mz-lift .mz-held { width: 100%; height: calc(100% - 56px); }
-  #mz-lift .mz-held h3 { left: 10px; top: -22px; font-size: 13px; letter-spacing: 4px; padding: 27px 10px; }
-  #mz-lift .mz-lift-x { display: block; }
-  #mz-lift.mz-gate .mz-lift-x { display: none; }
+  /* ==== 浮窗改全屏页：自顶栏下缘铺到底，顶栏活着（左钮变返回箭头），无遮罩无收窗叉，题签贴纸上缘 ==== */
+  #mz-lift { top: calc(var(--top-h) + env(safe-area-inset-top, 0px)); background: none; backdrop-filter: none; }
+  #mz-lift.mz-show, #mz-lift.mz-hide { animation: none; }
+  #mz-lift .mz-held { width: 100%; height: 100%; }
+  #mz-lift .mz-held h3 { left: 10px; top: 0; font-size: 13px; letter-spacing: 4px; padding: 16px 10px; }
   #mz-lift .mz-held .mz-held-body { padding: 14px 4px calc(8px + env(safe-area-inset-bottom, 0px)); }
   .mz-card { padding: 12px 0 11px; font-size: 13.5px; }
   .mz-card:has(> .mz-seal-btn) { padding-right: 0; }
@@ -1764,7 +1765,7 @@
   .mz-shoplist { width: 100%; }
   .mz-picks.mz-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .mz-form input.mz-w { width: 100%; }
-  #mz-lift.mz-gate .mz-held { width: 100%; height: calc(100% - 56px); max-height: none; }
+  #mz-lift.mz-gate .mz-held { width: 100%; height: 100%; max-height: none; }
   .mz-gate-two { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .mz-picks.mz-gate-picks { grid-template-columns: minmax(0, 1fr); grid-auto-rows: auto; gap: 6px; }
   .mz-gate-sect { padding: 6px 12px 5px; }
@@ -4493,6 +4494,18 @@
     lift.classList.remove("mz-hide");
     lift.classList.add("mz-show");
     doc.getElementById(SEL.liftBody).scrollTop = 0;
+    plaqueState();
+  }
+  function plaqueState() {
+    const p = doc.getElementById(SEL.mplaque);
+    if (!p) return;
+    p.classList.toggle("mz-ret", !!openName && openName !== GATE_WIN);
+    p.disabled = openName === GATE_WIN;
+  }
+  function liftBack() {
+    const back = doc.getElementById(SEL.liftBody).querySelector(".mz-back");
+    if (back) back.click();
+    else closeLift();
   }
   function closeLift(force) {
     if (openName === GATE_WIN && !force && gateNeeded()) return;
@@ -4503,6 +4516,7 @@
       reopenDrawer = false;
       setDrawer("l");
     }
+    plaqueState();
     const lift = doc.getElementById(SEL.lift);
     if (!lift) return;
     lift.classList.add("mz-hide");
@@ -4591,10 +4605,6 @@
     body.scrollTop = bodySt;
   }
   function onLiftClick(e) {
-    if (e.target.closest(".mz-lift-x")) {
-      closeLift();
-      return;
-    }
     if (openName === GATE_WIN) {
       if (e.target !== e.currentTarget) onGateClick(e);
       return;
@@ -4647,7 +4657,7 @@
   </div>
   <div class="mz-main">
     <div class="mz-topbar mz-tex">
-      <button class="mz-tb-plaque" id="${SEL.mplaque}" title="诸务">${ICO.menu}</button>
+      <button class="mz-tb-plaque" id="${SEL.mplaque}" title="诸务">${ICO.menu}${ICO.back}</button>
       <div class="mz-tb-face" id="${SEL.topbar}"></div>
       <div id="${SEL.corner}">
         <button data-corner="set" title="设置">${ICO.settings}</button>
@@ -4668,7 +4678,7 @@
     <button id="${SEL.jump}" title="回至卷尾"></button>
   </div>
   <div id="${SEL.mscrim}"></div>
-  <div id="${SEL.lift}"><div class="mz-held"><h3 id="${SEL.liftTitle}"></h3><button class="mz-lift-x" title="收窗">${ICO.close}</button><div class="mz-held-body" id="${SEL.liftBody}"></div></div></div>
+  <div id="${SEL.lift}"><div class="mz-held"><h3 id="${SEL.liftTitle}"></h3><div class="mz-held-body" id="${SEL.liftBody}"></div></div></div>
   `;
   }
   var drawerOpen = null;
@@ -4735,7 +4745,10 @@
         if (!el.classList.contains("mz-locked")) openLift(el.dataset.lift);
       });
     });
-    doc.getElementById(SEL.mplaque).addEventListener("click", () => toggleDrawer("l"));
+    doc.getElementById(SEL.mplaque).addEventListener("click", () => {
+      if (liftOpenName()) liftBack();
+      else toggleDrawer("l");
+    });
     doc.getElementById(SEL.mscrim).addEventListener("click", () => setDrawer(null));
     root.querySelector(".mz-side-x").addEventListener("click", () => setDrawer(null));
   }
