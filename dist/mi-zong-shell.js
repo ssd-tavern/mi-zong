@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.38";
+  var CDN_TAG = "3.0.39";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1697,9 +1697,9 @@
   .mz-side { background: linear-gradient(color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent), color-mix(in srgb, var(--bg0) calc(100% - var(--tex-op) * 100%), transparent)),
     var(--tex) 0 0 / 1024px 1024px repeat, var(--bg0);
     background-blend-mode: normal, overlay, normal; }
-  /* 抽屉头行：题字靠左、收起叉靠右，底下一道线与目录分开 */
-  .mz-plaque { justify-content: space-between; height: 44px; border-bottom: 1px solid var(--gold-line); text-indent: 0; }
-  .mz-side-x { display: block; flex: none; width: 32px; height: 32px; border: none; background: none; cursor: pointer; padding: 8px;
+  /* 抽屉头行：题字居中同桌面端，收起叉绝对定位贴右，不画线 */
+  .mz-plaque { height: 44px; }
+  .mz-side-x { display: block; position: absolute; right: 0; top: 50%; translate: 0 -50%; width: 32px; height: 32px; border: none; background: none; cursor: pointer; padding: 8px;
     color: var(--txt-faint); transition: color var(--t-fast) var(--ease-out); }
   .mz-side-x:active, .mz-side-x:hover { color: var(--gold-hi); }
   .mz-side-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
