@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.47";
+  var CDN_TAG = "3.0.48";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -922,13 +922,13 @@
 .mz-tb-face { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 40px;
   overflow: hidden; scrollbar-gutter: stable both-edges; padding: 0 calc(var(--col-side) - 9px); height: 100%; }
 .mz-tb-set { display: flex; align-items: center; gap: 40px; min-width: 0; }
-/* 一行账头：标签金常规体在前、值象牙粗体在后，桌面 14px（手机 12）、同 .5 字距，标签与值固定隔 5；三项同式；桌面端不画竖线，组间靠 40 空隔开；桌面端值一律象牙不标金 */
+/* 一行账头：标签金常规体在前、值象牙粗体在后，桌面 15px（手机 12）、同 .5 字距，标签与值固定隔 5；三项同式；桌面端不画竖线，组间靠 40 空隔开；桌面端值一律象牙不标金 */
 .mz-tb-time { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 5px;
-  font-size: 14px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
+  font-size: 15px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
 .mz-tb-time b { text-indent: 0; color: var(--txt); font-weight: 700; }
 .mz-tb-time.mz-dim { color: var(--txt-faint); font-weight: 500; }
 .mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 5px;
-  font-size: 14px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
+  font-size: 15px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
 /* 顶栏值只两色：象牙（常态）／红（危） */
 .mz-tb-i b { text-indent: 0; color: var(--txt); font-weight: 700; }
 .mz-tb-i b.mz-red { color: var(--red); }
