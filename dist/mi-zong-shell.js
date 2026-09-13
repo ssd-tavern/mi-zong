@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.24";
+  var CDN_TAG = "3.0.25";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1635,10 +1635,10 @@
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
 
   /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样）；宵禁／节令／大势下沉抽屉 ==== */
-  /* 两端钮的图标边与正文首字对齐：钮内边距 5，故顶栏留白＝正文留白－5 */
-  .mz-topbar { padding-left: calc(var(--col-side) - 5px); padding-right: calc(var(--col-side) - 7px); gap: 10px; }
-  /* 只留线稿图标，不加框不填底，与右端工具栏同族 */
-  .mz-tb-plaque { display: flex; color: var(--txt-dim); width: 28px; height: 28px; padding: 5px;
+  /* ==== 顶栏钮一套规格：32 点击区、8 内边距、16 图标；钮与读数隔 12，钮与钮隔 8（中心相距 40）；两端图标边与正文首末字对齐（留白＝正文留白－8） ==== */
+  .mz-topbar { --tb-btn: 32px; --tb-pad: 8px; padding-left: calc(var(--col-side) - var(--tb-pad)); padding-right: calc(var(--col-side) - var(--tb-pad)); gap: 12px; }
+  /* 只留线稿图标，不加框不填底，与右端工具栏同规格 */
+  .mz-tb-plaque { display: flex; color: var(--txt-faint); width: var(--tb-btn); height: var(--tb-btn); padding: var(--tb-pad);
     transition: color var(--t-fast) var(--ease-out); }
   .mz-tb-plaque:active, .mz-tb-plaque:hover, .mz-tb-plaque.mz-on { color: var(--gold-hi); }
   /* 钮里两枚图标：诸务三横／返回箭头，随窗态二选一；开坛窗时置灰 */
@@ -1655,7 +1655,7 @@
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mz-tb-time b { font-size: 12px; color: var(--txt); }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
-  .mz-tb-face { padding-left: 0; gap: 10px; margin-right: 10px; }
+  .mz-tb-face { padding-left: 0; gap: 10px; margin-right: 0; }
   .mz-topbar > :last-child { margin-right: 0; }
   .mz-tb-set { gap: 10px; }
   .mz-tb-i { flex-direction: row; align-items: baseline; gap: 6px; font-size: 12px; letter-spacing: .5px; text-indent: 0; color: var(--gold); }
@@ -1666,9 +1666,8 @@
   .mz-tb-i b.mz-gain { color: var(--gold-hi); }
   .mz-tb-i b.mz-red { color: var(--red); }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
-  /* 设置与出卷两钮：点击区 30、相隔 10，中心相距 40 免误触；图标仍 16 */
-  #mz-corner { gap: 10px; }
-  #mz-corner button { color: var(--txt-faint); width: 30px; height: 30px; padding: 7px; }
+  #mz-corner { gap: 8px; }
+  #mz-corner button { color: var(--txt-faint); opacity: 1; width: var(--tb-btn); height: var(--tb-btn); padding: var(--tb-pad); }
   #mz-corner button:hover { color: var(--gold-hi); }
   #mz-corner button.mz-on { color: var(--gold-hi); }
   /* 玩法窗开着时收起设置／出卷，免得误触退回酒馆；开坛窗仍留出卷 */
@@ -1693,7 +1692,7 @@
   /* 匾额改抽屉头行：题字靠左、收起叉靠右，只留底下一道线 */
   .mz-plaque { justify-content: space-between; height: 44px; border-width: 0 0 1px; text-indent: 0; }
   .mz-plaque::before, .mz-plaque::after { display: none; }
-  .mz-side-x { display: block; flex: none; width: 30px; height: 30px; border: none; background: none; cursor: pointer; padding: 7px;
+  .mz-side-x { display: block; flex: none; width: 32px; height: 32px; border: none; background: none; cursor: pointer; padding: 8px;
     color: var(--txt-faint); transition: color var(--t-fast) var(--ease-out); }
   .mz-side-x:active, .mz-side-x:hover { color: var(--gold-hi); }
   .mz-side-x svg { width: 100%; height: 100%; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
