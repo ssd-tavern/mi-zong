@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.41";
+  var CDN_TAG = "3.0.42";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1659,9 +1659,9 @@
   .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
-  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：去标签只留值（贯与人自带单位）、值 12px、字距半像素、项间只靠 14 空隔开不画线；时辰仍留省略号兜底 */
+  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：时辰去标签只留「日期 时辰」，铜钱（在藏绢帛）与信众保留两字标签；值 12px、字距半像素、项间只靠 14 空隔开不画线；时辰仍留省略号兜底 */
   @container mz (max-width: 599px) {
-    .mz-tb-time > span, .mz-tb-i > span { display: none; }
+    .mz-tb-time > span { display: none; }
     .mz-tb-face, .mz-tb-set { gap: 14px; }
     .mz-tb-time { gap: 6px; font-size: 12px; letter-spacing: .5px; color: var(--gold-hi); }
     .mz-tb-time b { font-size: 12px; }
