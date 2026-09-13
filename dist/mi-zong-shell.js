@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.36";
+  var CDN_TAG = "3.0.37";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1620,9 +1620,16 @@
 /* ==== 遮罩（桌面端不存在） ==== */
 #mz-mscrim { display: none; }
 
+/* ==== 窄桌面：侧栏收到 240、两侧留白降到 32，正文列随宽 597～740；读数间距 40 收到 28 ==== */
+@container mz (900px < width <= 1079px) {
+  .mz-side { width: 240px; }
+  .mz-main { --col-side: max(32px, calc((100% - var(--read-col)) / 2)); }
+  .mz-tb-face, .mz-tb-set { gap: 28px; }
+}
+
 @container mz (max-width: 900px) {
-  /* ==== 主区：正文列铺满，底部只剩书写区 ==== */
-  .mz-main { --col-side: 22px; }
+  /* ==== 主区：正文列封顶 700 居中，宽度不够才退到两侧各 22；底部只剩书写区 ==== */
+  .mz-main { --col-side: max(22px, calc((100% - var(--read-col)) / 2)); }
   /* 状态栏留空放在顶栏内，让账头底色一直铺到屏幕顶边，不留一条纸色带 */
   .mz-topbar { height: calc(var(--top-h) + env(safe-area-inset-top, 0px)); padding-top: env(safe-area-inset-top, 0px); }
   /* iOS 滚动条不占位，不再从留白里扣槽宽，正文与书写区仍按 --col-side 对齐 */
@@ -1650,26 +1657,25 @@
   .mz-tb-plaque.mz-ret svg:first-child { display: none; }
   .mz-tb-plaque.mz-ret svg:last-child { display: block; }
   .mz-tb-plaque[disabled] { opacity: .4; }
-  /* 窄屏顶栏一行式：时辰只留「日期 时辰」，标签不显 */
-  .mz-tb-time > span { display: none; }
-  /* 三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：值 12px、字距半像素、间距 10；时辰仍留省略号兜底 */
-  .mz-tb-time { flex-direction: row; align-items: baseline; gap: 6px; text-indent: 0;
-    font-size: 12px; letter-spacing: .5px; color: var(--gold-hi); flex: 0 1 auto; min-width: 0;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .mz-tb-time b { font-size: 12px; color: var(--txt); }
-  .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
-  /* 窄屏回到一排 flex：诸务钮／读数靠左／工具栏，工具栏不再绝对定位 */
-  .mz-tb-face { justify-content: flex-start; gap: 10px; padding: 0; scrollbar-gutter: auto; }
+  /* 窄屏回到一排 flex：诸务钮／读数靠左／工具栏，工具栏不再绝对定位；600～900 读数字阶与标签同桌面端，只把间距收到 20 */
+  .mz-tb-face { justify-content: flex-start; gap: 20px; padding: 0; scrollbar-gutter: auto; }
   .mz-topbar > #mz-corner { position: static; translate: none; }
-  .mz-tb-set { gap: 10px; }
-  .mz-tb-i { flex-direction: row; align-items: baseline; gap: 6px; font-size: 12px; letter-spacing: .5px; text-indent: 0; color: var(--gold); }
-  /* 贯与人自带单位，窄屏不印「铜钱」「信众」标签 */
-  .mz-tb-i > span { display: none; }
-  .mz-tb-i::before { display: block; left: -5px; height: 15px; background: rgba(var(--gold-rgb), .22); }
-  .mz-tb-i b { font-size: 12px; color: var(--txt); }
-  .mz-tb-i b.mz-gain { color: var(--gold-hi); }
-  .mz-tb-i b.mz-red { color: var(--red); }
+  .mz-tb-set { gap: 20px; }
+  .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
+  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：去标签只留值（贯与人自带单位）、值 12px、字距半像素、间距 10、项间竖线；时辰仍留省略号兜底 */
+  @container mz (max-width: 599px) {
+    .mz-tb-time > span, .mz-tb-i > span { display: none; }
+    .mz-tb-face, .mz-tb-set { gap: 10px; }
+    .mz-tb-time { gap: 6px; font-size: 12px; letter-spacing: .5px; color: var(--gold-hi); }
+    .mz-tb-time b { font-size: 12px; }
+    .mz-tb-i { gap: 6px; font-size: 12px; letter-spacing: .5px; }
+    .mz-tb-i::before { display: block; left: -5px; height: 15px; background: rgba(var(--gold-rgb), .22); }
+    .mz-tb-i b { font-size: 12px; }
+    .mz-tb-i b.mz-gain { color: var(--gold-hi); }
+    .mz-tb-i b.mz-red { color: var(--red); }
+  }
   #mz-corner { gap: 8px; }
   #mz-corner button { color: var(--txt-faint); opacity: 1; width: var(--tb-btn); height: var(--tb-btn); padding: var(--tb-pad); }
   #mz-corner button:hover { color: var(--gold-hi); }
