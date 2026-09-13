@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.43";
+  var CDN_TAG = "3.0.44";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -93,7 +93,8 @@
     menu: svg('<path d="M4 6h16M4 12h16M4 18h10"/>'),
     close: svg('<path d="M5 5l14 14M19 5L5 19"/>'),
     settings: svg('<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>'),
-    back: svg('<path d="M15 5l-7 7 7 7"/>'),
+    back: svg('<path d="M16 5l-8 7 8 7"/>'),
+    /* 折线撑到与叉同高（5～19），描线同 1.6，视觉重量才对齐 */
     chev: svg('<path d="M9 6l6 6-6 6"/>'),
     lock: svg('<rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>')
   };
@@ -1659,13 +1660,13 @@
   .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
   .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
-  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：时辰去标签只留「日期 时辰」，铜钱（在藏绢帛）与信众的两字标签与值同字号同字色直接拼作一串「铜钱一万二千八百贯」；值 12px、字距半像素、项间只靠 14 空隔开不画线；时辰仍留省略号兜底 */
+  /* 手机（<600）：三项常驻要在 390 宽里挤下「十二月三十 子时／一万二千八百贯／一千二百人」：时辰去标签只留「日期 时辰」，铜钱（在藏绢帛）与信众的两字标签金、值象牙，同字号直接拼作一串「铜钱一万二千八百贯」；值 12px、字距半像素、项间只靠 14 空隔开不画线；时辰仍留省略号兜底 */
   @container mz (max-width: 599px) {
     .mz-tb-time > span { display: none; }
     .mz-tb-face, .mz-tb-set { gap: 14px; }
     .mz-tb-time { gap: 6px; font-size: 12px; letter-spacing: .5px; color: var(--gold-hi); }
     .mz-tb-time b { font-size: 12px; }
-    .mz-tb-i { gap: 0; font-size: 12px; letter-spacing: .5px; color: var(--txt); }
+    .mz-tb-i { gap: 0; font-size: 12px; letter-spacing: .5px; }
     .mz-tb-i b { font-size: 12px; }
     .mz-tb-i b.mz-gain { color: var(--gold-hi); }
     .mz-tb-i b.mz-red { color: var(--red); }
