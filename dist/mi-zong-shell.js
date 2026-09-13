@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.27";
+  var CDN_TAG = "3.0.28";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -17,7 +17,7 @@
   }
   var ASSET_BASE = resolveAssetBase();
   var asset = (name) => ASSET_BASE + name;
-  var PRELOAD_ASSETS = ["bg-ink.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "map-panorama.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "lotus-rank.webp", "map-changan.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp", "banner-craft.webp", "sect-1-bliss.webp", "sect-2-illusion.webp", "sect-3-mercy.webp", "sect-4-asura.webp", "sect-5-strings.webp", "letter-envelope.webp", "paper-tibet.webp", "stamp-gesang.webp", "map-road.webp", "map-lhasa.webp", "scene-xishi.webp", "scene-pingkang.webp", "scene-dongshi.webp", "scene-xiangfu.webp", "scene-ximin.webp", "scene-tianjie.webp", "scene-lengfang.webp", "scene-qujiang.webp", "scene-huangcheng.webp", "scene-hall-1.webp", "scene-hall-2.webp", "scene-hall-3.webp", "scene-longshan.webp", "scene-qinzhou.webp", "scene-hezhou.webp", "scene-shanzhou.webp", "scene-chiling.webp", "scene-baihai.webp", "scene-yushu.webp", "scene-naqu.webp", "scene-dazhao.webp", "scene-xiaozhao.webp", "scene-hongshan.webp", "scene-yalong.webp", "scene-luoxie.webp", "scene-luoxie-2.webp", "scene-luoxie-3.webp", "fest-yuanri.webp", "fest-yuanri-xue.webp", "fest-shangyuan.webp", "fest-shangyuan-xue.webp", "fest-huiri.webp", "fest-huiri-xue.webp", "fest-hanshi.webp", "fest-hanshi-xue.webp", "fest-qingming.webp", "fest-qingming-xue.webp", "fest-shangsi.webp", "fest-shangsi-xue.webp", "fest-yufo.webp", "fest-yufo-xue.webp", "fest-duanwu.webp", "fest-duanwu-xue.webp", "fest-qixi.webp", "fest-qixi-xue.webp", "fest-yulanpen.webp", "fest-yulanpen-xue.webp", "fest-chongyang.webp", "fest-chongyang-xue.webp", "fest-dongzhi.webp", "fest-dongzhi-xue.webp", "fest-suichu.webp", "fest-suichu-xue.webp", "hall-lx-1-sealed.webp", "hall-lx-2-opened.webp", "hall-lx-3-court.webp", "fac-lx-danfang.webp", "fac-lx-yijing.webp", "fac-lx-keshe.webp", "fac-lx-huotan.webp", "fac-lx-yicang.webp", "fac-lx-tancheng.webp", "fac-lx-wenquan.webp", "fac-lx-jiguan.webp", "fac-lx-gongfang.webp", "fac-lx-mijiao.webp", "fac-lx-dilao.webp", "fac-lx-kufang.webp", "own-lx-1-rough.webp", "own-lx-2-fine.webp", "own-lx-3-grand.webp"];
+  var PRELOAD_ASSETS = ["bg-ink.webp", "hanging-fish.webp", "incense-coil.webp", "icon-redknot.webp", "icon-coffer.webp", "icon-letterbox.webp", "shrine-model.webp", "icon-folddoc.webp", "icon-ledger.webp", "map-panorama.webp", "stamp-angelica.webp", "stamp-orchid.webp", "stamp-peach.webp", "stamp-pomegranate.webp", "lotus-rank.webp", "map-changan.webp", "hall-1-hut.webp", "hall-2-vihara.webp", "hall-3-edict.webp", "fac-danfang.webp", "fac-xingtang.webp", "fac-kefang.webp", "fac-huotan.webp", "fac-mitan.webp", "fac-wentang.webp", "fac-jiguan.webp", "fac-rongjin.webp", "fac-midang.webp", "fac-dilao.webp", "fac-kufang.webp", "fac-guifang.webp", "rite-grand.webp", "store-drug.webp", "store-tool.webp", "store-ritual.webp", "own-1-rough.webp", "own-2-fine.webp", "own-3-grand.webp", "loan-guifang.webp", "banner-handle.webp", "banner-steward.webp", "banner-consort.webp", "banner-order.webp", "banner-craft.webp", "sect-1-bliss.webp", "sect-2-illusion.webp", "sect-3-mercy.webp", "sect-4-asura.webp", "sect-5-strings.webp", "letter-envelope.webp", "paper-tibet.webp", "stamp-gesang.webp", "map-road.webp", "map-lhasa.webp", "scene-xishi.webp", "scene-pingkang.webp", "scene-dongshi.webp", "scene-xiangfu.webp", "scene-ximin.webp", "scene-tianjie.webp", "scene-lengfang.webp", "scene-qujiang.webp", "scene-huangcheng.webp", "scene-hall-1.webp", "scene-hall-2.webp", "scene-hall-3.webp", "scene-longshan.webp", "scene-qinzhou.webp", "scene-hezhou.webp", "scene-shanzhou.webp", "scene-chiling.webp", "scene-baihai.webp", "scene-yushu.webp", "scene-naqu.webp", "scene-dazhao.webp", "scene-xiaozhao.webp", "scene-hongshan.webp", "scene-yalong.webp", "scene-luoxie.webp", "scene-luoxie-2.webp", "scene-luoxie-3.webp", "fest-yuanri.webp", "fest-shangyuan.webp", "fest-huiri.webp", "fest-hanshi.webp", "fest-qingming.webp", "fest-shangsi.webp", "fest-yufo.webp", "fest-duanwu.webp", "fest-qixi.webp", "fest-yulanpen.webp", "fest-chongyang.webp", "fest-dongzhi.webp", "fest-suichu.webp", "fest-xue-sagadawa.webp", "fest-xue-saima.webp", "fest-xue-muyu.webp", "fest-xue-wangguo.webp", "fest-xue-gutu.webp", "fest-xue-xinnian.webp", "hall-lx-1-sealed.webp", "hall-lx-2-opened.webp", "hall-lx-3-court.webp", "fac-lx-danfang.webp", "fac-lx-yijing.webp", "fac-lx-keshe.webp", "fac-lx-huotan.webp", "fac-lx-yicang.webp", "fac-lx-tancheng.webp", "fac-lx-wenquan.webp", "fac-lx-jiguan.webp", "fac-lx-gongfang.webp", "fac-lx-mijiao.webp", "fac-lx-dilao.webp", "fac-lx-kufang.webp", "own-lx-1-rough.webp", "own-lx-2-fine.webp", "own-lx-3-grand.webp"];
   var PRELOAD_LANES = 6;
   var SEL = {
     entry: "mz-entry",
@@ -245,6 +245,7 @@
     [10, 15, "冬至", 0, "官府休假，晚辈献鞋袜，亲友走动"],
     [11, 30, "岁除", 0, "傩队沿街驱疫，各家通宵守岁"]
   ];
+  var FESTIVALS_XUE = [[3, 15, "萨嘎达瓦", 0, "佛诞成道日，巡像转经遵令停办，信众暗中绕城"], [5, 15, "赛马会", 1, "盛夏草滩赛马摔跤射箭，四方牧民聚饮青稞酒"], [6, 7, "沐浴节", 3, "弃山星现，男女老幼下吉曲河洗浴七日"], [7, 1, "望果节", 0, "青稞熟前绕田转圈，赛马射箭，庄园宴饮"], [9, 30, "古突夜", 0, "年尾吃面团驱鬼，全家举火把送鬼出门"], [10, 1, "吐蕃新年", 1, "部族聚在开阔地煨桑祭天，杀羊祈赞普长寿，互送节礼"]];
   var HALLS = ["破败草庵", "庄严精舍", "敕赐法堂"];
   var HALL_PRICE = { 庄严精舍: 200, 敕赐法堂: 1e3 };
   var HALL_LOOK = { 破败草庵: "殿宇陈旧，泥佛落尘，香客罕至", 庄严精舍: "殿阁一新，钟磬有声，香客盈门", 敕赐法堂: "朝廷题额高悬，自此有名分在身" };
@@ -429,11 +430,11 @@
     return n + cur;
   }
   var dayOfYear = (t) => t.月序号 * 30 + t.日;
-  function festivalState(t) {
+  function festivalState(t, table = FESTIVALS) {
     if (t.月序号 < 0 || !t.日) return { 今日: null, 将至: null };
     const d = dayOfYear(t);
     let 今日 = null, 将至 = null;
-    for (const [m, day, 名, win, 氛围] of FESTIVALS) {
+    for (const [m, day, 名, win, 氛围] of table) {
       const fd = m * 30 + day, diff = fd - d;
       if (Math.abs(diff) <= win) {
         今日 = { 名, 氛围 };
@@ -444,23 +445,25 @@
     return { 今日, 将至 };
   }
   var FEST_PIC = {
-    元日: ["fest-yuanri.webp", "fest-yuanri-xue.webp"],
-    上元: ["fest-shangyuan.webp", "fest-shangyuan-xue.webp"],
-    晦日: ["fest-huiri.webp", "fest-huiri-xue.webp"],
-    寒食: ["fest-hanshi.webp", "fest-hanshi-xue.webp"],
-    清明: ["fest-qingming.webp", "fest-qingming-xue.webp"],
-    上巳: ["fest-shangsi.webp", "fest-shangsi-xue.webp"],
-    浴佛: ["fest-yufo.webp", "fest-yufo-xue.webp"],
-    端午: ["fest-duanwu.webp", "fest-duanwu-xue.webp"],
-    七夕: ["fest-qixi.webp", "fest-qixi-xue.webp"],
-    盂兰盆: ["fest-yulanpen.webp", "fest-yulanpen-xue.webp"],
-    重阳: ["fest-chongyang.webp", "fest-chongyang-xue.webp"],
-    冬至: ["fest-dongzhi.webp", "fest-dongzhi-xue.webp"],
-    岁除: ["fest-suichu.webp", "fest-suichu-xue.webp"]
+    元日: "fest-yuanri.webp",
+    上元: "fest-shangyuan.webp",
+    晦日: "fest-huiri.webp",
+    寒食: "fest-hanshi.webp",
+    清明: "fest-qingming.webp",
+    上巳: "fest-shangsi.webp",
+    浴佛: "fest-yufo.webp",
+    端午: "fest-duanwu.webp",
+    七夕: "fest-qixi.webp",
+    盂兰盆: "fest-yulanpen.webp",
+    重阳: "fest-chongyang.webp",
+    冬至: "fest-dongzhi.webp",
+    岁除: "fest-suichu.webp"
   };
+  var FEST_PIC_XUE = { 萨嘎达瓦: "fest-xue-sagadawa.webp", 赛马会: "fest-xue-saima.webp", 沐浴节: "fest-xue-muyu.webp", 望果节: "fest-xue-wangguo.webp", 古突夜: "fest-xue-gutu.webp", 吐蕃新年: "fest-xue-xinnian.webp" };
   function festToday(D) {
-    const f = festivalState(parseTime(D.时空.时间)).今日;
-    return f ? { 名: f.名, 氛围: f.氛围, src: FEST_PIC[f.名][abroadOf(D) ? 1 : 0] } : null;
+    const xue = abroadOf(D);
+    const f = festivalState(parseTime(D.时空.时间), xue ? FESTIVALS_XUE : FESTIVALS).今日;
+    return f ? { 名: f.名, 氛围: f.氛围, src: (xue ? FEST_PIC_XUE : FEST_PIC)[f.名] } : null;
   }
   var isPanelText = (text) => /^\s*(?:<StatusPlaceHolderImpl\s*\/?>\s*)*【开场介绍】/.test(String(text || ""));
   var LETTER_TITLE = "雪域佛国";
