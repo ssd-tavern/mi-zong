@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.21";
+  var CDN_TAG = "3.0.22";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -1617,8 +1617,6 @@
 #mz-mscrim { display: none; }
 
 @container mz (max-width: 900px) {
-  /* 容器查询命不中容器自身，窄屏令牌挂在壳根的直接子元素上再往下继承 */
-  #mz-shell-root > * { --top-h: 52px; --fs-body: calc(16px * var(--fs-scale)); }
   /* ==== 主区：正文列铺满，底部只剩书写区 ==== */
   .mz-main { --col-side: 22px; }
   /* 状态栏留空放在顶栏内，让账头底色一直铺到屏幕顶边，不留一条纸色带 */
@@ -1638,15 +1636,10 @@
 
   /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样）；宵禁／节令／大势下沉抽屉 ==== */
   .mz-topbar { padding-left: 10px; padding-right: 10px; gap: 10px; }
-  /* 落单在 logo 角，纯图标像装饰：加一圈金线＋淡填底，收成一枚可点小牌 */
-  .mz-tb-plaque { display: flex; color: var(--txt-dim); width: 26px; height: 26px; padding: 5px;
-    border: 1px solid rgba(var(--gold-rgb), .38); border-radius: 7px;
-    background: rgba(var(--gold-rgb), .07);
-    transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
-  .mz-tb-plaque:active, .mz-tb-plaque:hover { color: var(--gold-hi);
-    border-color: rgba(var(--gold-rgb), .65); background: rgba(var(--gold-rgb), .14); }
-  .mz-tb-plaque.mz-on { color: var(--on-gold); border-color: var(--gold-hi);
-    background: var(--gold-hi); }
+  /* 只留线稿图标，不加框不填底，与右端工具栏同族 */
+  .mz-tb-plaque { display: flex; color: var(--txt-dim); width: 28px; height: 28px; padding: 5px;
+    transition: color var(--t-fast) var(--ease-out); }
+  .mz-tb-plaque:active, .mz-tb-plaque:hover, .mz-tb-plaque.mz-on { color: var(--gold-hi); }
   /* 钮里两枚图标：诸务三横／返回箭头，随窗态二选一；开坛窗时置灰 */
   .mz-tb-plaque svg:last-child { display: none; }
   .mz-tb-plaque.mz-ret svg:first-child { display: none; }
@@ -1676,6 +1669,8 @@
   #mz-corner button { color: var(--txt-faint); width: 26px; height: 26px; padding: 5px; }
   #mz-corner button:hover { color: var(--gold-hi); }
   #mz-corner button.mz-on { color: var(--gold-hi); }
+  /* 玩法窗开着时收起设置／出卷，免得误触退回酒馆；开坛窗仍留出卷 */
+  #mz-corner.mz-away { display: none; }
 
   /* ==== 侧栏即左抽屉：八成宽整高，自左滑入盖住顶栏与正文，点叉或遮罩收起，不接手势 ==== */
   .mz-side { position: absolute; left: 0; top: 0; bottom: 0; width: min(80cqw, 380px); z-index: 30;
@@ -2021,7 +2016,6 @@
       renderAll(true);
       renderStoryLog();
       await veil;
-      playEntrance();
     } catch (e) {
       const why = doc.querySelector("#" + SEL.lift + " .mz-gate-foot .mz-why");
       if (why) why.textContent = "出错: " + (e && e.message ? e.message : e);
@@ -4499,8 +4493,11 @@
   function plaqueState() {
     const p = doc.getElementById(SEL.mplaque);
     if (!p) return;
-    p.classList.toggle("mz-ret", !!openName && openName !== GATE_WIN);
+    const inWin = !!openName && openName !== GATE_WIN;
+    p.classList.toggle("mz-ret", inWin);
     p.disabled = openName === GATE_WIN;
+    const corner = doc.getElementById(SEL.corner);
+    if (corner) corner.classList.toggle("mz-away", inWin);
   }
   function liftBack() {
     const back = doc.getElementById(SEL.liftBody).querySelector(".mz-back");
