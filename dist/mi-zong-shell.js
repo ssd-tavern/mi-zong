@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.54";
+  var CDN_TAG = "4.0.0";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -743,7 +743,6 @@
 .mz-doom .mz-sr-row span { flex: none; }
 .mz-doom .mz-sr-row b { min-width: 0; text-align: right; letter-spacing: .5px; font-weight: 500;
   color: var(--txt); overflow: hidden; text-overflow: ellipsis; }
-.mz-doom .mz-sr-row b.mz-gain { color: var(--gold-hi); }
 .mz-doom .mz-sr-row b.mz-red { color: var(--red); }
 .mz-doom .mz-sr-row b.mz-dim { color: var(--txt-faint); opacity: .6; }
 
@@ -926,10 +925,7 @@
 .mz-tb-time.mz-dim { color: var(--txt-faint); font-weight: 500; }
 .mz-tb-i { position: relative; flex: none; display: flex; flex-direction: row; align-items: baseline; gap: 5px;
   font-size: 15px; line-height: 1.2; letter-spacing: .5px; text-indent: 0; color: var(--gold); font-weight: 400; white-space: nowrap; }
-/* 顶栏值只两色：象牙（常态）／红（危） */
 .mz-tb-i b { text-indent: 0; color: var(--txt); font-weight: 700; }
-.mz-tb-i b.mz-red { color: var(--red); }
-.mz-tb-i b.mz-dim { color: var(--txt-faint); font-weight: 500; }
 
 /* 槽宽 9px（见 tokens.js）两边各占一道，从总留白里扣掉，正文列才与书写区左右对齐 */
 #mz-paper { flex: 1; min-height: 0; overflow-y: auto; scrollbar-gutter: stable both-edges;
@@ -1204,7 +1200,6 @@
 .mz-form input { border: none; border-bottom: 1px solid var(--line); background: transparent; outline: none;
   font-family: inherit; font-size: 15.5px; color: var(--txt); padding: 3px 2px; width: 150px; caret-color: var(--gold-hi); }
 .mz-form input.mz-w { width: 260px; }
-.mz-form .mz-choices { display: flex; gap: 8px; align-items: center; }
 .mz-form .mz-price { font-size: 12px; letter-spacing: .5px; opacity: .85; margin-left: 3px; }
 .mz-form ::placeholder { color: var(--txt-faint); }
 /* 契纸：一切记账表单的容器，整列竖排、控件撑满、大号朱印钮收尾；不加框，靠段题横线与留白成段 */
@@ -1463,8 +1458,6 @@
 .mz-thinking .mz-rule.mz-r { background: linear-gradient(90deg, var(--line), transparent); }
 .mz-thinking img { width: 19px; height: 19px; animation: mz-smoke 2.4s ease-in-out infinite; }
 @keyframes mz-smoke { 0%,100% { opacity: .5; translate: 0 0; rotate: -2deg; } 50% { opacity: 1; translate: 0 -2px; rotate: 2deg; } }
-.mz-cursor::after { content: '▍'; color: var(--gold-hi); opacity: .6; animation: mz-blink 1s steps(2, jump-none) infinite; }
-@keyframes mz-blink { 0% { opacity: .6; } 100% { opacity: 0; } }
 #mz-delbar button.mz-armed { color: var(--on-red); background: var(--red); border-color: var(--red); }
 #mz-entry { all: initial; position: fixed; z-index: 8999; display: none; box-sizing: border-box;
   direction: ltr; unicode-bidi: isolate; -webkit-locale: 'zh'; -webkit-tap-highlight-color: transparent;
@@ -1628,7 +1621,7 @@
   /* iOS Safari 聚焦字号 <16px 的输入框会放大页面 */
   #mz-shell-root input, #mz-shell-root textarea { font-size: 16px; }
 
-  /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（左，三项去标签只留值），工具栏（右，走基样） ==== */
+  /* ==== 顶栏：诸务钮＋时辰／铜钱／信众（居中，手机只时辰去标签），出卷钮（右） ==== */
   /* ==== 顶栏钮一套规格：32 点击区、8 内边距、16 图标；钮与读数隔 12，钮与钮隔 8（中心相距 40）；两端图标边与正文首末字对齐（留白＝正文留白－8） ==== */
   .mz-topbar { --tb-btn: 32px; --tb-pad: 8px; padding-left: calc(var(--col-side) - var(--tb-pad)); padding-right: calc(var(--col-side) - var(--tb-pad)); gap: 12px; }
   /* 只留线稿图标，不加框不填底，与右端工具栏同规格 */
@@ -1646,7 +1639,6 @@
   .mz-tb-set { gap: 20px; }
   .mz-tb-time { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   .mz-tb-time.mz-dim { color: var(--txt-faint); opacity: .6; }
-  .mz-tb-i b.mz-dim { color: var(--txt-faint); opacity: .6; }
   /* 手机（<600）：时辰去标签只留「日期 时辰」，铜钱（在藏绢帛）与信众的两字标签照留，字色字重同桌面端、字阶降到 12；组间距再收到 12；时辰仍留省略号兜底 */
   @container mz (max-width: 599px) {
     .mz-tb-time > span { display: none; }
@@ -3543,8 +3535,8 @@
       时辰: esc2(t.时辰),
       题: esc2(D.时空.时间.replace(/\//g, " ")),
       // 藏地无铜钱，标签改绢帛，值仍是账上的贯
-      铜钱: { k: abroadOf(D) ? "绢帛" : "铜钱", v: moneyTop(文), cls: "mz-gain", stat: "铜钱" },
-      信众: { k: "信众", v: cn(D.教务.信众) + "人", cls: "mz-gain", stat: "信众" },
+      铜钱: { k: abroadOf(D) ? "绢帛" : "铜钱", v: moneyTop(文), stat: "铜钱" },
+      信众: { k: "信众", v: cn(D.教务.信众) + "人", stat: "信众" },
       大势: (() => {
         const d = doomRow(D, t);
         return { k: d.k, v: esc2(d.v), cls: d.cls };
