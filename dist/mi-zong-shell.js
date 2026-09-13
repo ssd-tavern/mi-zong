@@ -4,7 +4,7 @@
   var SHELL_ID = "mz-shell-root";
   var SHELL_TOKEN = "mz_" + Math.random().toString(36).slice(2) + "_" + Date.now();
   var CARD_TITLE = "密宗模拟器";
-  var CDN_TAG = "3.0.48";
+  var CDN_TAG = "3.0.49";
   var FONT_PKG = "@fontsource/noto-serif-sc@5.3.0";
   var FONT_CSS = [400, 600].map((w) => "https://testingcf.jsdelivr.net/npm/" + FONT_PKG + "/" + w + ".css");
   var FONT_LINK_ID = "mz-font-";
@@ -52,7 +52,6 @@
     } catch (err) {
     }
   }
-  var FS_SCALES = [["1", "适中"], ["1.08", "大"], ["1.16", "特大"]];
   var PREF_NS = "mzPref:";
   function getPref(k, def) {
     try {
@@ -92,7 +91,6 @@
     down: svg('<path d="M12 5v14M19 12l-7 7-7-7"/>'),
     menu: svg('<path d="M4 6h16M4 12h16M4 18h10"/>'),
     close: svg('<path d="M5 5l14 14M19 5L5 19"/>'),
-    settings: svg('<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>'),
     back: svg('<path d="M16 5l-8 7 8 7"/>'),
     /* 折线撑到与叉同高（5～19），描线同 1.6，视觉重量才对齐 */
     chev: svg('<path d="M9 6l6 6-6 6"/>'),
@@ -551,9 +549,8 @@
   --fs-plaque: 17px; --ls-plaque: 7px;
   --fs-name: 15.5px; --ls-name: 3px;
   --fs-label: 12.5px; --ls-label: 3px;
-  /* 正文字号＝断点基准×设置里的倍数；窄屏基准另见 phone.js */
-  --fs-scale: 1;
-  --fs-body: calc(17.5px * var(--fs-scale));
+  /* 正文字号只此一档；窄屏基准另见 phone.js */
+  --fs-body: 17.5px;
   --fs-read: 13.5px; --ls-read: .5px;
   --fs-tag: 12px; --ls-tag: 2px;
   --fs-btn: 13.5px; --ls-btn: 2px; --fs-btn-lg: 16px; --ls-btn-lg: 6px;
@@ -1437,19 +1434,6 @@
 .mz-atlas .mz-zlist li em { font-style: normal; font-size: 12px; letter-spacing: .5px; color: var(--txt-faint); margin-left: 8px; }
 .mz-atlas .mz-zlist-road li.mz-abroad { grid-column: 1 / -1; }
 
-/* ==== 设置窗（首组标签让出左上题签） ==== */
-.mz-set-group { display: flex; flex-direction: column; gap: 10px; }
-.mz-set-win .mz-set-group:first-child .mz-set-lab { padding-left: 48px; }
-.mz-set-lab { font-size: 13px; letter-spacing: 2px; color: var(--txt-faint); }
-.mz-set-opt { position: relative; display: flex; align-items: center; padding: 11px 16px; cursor: pointer;
-  font-size: 14.5px; letter-spacing: 1px; color: var(--txt-dim);
-  border: 1px solid var(--line); background: var(--bg3);
-  transition: border-color var(--t-fast) var(--ease-out), background var(--t-fast) var(--ease-out); }
-.mz-set-opt input { position: absolute; opacity: 0; width: 0; height: 0; }
-.mz-set-opt:hover { border-color: rgba(var(--red-rgb), .5); }
-.mz-set-opt:has(input:checked) { border-color: var(--red); background: rgba(var(--red-rgb),.07);
-  box-shadow: inset 0 0 0 1px var(--red); color: var(--txt); }
-
 `;
 
   // src/css/extras.js
@@ -1670,7 +1654,7 @@
   #mz-corner button { color: var(--txt-faint); opacity: 1; width: var(--tb-btn); height: var(--tb-btn); padding: var(--tb-pad); }
   #mz-corner button:hover { color: var(--gold-hi); }
   #mz-corner button.mz-on { color: var(--gold-hi); }
-  /* 玩法窗开着时收起设置／出卷，免得误触退回酒馆；开坛窗仍留出卷 */
+  /* 玩法窗开着时收起出卷，免得误触退回酒馆；开坛窗仍留出卷 */
   #mz-corner.mz-away { display: none; }
 
   /* ==== 侧栏即左抽屉：八成宽整高，自左滑入盖住顶栏与正文，点叉或遮罩收起，不接手势 ==== */
@@ -2804,16 +2788,12 @@
   }
   function onOptionClick(text) {
     if (sending) return;
-    if (getPref("optSend", "now") === "fill") {
-      const ta = doc.getElementById(SEL.textarea);
-      if (ta) {
-        ta.value = text;
-        autogrowTA();
-        ta.focus();
-      }
-      return;
+    const ta = doc.getElementById(SEL.textarea);
+    if (ta) {
+      ta.value = text;
+      autogrowTA();
+      ta.focus();
     }
-    sendText(text);
   }
   function onSendButton() {
     if (!sending) {
@@ -4199,13 +4179,6 @@
       { id: "craft", label: "工坊", n: crList.length ? "可制" + crList.join("／") : "无坊" }
     ], withNote(D)) + pane("库藏", "store", storePane, "store") + pane("库藏", "craft", '<div class="mz-folio mz-fill">' + pagePic("工坊") + craftForm + "</div>", "store") + "</section>";
   }
-  function settingsHtml() {
-    const mode = getPref("optSend", "now");
-    const opt = (v, lab) => '<label class="mz-set-opt"><input type="radio" name="mz-opt-send" value="' + v + '"' + (mode === v ? " checked" : "") + "><span>" + lab + "</span></label>";
-    const fs = FS_SCALES.some((x) => x[0] === getPref("fsScale", "1")) ? getPref("fsScale", "1") : "1";
-    const fsOpt = ([v, lab]) => '<label class="mz-set-opt"><input type="radio" name="mz-opt-fs" value="' + v + '"' + (fs === v ? " checked" : "") + "><span>" + lab + "</span></label>";
-    return '<section class="mz-win mz-set-win mz-on"><div class="mz-set-group"><div class="mz-set-lab">点选一条行事后</div>' + opt("now", "直接发送") + opt("fill", "填入输入框") + '</div><div class="mz-set-group"><div class="mz-set-lab">正文字号</div>' + FS_SCALES.map(fsOpt).join("") + "</div></section>";
-  }
   var basketBase = null;
   function syncBasketBase(D) {
     const base = baseOf(D);
@@ -4242,8 +4215,6 @@
         return affairsHtml(D);
       case "库藏":
         return cofferHtml(D);
-      case "设置":
-        return settingsHtml();
     }
     return '<section class="mz-win mz-on"><div class="mz-stub">未辟</div></section>';
   }
@@ -4260,17 +4231,6 @@
     return out;
   }
   function onWindowClick(e, win) {
-    const optSend = e.target.closest('input[name="mz-opt-send"]');
-    if (optSend) {
-      setPref("optSend", optSend.value);
-      return;
-    }
-    const optFs = e.target.closest('input[name="mz-opt-fs"]');
-    if (optFs) {
-      setPref("fsScale", optFs.value);
-      applyFontScale();
-      return;
-    }
     const pic = e.target.closest(".mz-pic img");
     if (pic) {
       openViewer(pic.getAttribute("src"), pic.getAttribute("alt") || "");
@@ -4653,7 +4613,6 @@
       <button class="mz-tb-plaque" id="${SEL.mplaque}" title="诸务">${ICO.menu}${ICO.back}</button>
       <div class="mz-tb-face" id="${SEL.topbar}"></div>
       <div id="${SEL.corner}">
-        <button data-corner="set" title="设置">${ICO.settings}</button>
         <button data-corner="exit" title="出卷">${ICO.close}</button>
       </div>
     </div>
@@ -4698,12 +4657,6 @@
       doc.head.appendChild(link);
     });
   }
-  function applyFontScale() {
-    const root = doc.getElementById(SHELL_ID);
-    if (!root) return;
-    const v = getPref("fsScale", "1");
-    root.style.setProperty("--fs-scale", FS_SCALES.some((x) => x[0] === v) ? v : "1");
-  }
   function ensureShell() {
     if (doc.getElementById(SHELL_ID)) return;
     ensureFonts();
@@ -4720,7 +4673,6 @@
     root.dataset.owner = SHELL_TOKEN;
     root.innerHTML = skeletonHtml();
     doc.body.appendChild(root);
-    applyFontScale();
     const exit = () => {
       if (drawerOpen) {
         setDrawer(null);
@@ -4728,11 +4680,7 @@
       }
       toggleShell();
     };
-    root.querySelectorAll("#" + SEL.corner + " button").forEach((b) => {
-      const k = b.dataset.corner;
-      if (k === "set") b.addEventListener("click", () => openLift("设置"));
-      else if (k === "exit") b.addEventListener("click", exit);
-    });
+    root.querySelector("#" + SEL.corner + ' button[data-corner="exit"]').addEventListener("click", exit);
     root.querySelectorAll(".mz-side [data-lift]").forEach((el) => {
       el.addEventListener("click", () => {
         if (!el.classList.contains("mz-locked")) openLift(el.dataset.lift);
